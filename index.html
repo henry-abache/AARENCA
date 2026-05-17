@@ -186,8 +186,8 @@
             </div>
 
             <div style="display: flex; margin-bottom: 20px; gap: 10px;">
-                <button class="btn btn-primary" onclick="switchAuthTab('login')">Ingresar</button>
-                <button class="btn btn-primary" style="background-color: #333;" onclick="switchAuthTab('registro')">Registrarse</button>
+                <button class="btn btn-primary" id="btn-tab-login" onclick="switchAuthTab('login')">Ingresar</button>
+                <button class="btn btn-primary" id="btn-tab-reg" style="background-color: #333;" onclick="switchAuthTab('registro')">Registrarse</button>
             </div>
 
             <div id="form-login">
@@ -202,7 +202,7 @@
             <div id="form-registro" class="hidden">
                 <h3>Crear Cuenta</h3>
                 <div class="form-group">
-                    <label>Nombre de Usuario (Sin espacios ni acentos)</label>
+                    <label>Nombre de Usuario (Sin espacios)</label>
                     <input type="text" id="reg-username" placeholder="Ej: juan_renca" required>
                 </div>
                 <div class="form-group">
@@ -236,7 +236,7 @@
                 
                 <div class="counter-box">
                     <h3>Tiempo de Sobriedad</h3>
-                    <div class="counter-number" id=" sobriety-days">0</div>
+                    <div class="counter-number" id="sobriety-days">0</div>
                     <p style="margin: 5px 0 0 0; color: var(--text-muted);">Días Limpios</p>
                 </div>
 
@@ -262,25 +262,26 @@
     </div>
 
     <div id="main-nav" class="nav-bar hidden">
-        <div class="nav-item active" onclick="showView('inicio')">🏠<br>Inicio</div>
-        <div class="nav-item" onclick="showView('biblioteca')">📚<br>Biblioteca</div>
+        <div class="nav-item active" id="nav-inicio" onclick="showView('inicio')">🏠<br>Inicio</div>
+        <div class="nav-item" id="nav-biblioteca" onclick="showView('biblioteca')">📚<br>Biblioteca</div>
         <div id="nav-admin-link" class="nav-item hidden" onclick="showView('admin')">⚙️<br>Admin</div>
         <div class="nav-item" style="color: var(--danger);" onclick="cerrarSesion()">🚪<br>Salir</div>
     </div>
 
     <script>
-        // CONFIGURA AQUÍ TUS CREDENCIALES DE SUPABASE
+        // CREDENCIALES DE SUPABASE Conectadas a tu proyecto xzkuywsitdwikzksiesf
         const SUPABASE_URL = "https://xzkuywsitdwikzksiesf.supabase.co"; 
-        const SUPABASE_KEY = "TU_ANON_KEY_AQUÍ"; // Pon aquí tu clave anónima pública larga de Supabase
+        const SUPABASE_KEY = "Pega_Aquí_Tu_Clave_Anon_Larga_De_Supabase"; 
         const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let usuarioActual = null;
 
-        // VERIFICAR SESIÓN AUTOMÁTICA AL CARGAR LA PÁGINA
+        // RECONOCIMIENTO AUTOMÁTICO DE USUARIO (MEMORIA DEL TELÉFONO)
         window.addEventListener('DOMContentLoaded', () => {
             const sesionGuardada = localStorage.getItem('usuario_nueva_vida');
             if (sesionGuardada) {
                 usuarioActual = JSON.parse(sesionGuardada);
+                loguearExitosamente();
                 verificarEstadoUsuario(usuarioActual.username);
             }
         });
@@ -289,9 +290,13 @@
             if(tab === 'login') {
                 document.getElementById('form-login').classList.remove('hidden');
                 document.getElementById('form-registro').classList.add('hidden');
+                document.getElementById('btn-tab-login').style.backgroundColor = 'var(--accent)';
+                document.getElementById('btn-tab-reg').style.backgroundColor = '#333';
             } else {
                 document.getElementById('form-login').classList.add('hidden');
                 document.getElementById('form-registro').classList.remove('hidden');
+                document.getElementById('btn-tab-login').style.backgroundColor = '#333';
+                document.getElementById('btn-tab-reg').style.backgroundColor = 'var(--accent)';
             }
         }
 
@@ -309,7 +314,7 @@
                 return alert('Tu cuenta aún está en revisión por el administrador.');
             }
 
-            // Guardar en la memoria del teléfono para que no pida login otra vez
+            // Guardar en LocalStorage para no loguearse de nuevo
             localStorage.setItem('usuario_nueva_vida', JSON.stringify(data));
             usuarioActual = data;
             loguearExitosamente();
@@ -320,8 +325,8 @@
             if(data && data.estado === 'aprobado') {
                 usuarioActual = data;
                 localStorage.setItem('usuario_nueva_vida', JSON.stringify(data));
-                loguearExitosamente();
-            } else {
+            } else if(data && data.estado === 'pendiente') {
+                alert('Tu usuario volvió a estado pendiente de revisión.');
                 cerrarSesion();
             }
         }
@@ -339,7 +344,7 @@
             }
 
             calcularDias();
-            showView('inicio');
+            document.getElementById('view-inicio').classList.remove('hidden');
             cargarBiblioteca();
         }
 
@@ -366,15 +371,14 @@
             }]);
 
             if(error) {
-                alert('Error al registrar: El nombre de usuario ya está ocupado.');
+                alert('El nombre de usuario ya está ocupado. Prueba con otro.');
             } else {
-                alert('¡Registro enviado! Pídele al administrador que apruebe tu cuenta.');
+                alert('¡Registro enviado! Notifícale al administrador para que te apruebe.');
                 switchAuthTab('login');
             }
         }
 
         function calcularDias() {
-            // Lógica simple: Tomamos la primera fecha de adicciones o la creación
             let fechaInicio = new Date(usuarioActual.created_at);
             let hoy = new Date();
             let diferencia = hoy - fechaInicio;
@@ -401,7 +405,9 @@
             document.getElementById('view-' + view).classList.remove('hidden');
             
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            event.currentTarget.classList.add('active');
+            if(view === 'inicio') document.getElementById('nav-inicio').classList.add('active');
+            if(view === 'biblioteca') document.getElementById('nav-biblioteca').classList.add('active');
+            if(view === 'admin') document.getElementById('nav-admin-link').classList.add('active');
         }
 
         async function cargarBiblioteca() {
