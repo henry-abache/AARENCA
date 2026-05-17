@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <link rel="manifest" href="manifest.json">
+<link rel="manifest" href="manifest.json">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nueva Vida - Alcohólicos Anónimos</title>
@@ -23,16 +23,16 @@
         }
         body { margin: 0; padding: 0; background-color: #020617; color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 19px; }
         .app-container { max-width: 500px; margin: 0 auto; min-height: 100vh; background-color: var(--bg-dark); display: flex; flex-direction: column; position: relative; box-shadow: 0 0 25px rgba(0,0,0,0.7); padding-bottom: 95px; box-sizing: border-box; }
-        .header { padding: 18px 24px; background-color: var(--card-dark); border-bottom: 2px solid #334155; text-align: center; }
-        .header h1 { margin: 4px 0 0 0; font-size: 22px; }
+        .header { padding: 24px; background-color: var(--card-dark); border-bottom: 2px solid #334155; text-align: center; }
+        .header h1 { margin: 0; font-size: 26px; }
         .main-content { flex: 1; padding: 20px; overflow-y: auto; }
         .card { background-color: var(--card-dark); border-radius: 20px; padding: 24px; margin-bottom: 20px; border: 2px solid #334155; }
         .input-field, .select-field { width: 100%; padding: 16px; background-color: #0f172a; border: 2px solid #475569; border-radius: 14px; color: white; font-size: 18px; margin-top: 8px; margin-bottom: 20px; box-sizing: border-box; }
-        .btn { background-color: var(--primary); color: white; border: none; padding: 18px; border-radius: 16px; font-size: 20px; font-weight: bold; cursor: pointer; width: 100%; display: block; text-align: center; text-decoration: none; box-sizing: border-box; }
+        .btn { background-color: var(--primary); color: white; border: none; padding: 18px; border-radius: 16px; font-size: 20px; font-weight: bold; cursor: pointer; width: 100%; display: block; text-align: center; text-decoration: none; }
         .btn-danger { background-color: var(--danger); }
         .btn-success { background-color: var(--accent); }
         .btn-secondary { background-color: #475569; }
-        .btn-warning { background-color: var(--warning); }
+        .btn-warning { background-color: var(--warning); color: #020617; }
         .btn-sm { padding: 10px 18px; font-size: 16px; width: auto; border-radius: 12px; display: inline-block; }
         .checkbox-group { background: #0f172a; padding: 14px; border-radius: 14px; margin-bottom: 15px; border: 2px solid #334155; }
         .checkbox-label { display: flex; align-items: center; font-size: 21px; cursor: pointer; }
@@ -47,13 +47,17 @@
         .paso-row.completado .paso-numero { color: var(--warning); }
         .star-icon { font-size: 28px; margin-left: auto; color: #475569; }
         .star-icon.active { color: var(--warning); }
-        .popup-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 999; overflow-y: auto; }
-        .popup-card { background: var(--card-dark); border-radius: 24px; padding: 30px; text-align: center; max-width: 410px; width: 100%; border: 3px solid var(--warning); }
+        .popup-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 999; }
+        .popup-card { background: var(--card-dark); border-radius: 24px; padding: 30px; text-align: center; max-width: 410px; border: 3px solid var(--warning); }
         .biblioteca-item { background: #0f172a; padding: 18px; border-radius: 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; border: 2px solid #334155; }
-        .navbar { position: absolute; bottom: 0; left: 0; right: 0; height: 90px; background-color: var(--card-dark); border-top: 2px solid #334155; display: flex; justify-content: space-around; align-items: center; }
-        .nav-item { color: var(--text-muted); cursor: pointer; text-align: center; font-size: 11px; font-weight: bold; flex: 1; padding: 5px 0; }
+        
+        /* Ajuste de Navbar para 5 elementos */
+        .navbar { position: fixed; bottom: 0; left: 0; right: 0; max-width: 500px; margin: 0 auto; height: 90px; background-color: var(--card-dark); border-top: 2px solid #334155; display: flex; justify-content: space-around; align-items: center; z-index: 900; }
+        .nav-item { color: var(--text-muted); cursor: pointer; text-align: center; font-size: 14px; font-weight: bold; flex: 1; }
         .nav-item.active { color: var(--primary); }
-        .nav-icon { font-size: 20px; margin-bottom: 2px; }
+        .nav-icon { font-size: 26px; margin-bottom: 2px; }
+
+        /* Estilos de Administración */
         .solicitud-card { background: #1e293b; border-radius: 16px; padding: 18px; margin-bottom: 14px; border: 2px solid #d97706; }
         .solicitud-card.rechazada { border-color: #64748b; background: #0f172a; opacity: 0.8; }
         .solicitud-nombre { font-size: 20px; font-weight: bold; margin-bottom: 4px; color: #fff; }
@@ -61,23 +65,21 @@
         .solicitud-actions { display: flex; gap: 12px; margin-top: 10px; }
         .badge-pendiente { background: #92400e; color: #fde68a; font-size: 13px; padding: 3px 10px; border-radius: 20px; display: inline-block; margin-bottom: 8px; }
         .badge-rechazado { background: #334155; color: #cbd5e1; font-size: 13px; padding: 3px 10px; border-radius: 20px; display: inline-block; margin-bottom: 8px; }
-        .badge-admin { background: #7c3aed; color: #e9d5ff; font-size: 12px; padding: 2px 10px; border-radius: 20px; display: inline-block; margin-left: 8px; font-weight: bold; }
+        
         .acordeon-btn { background: #334155; color: #fff; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; text-align: center; margin-top: 25px; border: 1px solid #475569; }
+        .acordeon-contenido { background: #0b111e; padding: 15px; border-radius: 0 0 14px 14px; border: 2px solid #334155; border-top: none; }
+
+        /* Estilos Directorio y Eventos */
         .directorio-sede-seccion { margin-top: 20px; }
         .directorio-sede-titulo { background: #334155; color: #fde68a; padding: 8px 16px; border-radius: 10px; font-size: 16px; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; }
         .directorio-contacto { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .directorio-contacto.es-admin { border: 2px solid #7c3aed; background: #1a1035; }
         .directorio-nombre { font-weight: bold; font-size: 18px; }
-
-        /* Eventos */
-        .evento-card { background: #0f172a; border: 2px solid #2563eb; border-radius: 16px; padding: 18px; margin-bottom: 14px; }
-        .evento-titulo { font-size: 20px; font-weight: bold; color: #fff; margin-bottom: 6px; }
-        .evento-meta { font-size: 14px; color: var(--text-muted); margin-bottom: 4px; }
-        .evento-sede-badge { background: #1e3a5f; color: #93c5fd; font-size: 12px; padding: 2px 8px; border-radius: 10px; display: inline-block; margin: 2px; }
-        .sede-check { display: flex; align-items: center; background: #0f172a; border: 2px solid #334155; border-radius: 12px; padding: 12px 16px; margin-bottom: 10px; cursor: pointer; gap: 12px; }
-        .sede-check.seleccionada { border-color: #2563eb; background: #0d1f3c; }
-        .sede-check input { width: 22px; height: 22px; cursor: pointer; }
-        .notif-dot { display: inline-block; width: 10px; height: 10px; background: #dc2626; border-radius: 50%; margin-left: 4px; vertical-align: middle; }
+        .directorio-rol { font-size: 13px; color: var(--text-muted); background: #1e293b; padding: 2px 8px; border-radius: 10px; margin-left: 6px; display: inline-block; }
+        
+        .evento-card { background: #1e293b; border-radius: 16px; padding: 20px; margin-bottom: 15px; border-left: 5px solid var(--primary); }
+        .evento-titulo { font-size: 22px; font-weight: bold; color: #fff; margin-bottom: 6px; }
+        .evento-meta { font-size: 15px; color: var(--warning); margin-bottom: 8px; font-weight: 500; }
+        .evento-desc { font-size: 16px; color: var(--text-muted); line-height: 1.4; }
     </style>
 </head>
 <body>
@@ -87,23 +89,22 @@
         const SUPABASE_KEY = "sb_publishable_8NSIOBCEbc4_mM9KWMKJvA_MPWW5Cv3";
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        const CODIGO_SECRETO_ADMIN = "felices24";
         const GRUPOS = [
-            { id: "san-jose-renca", nombre: "SAN JOSE DE RENCA" },
-            { id: "grupo-esperanza", nombre: "GRUPO ESPERANZA" }
+          { id: "san-jose-renca", nombre: "SAN JOSE DE RENCA" },
+          { id: "grupo-esperanza", nombre: "GRUPO ESPERANZA" }
         ];
         const ADICCIONES_DISPONIBLES = ["Alcohol", "Marihuana", "Cocaina", "Tabaco", "Juego Compulsivo"];
         const PASOS_AA = [
             "Admitimos que eramos impotentes ante el alcohol y nuestras vidas se habian vuelto ingobernables.",
             "Llegamos a creer que un Poder superior a nosotros mismos podria devolvernos el sano juicio.",
-            "Decidimos poner nuestra voluntad y nuestras vidas al cuidado de Dios, tal como nosotros lo entendiamos.",
+            "Decidimos poner nuestra voluntad y nuestras vidas al cuidado de Dios, tal como nosotros lo entendemiamos.",
             "Sin miedo, hicimos un minucioso examen de conciencia de nosotros mismos.",
             "Admitimos ante Dios, ante nosotros mismos y ante otro ser humano la naturaleza exacta de nuestros defectos.",
             "Estuvimos enteramente dispuestos a dejar que Dios nos liberase de todos estos defectos de caracter.",
             "Humildemente le pedimos que nos librase de nuestros defectos.",
             "Hicimos una lista de todas aquellas personas a quienes habiamos ofendido y estuvimos dispuestos a reparar el dano.",
             "Reparamos directamente a cuantos nos fue posible el dano causado, excepto cuando el hacerlo implicaba perjuicio.",
-            "Continuamos con nuestro examen de conciencia, admitiendo inmediatamente nuestros errores cuando los descubriamos.",
+            "Continuamos con nuestro examen de conciencia, admitiendo inmediatamente nuestros errores cuando los descobriamos.",
             "Buscamos a traves de la oracion y la meditacion mejorar nuestro contacto con Dios.",
             "Habiendo experimentado un despertar espiritual, tratamos de llevar este mensaje a otros alcoholicos."
         ];
@@ -118,10 +119,12 @@
             const [user, setUser] = React.useState(null);
             const [activeTab, setActiveTab] = React.useState("inicio");
             const [misAdicciones, setMisAdicciones] = React.useState({});
+            const [nuevaAdiccion, setNuevaAdiccion] = React.useState(""); 
             const [pasoActual, setPasoActual] = React.useState(1);
             const [biblioteca, setBiblioteca] = React.useState([]);
             const [directorioUsuarios, setDirectorioUsuarios] = React.useState([]);
             const [eventos, setEventos] = React.useState([]);
+            
             const [mostrarAliento, setMostrarAliento] = React.useState(false);
             const [lecturaRecomendada, setLecturaRecomendada] = React.useState("");
             const [nombre, setNombre] = React.useState("");
@@ -131,30 +134,34 @@
             const [rol, setRol] = React.useState("basico");
             const [mostrarCampoAdmin, setMostrarCampoAdmin] = React.useState(false);
             const [codigoAdmin, setCodigoAdmin] = React.useState("");
+            
+            const CODIGO_SECRETO_ADMIN = "felices24";
             const [checks, setChecks] = React.useState({});
             const [fechas, setFechas] = React.useState({});
             const [loginUsername, setLoginUsername] = React.useState("");
+            
+            // Biblioteca
             const [nuevoTitulo, setNuevoTitulo] = React.useState("");
             const [nuevoTipo, setNuevoTipo] = React.useState("Documento");
             const [nuevoLink, setNuevoLink] = React.useState("");
+            
+            // Eventos Form
+            const [evTitulo, setEvTitulo] = React.useState("");
+            const [evDesc, setEvDesc] = React.useState("");
+            const [evFecha, setEvFecha] = React.useState("");
+            const [evHora, setEvHora] = React.useState("");
+            const [evDireccion, setEvDireccion] = React.useState("");
+
+            // Administración
             const [solicitudesPendientes, setSolicitudesPendientes] = React.useState([]);
             const [solicitudesRechazadas, setSolicitudesRechazadas] = React.useState([]);
             const [mostrarHistorialRechazados, setMostrarHistorialRechazados] = React.useState(false);
             const [cargandoSolicitudes, setCargandoSolicitudes] = React.useState(false);
 
-            // Estados para crear evento
-            const [mostrarFormEvento, setMostrarFormEvento] = React.useState(false);
-            const [eventoTitulo, setEventoTitulo] = React.useState("");
-            const [eventoDescripcion, setEventoDescripcion] = React.useState("");
-            const [eventoFecha, setEventoFecha] = React.useState("");
-            const [eventoHora, setEventoHora] = React.useState("");
-            const [eventoDireccion, setEventoDireccion] = React.useState("");
-            const [eventoSedes, setEventoSedes] = React.useState([]);
-
             React.useEffect(() => {
                 if (!user) return;
                 cargarDatosNube();
-                const interval = setInterval(cargarDatosNube, 20000);
+                const interval = setInterval(cargarDatosNube, 6000);
                 return () => clearInterval(interval);
             }, [user]);
 
@@ -165,70 +172,64 @@
                         setMisAdicciones(uData.adicciones || {});
                         setPasoActual(uData.paso_actual || 1);
                         setMiTelefonoActual(uData.telefono || "");
-                        setUser(prev => ({ ...prev, estado: uData.estado }));
+                        setUser(prev => ({ ...prev, estado: uData.estado, rol: uData.rol }));
                     }
+                    
                     const { data: bData } = await supabase.from('biblioteca').select('*').eq('grupo_id', user.grupoId).order('id', { ascending: false });
                     if (bData) setBiblioteca(bData);
 
+                    // Traer Directorio de Usuarios aprobados
                     const { data: dData } = await supabase.from('usuarios').select('nombre_real, grupo_nombre, grupo_id, telefono, rol').eq('estado', 'aprobado').order('grupo_nombre', { ascending: true });
                     if (dData) setDirectorioUsuarios(dData);
 
-                    // Cargar eventos donde la sede del usuario está invitada
-                    const { data: eData } = await supabase.from('eventos').select('*').order('fecha', { ascending: true });
-                    if (eData) {
-                        const misEventos = eData.filter(ev => {
-                            const sedes = ev.sedes_invitadas || [];
-                            return sedes.includes(user.grupoId);
-                        });
-                        setEventos(misEventos);
-                    }
+                    // Traer Eventos públicos
+                    const { data: eData } = await supabase.from('eventos').select('*').order('created_at', { ascending: false });
+                    if (eData) setEventos(eData);
 
                     if (user.rol === 'admin') {
-                        const { data: pendientes } = await supabase.from('usuarios').select('*').eq('grupo_id', user.grupoId).eq('estado', 'pendiente').order('username', { ascending: true });
+                        const { data: pendientes } = await supabase
+                            .from('usuarios')
+                            .select('*')
+                            .eq('grupo_id', user.grupoId)
+                            .eq('estado', 'pendiente')
+                            .order('username', { ascending: true });
                         if (pendientes) setSolicitudesPendientes(pendientes);
-                        const { data: rechazados } = await supabase.from('usuarios').select('*').eq('grupo_id', user.grupoId).eq('estado', 'rechazado').order('username', { ascending: true });
-                        if (rechazados) setSolicitudesRechazadas(rechazados);
+
+                        const { data: rechazados } = await supabase
+                            .from('usuarios')
+                            .select('*')
+                            .eq('grupo_id', user.grupoId)
+                            .eq('estado', 'rechazado')
+                            .order('username', { ascending: true });
+                        if (rechados) setSolicitudesRechazadas(rechados);
                     }
                 } catch(e) {}
             }
 
-            const toggleSedeEvento = (sedeId) => {
-                setEventoSedes(prev =>
-                    prev.includes(sedeId) ? prev.filter(s => s !== sedeId) : [...prev, sedeId]
-                );
-            };
-
-            const crearEvento = async (e) => {
-                e.preventDefault();
-                if (!eventoTitulo || !eventoFecha || eventoSedes.length === 0) {
-                    return alert("Completa el titulo, fecha y selecciona al menos una sede.");
-                }
-                const nuevoEvento = {
-                    titulo: eventoTitulo,
-                    descripcion: eventoDescripcion,
-                    fecha: eventoFecha,
-                    hora: eventoHora,
-                    direccion: eventoDireccion,
-                    sedes_invitadas: eventoSedes,
-                    creado_por: user.nombreReal,
-                    grupo_nombre_creador: user.grupoNombre
-                };
-                const { error } = await supabase.from('eventos').insert([nuevoEvento]);
-                if (!error) {
-                    alert("Evento creado y notificacion enviada a las sedes seleccionadas.");
-                    setEventoTitulo(""); setEventoDescripcion(""); setEventoFecha("");
-                    setEventoHora(""); setEventoDireccion(""); setEventoSedes([]);
-                    setMostrarFormEvento(false);
+            const agregarAdiccion = async () => {
+                if (!nuevaAdiccion) return;
+                const hoy = new Date().toISOString().split('T')[0];
+                const nuevas = { ...misAdicciones, [nuevaAdiccion]: hoy };
+                const { error } = await supabase.from('usuarios').update({ adicciones: nuevas }).eq('username', user.username);
+                if (!error) { 
+                    setMisAdicciones(nuevas); 
+                    setNuevaAdiccion(""); 
+                    alert("✅ Adición guardada. El contador de este padecimiento parte desde hoy."); 
                     cargarDatosNube();
                 } else {
-                    alert("Error al crear evento: " + error.message);
+                    alert("Error: " + error.message);
                 }
             };
 
-            const eliminarEvento = async (id) => {
-                if (!confirm("Eliminar este evento?")) return;
-                const { error } = await supabase.from('eventos').delete().eq('id', id);
-                if (!error) cargarDatosNube();
+            const actualizarTelefonoPerfil = async (e) => {
+                e.preventDefault();
+                const { error } = await supabase.from('usuarios').update({ telefono: miTelefonoActual.trim() }).eq('username', user.username);
+                if (!error) {
+                    alert("📱 Teléfono de contacto guardado correctamente.");
+                    cargarDatosNube();
+                } else {
+                    alert("Error al actualizar teléfono: " + error.message);
+                }
             };
 
             const aprobarUsuario = async (username) => {
@@ -237,34 +238,35 @@
                 if (!error) {
                     setSolicitudesPendientes(prev => prev.filter(u => u.username !== username));
                     setSolicitudesRechazadas(prev => prev.filter(u => u.username !== username));
-                    alert("Usuario aprobado.");
+                    alert("✅ Usuario aprobado con éxito.");
                     cargarDatosNube();
-                } else { alert("Error: " + error.message); }
+                } else {
+                    alert("Error al aprobar: " + error.message);
+                }
                 setCargandoSolicitudes(false);
             };
 
             const rechazarUsuario = async (username) => {
-                if (!confirm("Rechazar solicitud de " + username + "?")) return;
+                const confirmar = confirm("¿Deseas rechazar la solicitud de " + username + "? Pasará al registro de rechazados.");
+                if (!confirmar) return;
                 setCargandoSolicitudes(true);
                 const { error } = await supabase.from('usuarios').update({ estado: 'rechazado' }).eq('username', username);
                 if (!error) {
                     setSolicitudesPendientes(prev => prev.filter(u => u.username !== username));
+                    alert("❌ Solicitud rechazada de forma segura.");
                     cargarDatosNube();
-                } else { alert("Error: " + error.message); }
+                } else {
+                    alert("Error al rechazar: " + error.message);
+                }
                 setCargandoSolicitudes(false);
-            };
-
-            const actualizarTelefonoPerfil = async (e) => {
-                e.preventDefault();
-                const { error } = await supabase.from('usuarios').update({ telefono: miTelefonoActual }).eq('username', user.username);
-                if (!error) alert("Telefono guardado correctamente.");
-                else alert("Error: " + error.message);
             };
 
             const registrarCuenta = async (e) => {
                 e.preventDefault();
-                if (!nombre || !sede) return alert("Complete nombre y sede.");
-                if (rol === 'admin' && codigoAdmin.trim() !== CODIGO_SECRETO_ADMIN) return alert("Codigo de administrador incorrecto.");
+                if (!nombre || !sede) return alert("Por favor complete los campos");
+                if (rol === 'admin' && codigoAdmin.trim() !== CODIGO_SECRETO_ADMIN) {
+                    return alert("❌ Código de administrador incorrecto.\nContacta al responsable de tu sede.");
+                }
                 const grupoSel = GRUPOS.find(g => g.id === sede);
                 const uid = nombre.replace(/\s+/g, "") + "_" + grupoSel.id;
                 const adiccionesConfig = {};
@@ -280,15 +282,18 @@
                         setMiTelefonoActual(usuarioExistente.telefono || "");
                         return;
                     }
-                    const nuevoUsuario = { username: uid, nombre_real: nombre, grupo_id: sede, grupo_nombre: grupoSel.nombre, rol, estado: rol === 'admin' ? 'aprobado' : 'pendiente', adicciones: adiccionesConfig, paso_actual: 1, telefono: telefono.trim() };
+                    const nuevoUsuario = { username: uid, nombre_real: nombre, grupo_id: sede, grupo_nombre: grupoSel.nombre, rol: rol, estado: rol === 'admin' ? 'aprobado' : 'pendiente', adicciones: adiccionesConfig, paso_actual: 1, telefono: telefono.trim() };
                     const { error } = await supabase.from('usuarios').insert([nuevoUsuario]);
-                    if (error) alert("ERROR: " + error.message);
-                    else {
+                    if (error) {
+                        alert("ERROR: " + error.message);
+                    } else {
                         setUser({ username: uid, nombreReal: nombre, grupoId: sede, grupoNombre: grupoSel.nombre, rol, estado: nuevoUsuario.estado });
                         setMisAdicciones(adiccionesConfig);
                         setMiTelefonoActual(telefono.trim());
                     }
-                } catch(err) { alert("Error de conexion: " + err.message); }
+                } catch(err) {
+                    alert("Error de conexión: " + err.message);
+                }
             };
 
             const entrarCuenta = async (e) => {
@@ -300,26 +305,54 @@
                     setMisAdicciones(data.adicciones || {});
                     setPasoActual(data.paso_actual || 1);
                     setMiTelefonoActual(data.telefono || "");
-                } else alert("Identificador no encontrado.");
+                } else {
+                    alert("Identificador no encontrado.");
+                }
             };
 
             const registrarRecaida = async (adiccion) => {
                 const hoyStr = new Date().toISOString().split('T')[0];
                 const nuevasAdicciones = { ...misAdicciones, [adiccion]: hoyStr };
                 const { error } = await supabase.from('usuarios').update({ adicciones: nuevasAdicciones }).eq('username', user.username);
-                if (!error) { setMisAdicciones(nuevasAdicciones); setLecturaRecomendada(LECTURAS[Math.floor(Math.random() * LECTURAS.length)]); setMostrarAliento(true); }
+                if (!error) {
+                    setMisAdicciones(nuevasAdicciones);
+                    setLecturaRecomendada(LECTURAS[Math.floor(Math.random() * LECTURAS.length)]);
+                    setMostrarAliento(true);
+                }
             };
 
-            const cambiarPaso = async (n) => {
-                const { error } = await supabase.from('usuarios').update({ paso_actual: n }).eq('username', user.username);
-                if (!error) setPasoActual(n);
+            const cambiarPaso = async (numeroPaso) => {
+                const { error } = await supabase.from('usuarios').update({ paso_actual: numeroPaso }).eq('username', user.username);
+                if (!error) setPasoActual(numeroPaso);
             };
 
             const subirMaterial = async (e) => {
                 e.preventDefault();
-                if (!nuevoTitulo || !nuevoLink) return alert("Completa titulo y enlace");
+                if (!nuevoTitulo || !nuevoLink) return alert("Completa el título y enlace");
                 const { error } = await supabase.from('biblioteca').insert([{ grupo_id: user.grupoId, titulo: nuevoTitulo, tipo: nuevoTipo, link: nuevoLink }]);
-                if (!error) { setNuevoTitulo(""); setNuevoLink(""); cargarDatosNube(); alert("Publicado con exito"); }
+                if (!error) { setNuevoTitulo(""); setNuevoLink(""); cargarDatosNube(); alert("Publicado con éxito"); }
+            };
+
+            const crearEvento = async (e) => {
+                e.preventDefault();
+                if (!evTitulo || !evFecha) return alert("El título y la fecha son obligatorios");
+                const nuevoEv = {
+                    titulo: evTitulo,
+                    descripcion: evDesc,
+                    fecha: evFecha,
+                    hora: evHora,
+                    direccion: evDireccion,
+                    creado_por: user.username,
+                    grupo_nombre_creador: user.grupoNombre
+                };
+                const { error } = await supabase.from('eventos').insert([nuevoEv]);
+                if (!error) {
+                    setEvTitulo(""); setEvDesc(""); setEvFecha(""); setEvHora(""); setEvDireccion("");
+                    cargarDatosNube();
+                    alert("🎉 Evento programado e insertado correctamente.");
+                } else {
+                    alert("Error al guardar evento: " + error.message);
+                }
             };
 
             const calcularDias = (fechaStr) => {
@@ -328,17 +361,11 @@
                 return dias < 0 ? 0 : dias;
             };
 
-            // Directorio: admins primero, luego miembros, agrupado por sede
             const directorioAgrupado = GRUPOS.map(grupo => {
-                const todos = directorioUsuarios.filter(u => u.grupo_id === grupo.id);
-                const admins = todos.filter(u => u.rol === 'admin');
-                const miembros = todos.filter(u => u.rol !== 'admin');
-                return { ...grupo, miembros: [...admins, ...miembros] };
+                const miembrosDeSede = directorioUsuarios.filter(u => u.grupo_id === grupo.id);
+                return { ...grupo, miembros: miembrosDeSede };
             });
 
-            const linkMaps = (dir) => "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(dir);
-
-            // ── LOGIN ────────────────────────────────────────────────────
             if (!user) {
                 return (
                     <div className="app-container" style={{padding: '20px', justifyContent: 'center'}}>
@@ -346,29 +373,23 @@
                             <h2 style={{textAlign: 'center', color: '#3b82f6', fontSize: '30px'}}>Nueva Vida AA</h2>
                             <form onSubmit={registrarCuenta}>
                                 <h4 style={{color: 'var(--accent)', marginBottom: '5px'}}>1. Registrarse</h4>
-                                <input type="text" className="input-field" placeholder="Nombre o Alias (Obligatorio)" value={nombre} onChange={e => setNombre(e.target.value)} />
+                                <input type="text" className="input-field" placeholder="Su Nombre o Alias" value={nombre} onChange={e => setNombre(e.target.value)} />
                                 <select className="select-field" value={sede} onChange={e => setSede(e.target.value)}>
                                     <option value="">-- Seleccionar Sede --</option>
                                     {GRUPOS.map(g => <option key={g.id} value={g.id}>{g.nombre}</option>)}
                                 </select>
                                 <input type="tel" className="input-field" placeholder="WhatsApp ej: +56912345678 (Opcional)" value={telefono} onChange={e => setTelefono(e.target.value)} />
                                 <div style={{textAlign: 'right', marginBottom: '10px'}}>
-                                    <span style={{fontSize: '13px', color: '#475569', cursor: 'pointer', textDecoration: 'underline'}} onClick={() => { setMostrarCampoAdmin(!mostrarCampoAdmin); setRol("basico"); setCodigoAdmin(""); }}>
-                                        Soy administrador autorizado
-                                    </span>
+                                    <span style={{fontSize: '13px', color: '#475569', cursor: 'pointer', textDecoration: 'underline'}} onClick={() => { setMostrarCampoAdmin(!mostrarCampoAdmin); setRol("basico"); setCodigoAdmin(""); }}>¿Soy administrador autorizado?</span>
                                 </div>
                                 {mostrarCampoAdmin && (
                                     <div style={{background: '#1e1a2e', border: '2px solid #7c3aed', borderRadius: '14px', padding: '16px', marginBottom: '20px'}}>
-                                        <label style={{fontSize: '15px', color: '#a78bfa', fontWeight: 'bold'}}>Codigo de Administrador:</label>
-                                        <input type="password" className="input-field" placeholder="Codigo secreto" value={codigoAdmin} style={{marginBottom: '8px'}} onChange={e => { setCodigoAdmin(e.target.value); setRol(e.target.value === CODIGO_SECRETO_ADMIN ? "admin" : "basico"); }} />
-                                        {codigoAdmin.length > 0 && (
-                                            <div style={{fontSize: '14px', color: rol === 'admin' ? '#4ade80' : '#f87171'}}>
-                                                {rol === 'admin' ? 'Codigo correcto - Administrador' : 'Codigo incorrecto'}
-                                            </div>
-                                        )}
+                                        <label style={{fontSize: '15px', color: '#a78bfa', fontWeight: 'bold'}}>🔐 Código de Administrador:</label>
+                                        <input type="password" className="input-field" placeholder="Ingrese el código secreto" value={codigoAdmin} style={{marginBottom: '8px'}} onChange={e => { setCodigoAdmin(e.target.value); setRol(e.target.value === CODIGO_SECRETO_ADMIN ? "admin" : "basico"); }} />
+                                        {codigoAdmin.length > 0 && <div style={{fontSize: '14px', marginTop: '4px', color: rol === 'admin' ? '#4ade80' : '#f87171'}}>{rol === 'admin' ? '✅ Código correcto' : '❌ Código incorrecto'}</div>}
                                     </div>
                                 )}
-                                <h4 style={{color: 'var(--warning)', fontSize: '18px', marginBottom: '10px'}}>Padecimientos y Ultimo consumo:</h4>
+                                <h4 style={{color: 'var(--warning)', fontSize: '18px', marginBottom: '10px'}}>Padecimientos y Último consumo:</h4>
                                 {ADICCIONES_DISPONIBLES.map(ad => (
                                     <div key={ad} className="checkbox-group">
                                         <label className="checkbox-label">
@@ -380,9 +401,9 @@
                                 ))}
                                 <button type="submit" className="btn btn-success" style={{marginTop: '15px'}}>Registrar e Ingresar</button>
                             </form>
-                            <hr style={{borderColor: '#334155', margin: '30px 0'}} />
+                            <hr style={{borderColor: '#334155', margin: '30px 0fb'}} />
                             <form onSubmit={entrarCuenta}>
-                                <h4 style={{color: '#fff', marginBottom: '5px'}}>2. Ya tengo cuenta</h4>
+                                <h4 style={{color: '#fff', marginBottom: '5px'}}>2. Ya tengo cuenta (Identificador)</h4>
                                 <input type="text" className="input-field" placeholder="Ej: Pedro_san-jose-renca" value={loginUsername} onChange={e => setLoginUsername(e.target.value)} />
                                 <button type="submit" className="btn btn-secondary">Entrar</button>
                             </form>
@@ -396,10 +417,10 @@
                     <div className="app-container" style={{padding: '20px', justifyContent: 'center', textAlign: 'center'}}>
                         <div className="card">
                             <div style={{fontSize: '55px'}}>⏳</div>
-                            <h2>Cuenta en Revision</h2>
-                            <p style={{color: 'var(--text-muted)'}}>Tu identificador:</p>
-                            <p style={{background: '#020617', padding: '15px', borderRadius: '10px', color: 'var(--primary)', fontFamily: 'monospace', fontWeight: 'bold', fontSize: '18px'}}>{user.username}</p>
-                            <p style={{color: 'var(--warning)'}}>Pidele al administrador que te autorice.</p>
+                            <h2>Cuenta en Revisión</h2>
+                            <p style={{color: 'var(--text-muted)'}}>Tu identificador para entrar es:</p>
+                            <p style={{background: '#020617', padding: '15px', borderRadius: '10px', color: 'var(--primary)', fontFamily: 'monospace', fontWeight: 'bold', fontSize: '20px'}}>{user.username}</p>
+                            <p style={{color: 'var(--warning)'}}>Pídele al administrador de tu sede que te autorice.</p>
                             <button className="btn btn-secondary" onClick={() => setUser(null)}>Volver</button>
                         </div>
                     </div>
@@ -412,14 +433,13 @@
                         <div className="card" style={{borderColor: 'var(--danger)'}}>
                             <div style={{fontSize: '55px'}}>❌</div>
                             <h2>Acceso Denegado</h2>
-                            <p style={{color: 'var(--text-muted)'}}>Tu solicitud fue rechazada por el administrador.</p>
-                            <button className="btn btn-secondary" style={{marginTop: '15px'}} onClick={() => setUser(null)}>Volver</button>
+                            <p style={{color: 'var(--text-muted)'}}>Tu solicitud de registro ha sido rechazada por el administrador de la sede.</p>
+                            <button className="btn btn-secondary" onClick={() => setUser(null)}>Volver al Inicio</button>
                         </div>
                     </div>
                 );
             }
 
-            // ── APP PRINCIPAL ────────────────────────────────────────────
             return (
                 <div className="app-container">
                     {mostrarAliento && (
@@ -427,88 +447,32 @@
                             <div className="popup-card">
                                 <div style={{fontSize: '55px'}}>❤️</div>
                                 <h2>Un paso a la vez</h2>
-                                <p style={{lineHeight: '1.6'}}>Hoy es un nuevo comienzo. Mantente fuerte por las proximas 24 horas.</p>
+                                <p style={{lineHeight: '1.6'}}>Tu avance anterior no se pierde, hoy es un nuevo comienzo. Mantente fuerte por las próximas 24 horas.</p>
                                 <div style={{background: '#020617', padding: '14px', borderRadius: '12px', textAlign: 'left', margin: '15px 0'}}>
-                                    <strong style={{color: 'var(--warning)'}}>Sugerencia:</strong>
+                                    <strong style={{color: 'var(--warning)'}}>Sugerencia de lectura:</strong>
                                     <p style={{margin: '4px 0 0 0', fontSize: '17px'}}>{lecturaRecomendada}</p>
                                 </div>
                                 <button className="btn btn-success" onClick={() => setMostrarAliento(false)}>Aceptar y Continuar</button>
                             </div>
                         </div>
                     )}
-
-                    {mostrarFormEvento && (
-                        <div className="popup-overlay">
-                            <div className="popup-card" style={{textAlign: 'left', borderColor: '#2563eb', maxHeight: '90vh', overflowY: 'auto'}}>
-                                <h3 style={{color: '#93c5fd', marginTop: 0}}>Crear Evento</h3>
-                                <form onSubmit={crearEvento}>
-                                    <label style={{fontSize: '14px', color: 'var(--text-muted)'}}>Titulo del evento</label>
-                                    <input type="text" className="input-field" placeholder="Ej: Reunion mensual de AA" value={eventoTitulo} onChange={e => setEventoTitulo(e.target.value)} />
-                                    <label style={{fontSize: '14px', color: 'var(--text-muted)'}}>Descripcion (opcional)</label>
-                                    <input type="text" className="input-field" placeholder="Detalles del evento..." value={eventoDescripcion} onChange={e => setEventoDescripcion(e.target.value)} />
-                                    <div style={{display: 'flex', gap: '10px'}}>
-                                        <div style={{flex: 1}}>
-                                            <label style={{fontSize: '14px', color: 'var(--text-muted)'}}>Fecha</label>
-                                            <input type="date" className="input-field" value={eventoFecha} onChange={e => setEventoFecha(e.target.value)} />
-                                        </div>
-                                        <div style={{flex: 1}}>
-                                            <label style={{fontSize: '14px', color: 'var(--text-muted)'}}>Hora</label>
-                                            <input type="time" className="input-field" value={eventoHora} onChange={e => setEventoHora(e.target.value)} />
-                                        </div>
-                                    </div>
-                                    <label style={{fontSize: '14px', color: 'var(--text-muted)'}}>Direccion del evento</label>
-                                    <input type="text" className="input-field" placeholder="Ej: Av. Principal 1234, Renca, Santiago" value={eventoDireccion} onChange={e => setEventoDireccion(e.target.value)} />
-                                    <label style={{fontSize: '14px', color: 'var(--text-muted)', display: 'block', marginBottom: '8px'}}>Invitar sedes (selecciona una o mas):</label>
-                                    {GRUPOS.map(g => (
-                                        <div key={g.id} className={"sede-check" + (eventoSedes.includes(g.id) ? " seleccionada" : "")} onClick={() => toggleSedeEvento(g.id)}>
-                                            <input type="checkbox" checked={eventoSedes.includes(g.id)} onChange={() => toggleSedeEvento(g.id)} />
-                                            <span style={{fontWeight: 'bold'}}>{g.nombre}</span>
-                                        </div>
-                                    ))}
-                                    <div style={{display: 'flex', gap: '10px', marginTop: '15px'}}>
-                                        <button type="submit" className="btn btn-success" style={{flex: 1, padding: '14px', fontSize: '17px'}}>Publicar Evento</button>
-                                        <button type="button" className="btn btn-secondary" style={{flex: 1, padding: '14px', fontSize: '17px'}} onClick={() => setMostrarFormEvento(false)}>Cancelar</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    )}
-
                     <div className="header">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/AA_logo.svg/80px-AA_logo.svg.png" alt="AA" style={{width: '46px', height: '46px', marginBottom: '4px', filter: 'drop-shadow(0 0 6px rgba(255,200,0,0.4))'}} />
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/AA_logo.svg/80px-AA_logo.svg.png" alt="AA" style={{width: '52px', height: '52px', marginBottom: '6px'}} />
                         <h1>{user.grupoNombre}</h1>
-                        <span style={{color: 'var(--accent)', fontWeight: 'bold', fontSize: '17px'}}>{user.nombreReal} {user.rol === 'admin' ? '(Admin)' : ''}</span>
+                        <span style={{color: 'var(--accent)', fontWeight: 'bold'}}>{user.nombreReal} {user.rol === 'admin' ? '(Admin)' : ''}</span>
                     </div>
-
                     <div className="main-content">
-
-                        {/* ── INICIO ── */}
                         {activeTab === "inicio" && (
                             <div>
                                 <div className="card" style={{textAlign: 'center', borderColor: 'var(--warning)'}}>
                                     <h3 style={{margin: 0, color: 'var(--warning)'}}>Mi Meta de Hoy</h3>
-                                    <p style={{fontSize: '32px', fontWeight: 'bold', color: '#10b981', margin: '5px 0'}}>Solo por Hoy!</p>
+                                    <p style={{fontSize: '32px', fontWeight: 'bold', color: '#10b981', margin: '5px 0'}}>¡Solo por Hoy!</p>
                                 </div>
 
-                                {/* Notificaciones de eventos */}
-                                {eventos.length > 0 && (
-                                    <div className="card" style={{borderColor: '#2563eb', padding: '16px'}}>
-                                        <h4 style={{margin: '0 0 10px 0', color: '#93c5fd'}}>📅 Tienes {eventos.length} evento{eventos.length > 1 ? 's' : ''} proximos</h4>
-                                        {eventos.slice(0, 2).map(ev => (
-                                            <div key={ev.id} style={{background: '#0f172a', borderRadius: '10px', padding: '10px', marginBottom: '8px', fontSize: '15px'}}>
-                                                <strong>{ev.titulo}</strong>
-                                                <div style={{color: 'var(--text-muted)'}}>{ev.fecha} {ev.hora && "a las " + ev.hora}</div>
-                                            </div>
-                                        ))}
-                                        <div style={{fontSize: '13px', color: '#475569', marginTop: '6px', cursor: 'pointer', textDecoration: 'underline'}} onClick={() => setActiveTab("eventos")}>Ver todos los eventos →</div>
-                                    </div>
-                                )}
-
-                                <form onSubmit={actualizarTelefonoPerfil} className="card" style={{borderColor: '#7c3aed'}}>
-                                    <h4 style={{margin: '0 0 5px 0', fontSize: '17px', color: '#c4b5fd'}}>📱 Mi Numero de WhatsApp</h4>
-                                    <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 10px 0'}}>Agregalo para aparecer en el directorio de tu sede.</p>
-                                    <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
-                                        <input type="tel" className="input-field" style={{marginBottom: 0, marginTop: 0, flex: 1, padding: '12px'}} placeholder="+56912345678" value={miTelefonoActual} onChange={e => setMiTelefonoActual(e.target.value)} />
+                                <form onSubmit={actualizarTelefonoPerfil} className="card" style={{borderColor: '#475569'}}>
+                                    <h4 style={{margin: '0 0 5px 0', fontSize: '17px'}}>📱 Mi Número de Contacto</h4>
+                                    <div style={{display: 'flex', gap: '8px'}}>
+                                        <input type="tel" className="input-field" style={{marginBottom: 0, marginTop: 0, flex: 1}} placeholder="Ej: +56912345678" value={miTelefonoActual} onChange={e => setMiTelefonoActual(e.target.value)} />
                                         <button type="submit" className="btn btn-success btn-sm">Guardar</button>
                                     </div>
                                 </form>
@@ -524,27 +488,41 @@
                                                 <div className="progress-container">
                                                     <div className="progress-label">
                                                         <span>Libre de {ad}</span>
-                                                        <span style={{color: 'var(--accent)', fontSize: '24px'}}>{dias} Dias</span>
+                                                        <span style={{color: 'var(--accent)', fontSize: '24px'}}>{dias} Días</span>
                                                     </div>
                                                     <div className="progress-bar-bg">
                                                         <div className="progress-bar-fill" style={{width: (porcentaje || 4) + "%"}}></div>
                                                     </div>
                                                 </div>
                                                 <button className="btn btn-danger" style={{padding: '12px', fontSize: '16px'}} onClick={() => registrarRecaida(ad)}>
-                                                    Registrar Recaida / Reiniciar
+                                                    Registrar Recaída / Reiniciar
                                                 </button>
                                             </div>
                                         );
                                     })
                                 }
+
+                                {/* Agregar nueva adicción al vuelo */}
+                                {ADICCIONES_DISPONIBLES.filter(ad => !misAdicciones[ad]).length > 0 && (
+                                    <div className="card" style={{borderColor: '#d97706'}}>
+                                        <h4 style={{margin: '0 0 10px 0', fontSize: '17px'}}>+ Agregar otra adicción al seguimiento</h4>
+                                        <select className="select-field" style={{marginBottom: '12px'}} value={nuevaAdiccion} onChange={e => setNuevaAdiccion(e.target.value)}>
+                                            <option value="">-- Seleccionar adicción --</option>
+                                            {ADICCIONES_DISPONIBLES.filter(ad => !misAdicciones[ad]).map(ad => (
+                                                <option key={ad} value={ad}>{ad}</option>
+                                            ))}
+                                        </select>
+                                        <button type="button" className="btn btn-warning" style={{fontSize: '17px', padding: '14px'}} onClick={agregarAdiccion}>
+                                            Agregar y empezar contador
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         )}
-
-                        {/* ── PASOS ── */}
                         {activeTab === "pasos" && (
                             <div>
                                 <h3>Los 12 Pasos</h3>
-                                <p style={{fontSize: '16px', color: 'var(--text-muted)', marginBottom: '15px'}}>Toca el paso en el que te encuentras:</p>
+                                <p style={{fontSize: '16px', color: 'var(--text-muted)', marginBottom: '15px'}}>Toca el paso en el que te encuentras trabajando:</p>
                                 {PASOS_AA.map((texto, i) => {
                                     const num = i + 1;
                                     const activo = pasoActual === num;
@@ -558,193 +536,178 @@
                                 })}
                             </div>
                         )}
-
-                        {/* ── DIRECTORIO ── */}
-                        {activeTab === "directorio" && (
-                            <div>
-                                <h3>Directorio Inter-Sedes</h3>
-                                <p style={{fontSize: '15px', color: 'var(--text-muted)', marginBottom: '20px'}}>
-                                    Los numeros con fondo morado son de administradores. Toca el boton para abrir WhatsApp.
-                                </p>
-                                {directorioAgrupado.map(grupo => (
-                                    <div key={grupo.id} className="directorio-sede-seccion">
-                                        <div className="directorio-sede-titulo">📍 {grupo.nombre}</div>
-                                        {grupo.miembros.length === 0
-                                            ? <p style={{fontSize: '15px', color: 'var(--text-muted)', paddingLeft: '10px'}}>No hay miembros con telefono registrado.</p>
-                                            : grupo.miembros.map((m, idx) => {
-                                                const esAdmin = m.rol === 'admin';
-                                                const tieneTel = m.telefono && m.telefono.trim().length > 0;
-                                                const linkWa = tieneTel ? "https://wa.me/" + m.telefono.replace(/[^0-9]/g, "") : null;
-                                                return (
-                                                    <div key={idx} className={"directorio-contacto" + (esAdmin ? " es-admin" : "")}>
-                                                        <div>
-                                                            <div style={{display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px'}}>
-                                                                <span className="directorio-nombre">{m.nombre_real}</span>
-                                                                {esAdmin && <span className="badge-admin">⭐ Administrador de Sede</span>}
-                                                            </div>
-                                                            <div style={{fontSize: '14px', color: tieneTel ? (esAdmin ? '#c4b5fd' : '#4ade80') : '#64748b', marginTop: '4px'}}>
-                                                                {tieneTel ? "📞 " + m.telefono : "Sin telefono registrado"}
-                                                            </div>
-                                                        </div>
-                                                        {tieneTel && (
-                                                            <a href={linkWa} target="_blank" rel="noreferrer" className={"btn btn-sm " + (esAdmin ? "btn-warning" : "btn-success")} style={{display: 'flex', alignItems: 'center', gap: '5px', textDecoration: 'none'}}>
-                                                                💬 Chat
-                                                            </a>
-                                                        )}
-                                                    </div>
-                                                );
-                                            })
-                                        }
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        {/* ── EVENTOS ── */}
-                        {activeTab === "eventos" && (
-                            <div>
-                                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px'}}>
-                                    <h3 style={{margin: 0}}>Eventos</h3>
-                                    {user.rol === 'admin' && (
-                                        <button className="btn btn-success btn-sm" onClick={() => setMostrarFormEvento(true)}>+ Crear Evento</button>
-                                    )}
-                                </div>
-                                {eventos.length === 0
-                                    ? <div className="card" style={{textAlign: 'center', color: 'var(--text-muted)'}}>
-                                        <div style={{fontSize: '40px', marginBottom: '10px'}}>📅</div>
-                                        <p>No hay eventos programados para tu sede.</p>
-                                      </div>
-                                    : eventos.map(ev => (
-                                        <div key={ev.id} className="evento-card">
-                                            <div className="evento-titulo">{ev.titulo}</div>
-                                            {ev.descripcion && <div style={{fontSize: '15px', color: 'var(--text-muted)', marginBottom: '8px'}}>{ev.descripcion}</div>}
-                                            <div className="evento-meta">📅 {ev.fecha} {ev.hora && "— " + ev.hora + " hrs"}</div>
-                                            <div className="evento-meta" style={{color: '#94a3b8', fontSize: '13px'}}>Organiza: {ev.grupo_nombre_creador} — {ev.creado_por}</div>
-                                            <div style={{margin: '8px 0'}}>
-                                                {(ev.sedes_invitadas || []).map(sid => {
-                                                    const g = GRUPOS.find(g => g.id === sid);
-                                                    return g ? <span key={sid} className="evento-sede-badge">{g.nombre}</span> : null;
-                                                })}
-                                            </div>
-                                            {ev.direccion && (
-                                                <a href={linkMaps(ev.direccion)} target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm" style={{textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '8px', fontSize: '15px'}}>
-                                                    📍 Ver en Google Maps
-                                                </a>
-                                            )}
-                                            {user.rol === 'admin' && ev.creado_por === user.nombreReal && (
-                                                <button className="btn btn-danger btn-sm" style={{marginTop: '10px', marginLeft: '8px', fontSize: '14px', padding: '8px 14px'}} onClick={() => eliminarEvento(ev.id)}>
-                                                    Eliminar
-                                                </button>
-                                            )}
-                                        </div>
-                                    ))
-                                }
-                            </div>
-                        )}
-
-                        {/* ── BIBLIOTECA ── */}
                         {activeTab === "biblioteca" && (
                             <div>
                                 <h3>Biblioteca de Sede</h3>
                                 {user.rol === 'admin' && (
                                     <form onSubmit={subirMaterial} className="card" style={{borderColor: 'var(--primary)'}}>
-                                        <h4 style={{margin: '0 0 10px 0', color: 'var(--primary)'}}>Anadir Recurso</h4>
-                                        <input type="text" placeholder="Titulo" className="input-field" value={nuevoTitulo} onChange={e => setNuevoTitulo(e.target.value)} />
-                                        <select className="select-field" value={nuevoTipo} onChange={e => setNuevoTipo(e.target.value)}>
-                                            <option value="Documento">Documento / PDF</option>
-                                            <option value="Audio">Audio / Reunion</option>
-                                            <option value="Video">Video Motivacional</option>
+                                        <h4 style={{margin:'0 0 10px 0', color:'var(--primary)'}}>Añadir Recurso</h4>
+                                        <input type="text" placeholder="Título del texto" className="input-field" value={nuevoTitulo} onChange={e=>setNuevoTitulo(e.target.value)} />
+                                        <select className="select-field" value={nuevoTipo} onChange={e=>setNuevoTipo(e.target.value)}>
+                                            <option value="Documento">📄 Documento / PDF</option>
+                                            <option value="Audio">🎵 Audio / Reunión</option>
+                                            <option value="Video">🎥 Video Motivacional</option>
                                         </select>
-                                        <input type="text" placeholder="Enlace URL" className="input-field" value={nuevoLink} onChange={e => setNuevoLink(e.target.value)} />
-                                        <button type="submit" className="btn btn-success">Publicar</button>
+                                        <input type="text" placeholder="Enlace URL del recurso" className="input-field" value={nuevoLink} onChange={e=>setNuevoLink(e.target.value)} />
+                                        <button type="submit" className="btn btn-success">Publicar en Sede</button>
                                     </form>
                                 )}
-                                {biblioteca.length === 0
-                                    ? <p style={{color: 'var(--text-muted)'}}>No hay material publicado.</p>
-                                    : biblioteca.map(b => (
+                                {biblioteca.length === 0 ? (
+                                    <p style={{color:'var(--text-muted)'}}>No hay material publicado para esta sede.</p>
+                                ) : (
+                                    biblioteca.map(b => (
                                         <div key={b.id} className="biblioteca-item">
                                             <div>
-                                                <div style={{fontWeight: 'bold'}}>{b.titulo}</div>
-                                                <div style={{fontSize: '14px', color: 'var(--text-muted)'}}>{b.tipo}</div>
+                                                <div style={{fontWeight:'bold'}}>{b.titulo}</div>
+                                                <div style={{fontSize:'14px', color:'var(--text-muted)'}}>{b.tipo}</div>
                                             </div>
-                                            <a href={b.link} target="_blank" rel="noreferrer" className="btn btn-sm btn-success" style={{textDecoration: 'none'}}>Abrir</a>
+                                            <a href={b.link} target="_blank" rel="noreferrer" className="btn btn-sm" style={{background: 'var(--primary)'}}>Abrir</a>
                                         </div>
                                     ))
-                                }
+                                )}
                             </div>
                         )}
-
-                        {/* ── ADMIN ── */}
-                        {activeTab === "admin" && user.rol === 'admin' && (
+                        {activeTab === "directorio" && (
                             <div>
-                                <h3>Panel de Administracion</h3>
-                                <p style={{fontSize: '15px', color: 'var(--text-muted)'}}>Solicitudes pendientes en tu sede:</p>
-                                {cargandoSolicitudes && <p style={{color: 'var(--warning)', textAlign: 'center'}}>Procesando...</p>}
-                                {solicitudesPendientes.length === 0
-                                    ? <div style={{background: '#0f172a', padding: '15px', borderRadius: '12px', textAlign: 'center', border: '1px solid #334155', color: 'var(--text-muted)'}}>No hay solicitudes pendientes.</div>
-                                    : solicitudesPendientes.map(sol => (
+                                <h3>Directorio Inter-Sedes</h3>
+                                {directorioAgrupado.map(grupo => (
+                                    <div key={grupo.id} className="directorio-sede-seccion">
+                                        <div className="directorio-sede-titulo">📍 {grupo.nombre}</div>
+                                        {grupo.miembros.length === 0 ? (
+                                            <p style={{fontSize:'15px', color:'var(--text-muted)', paddingLeft:'10px'}}>No hay miembros autorizados aún.</p>
+                                        ) : (
+                                            grupo.miembros.map((m, idx) => {
+                                                const tieneTlf = m.telefono && m.telefono.trim().length > 0;
+                                                return (
+                                                    <div key={idx} className="directorio-contacto">
+                                                        <div>
+                                                            <span className="directorio-nombre">{m.nombre_real}</span>
+                                                            {m.rol === 'admin' && <span className="directorio-rol">Admin</span>}
+                                                            <div style={{fontSize: '14px', color: tieneTlf ? '#4ade80' : '#64748b', marginTop: '4px'}}>
+                                                                {tieneTlf ? "📞 " + m.telefono : "❌ Sin teléfono público"}
+                                                            </div>
+                                                        </div>
+                                                        {tieneTlf && (
+                                                            <a href={"https://wa.me/" + m.telefono.replace(/[^0-9]/g, "")} target="_blank" rel="noreferrer" className="btn btn-success btn-sm" style={{textDecoration:'none'}}>💬 Chat</a>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        {activeTab === "eventos" && (
+                            <div>
+                                <h3>Próximos Eventos y Confraternizaciones</h3>
+                                {user.rol === 'admin' && (
+                                    <form onSubmit={crearEvento} className="card" style={{borderColor: 'var(--accent)'}}>
+                                        <h4 style={{margin: '0 0 10px 0', color: 'var(--accent)'}}>Organizar Nuevo Evento</h4>
+                                        <input type="text" placeholder="Título del evento (ej: Aniversario)" className="input-field" value={evTitulo} onChange={e=>setEvTitulo(e.target.value)} />
+                                        <textarea placeholder="Descripción detallada" className="input-field" style={{height:'90px', fontFamily:'inherit'}} value={evDesc} onChange={e=>setEvDesc(e.target.value)}></textarea>
+                                        <div style={{display:'flex', gap:'10px'}}>
+                                            <input type="date" className="input-field" value={evFecha} onChange={e=>setEvFecha(e.target.value)} />
+                                            <input type="time" className="input-field" value={evHora} onChange={e=>setEvHora(e.target.value)} />
+                                        </div>
+                                        <input type="text" placeholder="Dirección física o enlace virtual" className="input-field" value={evDireccion} onChange={e=>setEvDireccion(e.target.value)} />
+                                        <button type="submit" className="btn btn-success">Publicar Evento</button>
+                                    </form>
+                                )}
+                                {eventos.length === 0 ? (
+                                    <p style={{color:'var(--text-muted)'}}>No hay eventos programados por el momento.</p>
+                                ) : (
+                                    eventos.map(ev => (
+                                        <div key={ev.id} className="evento-card">
+                                            <div className="evento-titulo">{ev.titulo}</div>
+                                            <div className="evento-meta">🗓️ {ev.fecha} — ⏰ {ev.hora}</div>
+                                            {ev.direccion && <div style={{fontSize:'14px', color:'#fde68a', marginBottom:'8px'}}>📍 {ev.direccion}</div>}
+                                            {ev.descripcion && <p className="evento-desc">{ev.descripcion}</p>}
+                                            <div style={{fontSize: '12px', color: '#64748b', marginTop: '10px', textAlign: 'right'}}>Organiza: {ev.grupo_nombre_creador}</div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        )}
+                        {activeTab === "admin" && (
+                            <div>
+                                <h3>Panel de Administración</h3>
+                                <p style={{fontSize:'15px', color:'var(--text-muted)'}}>Usuarios esperando aprobación en tu sede:</p>
+                                
+                                {solicitudesPendientes.length === 0 ? (
+                                    <div style={{background: '#0f172a', padding: '15px', borderRadius: '12px', textAlign: 'center', border: '1px solid #334155', color: 'var(--text-muted)'}}>
+                                        No hay solicitudes pendientes de acceso.
+                                    </div>
+                                ) : (
+                                    solicitudesPendientes.map(sol => (
                                         <div key={sol.username} className="solicitud-card">
-                                            <div className="badge-pendiente">Pendiente</div>
+                                            <div className="badge-pendiente">Pendiente de Autorización</div>
                                             <div className="solicitud-nombre">{sol.nombre_real}</div>
-                                            <div className="solicitud-info">ID: {sol.username}</div>
-                                            <div className="solicitud-info">Telefono: {sol.telefono || "No registrado"}</div>
-                                            {sol.adicciones && Object.keys(sol.adicciones).length > 0 && (
-                                                <div className="solicitud-info">Padecimientos: {Object.keys(sol.adicciones).join(", ")}</div>
-                                            )}
+                                            <div className="solicitud-info"><strong>ID único:</strong> {sol.username}</div>
+                                            <div className="solicitud-info">
+                                                <strong>Contadores activos:</strong> {Object.keys(sol.adicciones || {}).join(", ") || "Ninguno"}
+                                            </div>
                                             <div className="solicitud-actions">
-                                                <button className="btn btn-success btn-sm" onClick={() => aprobarUsuario(sol.username)} disabled={cargandoSolicitudes}>Aprobar</button>
-                                                <button className="btn btn-danger btn-sm" onClick={() => rechazarUsuario(sol.username)} disabled={cargandoSolicitudes}>Rechazar</button>
+                                                <button className="btn btn-success btn-sm" disabled={cargandoSolicitudes} onClick={() => aprobarUsuario(sol.username)}>
+                                                    Aprobar Ingreso
+                                                </button>
+                                                <button className="btn btn-danger btn-sm" disabled={cargandoSolicitudes} onClick={() => rechazarUsuario(sol.username)}>
+                                                    Rechazar
+                                                </button>
                                             </div>
                                         </div>
                                     ))
-                                }
-                                {solicitudesRechazadas.length > 0 && (
-                                    <div>
-                                        <div className="acordeon-btn" onClick={() => setMostrarHistorialRechazados(!mostrarHistorialRechazados)}>
-                                            {mostrarHistorialRechazados ? "Ocultar" : "Ver"} rechazados ({solicitudesRechazadas.length})
-                                        </div>
-                                        {mostrarHistorialRechazados && solicitudesRechazadas.map(sol => (
-                                            <div key={sol.username} className="solicitud-card rechazada" style={{marginTop: '10px'}}>
-                                                <div className="badge-rechazado">Rechazado</div>
-                                                <div className="solicitud-nombre">{sol.nombre_real}</div>
-                                                <div className="solicitud-info">ID: {sol.username}</div>
-                                                <div className="solicitud-actions">
-                                                    <button className="btn btn-success btn-sm" onClick={() => aprobarUsuario(sol.username)} disabled={cargandoSolicitudes}>Aprobar de todas formas</button>
+                                )}
+
+                                <div className="acordeon-btn" onClick={() => setMostrarHistorialRechazados(!mostrarHistorialRechazados)}>
+                                    {mostrarHistorialRechazados ? "⬇️ Ocultar Historial de Rechazados" : "➡️ Mostrar Historial de Rechazados (" + solicitudesRechazadas.length + ")"}
+                                </div>
+                                
+                                {mostrarHistorialRechazados && (
+                                    <div className="acordeon-contenido">
+                                        {solicitudesRechazadas.length === 0 ? (
+                                            <p style={{fontSize: '15px', color: 'var(--text-muted)', textAlign: 'center', margin: 0}}>No hay usuarios rechazados en el registro.</p>
+                                        ) : (
+                                            solicitudesRechazadas.map(sol => (
+                                                <div key={sol.username} className="solicitud-card rechazada">
+                                                    <div className="badge-rechazado">Rechazado</div>
+                                                    <div className="solicitud-nombre" style={{fontSize: '18px'}}>{sol.nombre_real}</div>
+                                                    <div className="solicitud-info" style={{fontSize: '14px'}}><strong>ID:</strong> {sol.username}</div>
+                                                    <div className="solicitud-actions">
+                                                        <button className="btn btn-success btn-sm" style={{padding: '6px 12px', fontSize: '14px'}} onClick={() => aprobarUsuario(sol.username)}>
+                                                            Reautorizar / Aprobar
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            ))
+                                        )}
                                     </div>
                                 )}
                             </div>
                         )}
-
                     </div>
-
-                    {/* ── NAVBAR ── */}
                     <div className="navbar">
-                        <div className={"nav-item" + (activeTab === 'inicio' ? ' active' : '')} onClick={() => setActiveTab("inicio")}>
-                            <div className="nav-icon">🏠</div><span>Inicio</span>
+                        <div className={"nav-item" + (activeTab === "inicio" ? " active" : "")} onClick={() => setActiveTab("inicio")}>
+                            <div className="nav-icon">🏠</div>Inicio
                         </div>
-                        <div className={"nav-item" + (activeTab === 'pasos' ? ' active' : '')} onClick={() => setActiveTab("pasos")}>
-                            <div className="nav-icon">⭐</div><span>12 Pasos</span>
+                        <div className={"nav-item" + (activeTab === "pasos" ? " active" : "")} onClick={() => setActiveTab("pasos")}>
+                            <div className="nav-icon">✨</div>Pasos
                         </div>
-                        <div className={"nav-item" + (activeTab === 'eventos' ? ' active' : '')} onClick={() => setActiveTab("eventos")}>
-                            <div className="nav-icon">📅</div>
-                            <span>Eventos{eventos.length > 0 ? <span className="notif-dot"></span> : ''}</span>
+                        <div className={"nav-item" + (activeTab === "biblioteca" ? " active" : "")} onClick={() => setActiveTab("biblioteca")}>
+                            <div className="nav-icon">📚</div>Biblioteca
                         </div>
-                        <div className={"nav-item" + (activeTab === 'directorio' ? ' active' : '')} onClick={() => setActiveTab("directorio")}>
-                            <div className="nav-icon">📞</div><span>Directorio</span>
+                        <div className={"nav-item" + (activeTab === "directorio" ? " active" : "")} onClick={() => setActiveTab("directorio")}>
+                            <div className="nav-icon">📇</div>Directorio
                         </div>
-                        <div className={"nav-item" + (activeTab === 'biblioteca' ? ' active' : '')} onClick={() => setActiveTab("biblioteca")}>
-                            <div className="nav-icon">📚</div><span>Biblioteca</span>
+                        <div className={"nav-item" + (activeTab === "eventos" ? " active" : "")} onClick={() => setActiveTab("eventos")}>
+                            <div className="nav-icon">📅</div>Eventos
                         </div>
                         {user.rol === 'admin' && (
-                            <div className={"nav-item" + (activeTab === 'admin' ? ' active' : '')} onClick={() => setActiveTab("admin")}>
-                                <div className="nav-icon">⚙️</div><span>Admin</span>
+                            <div className={"nav-item" + (activeTab === "admin" ? " active" : "")} onClick={() => setActiveTab("admin")}>
+                                <div className="nav-icon">👥</div>Admin
                             </div>
                         )}
                     </div>
-
                 </div>
             );
         }
