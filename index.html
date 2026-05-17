@@ -85,6 +85,7 @@
 </head>
 <body>
     <div id="root"></div>
+    
     <script type="text/babel">
         const SUPABASE_URL = "https://xzkuywsitdwikzksiesf.supabase.co";
         const SUPABASE_KEY = "sb_publishable_8NSIOBCEbc4_mM9KWMKJvA_MPWW5Cv3";
@@ -101,7 +102,7 @@
             "Decidimos poner nuestra voluntad y nuestras vidas al cuidado de Dios, tal como nosotros lo entendemiamos.",
             "Sin miedo, hicimos un minucioso examen de conciencia de nosotros mismos.",
             "Admitimos ante Dios, ante nosotros mismos y ante otro ser humano la naturaleza exacta de nuestros defectos.",
-            "Estuvimos enteramente dispuestos a dejar que Dios nos liberase de todos estos defectos de caracter.",
+            "Estuvimos enteramente dispuestos a dejar que Dios nos liberase de todos estos defectos de carácter.",
             "Humildemente le pedimos que nos librase de nuestros defectos.",
             "Hicimos una lista de todas aquellas personas a quienes habiamos ofendido y estuvimos dispuestos a reparar el dano.",
             "Reparamos directamente a cuantos nos fue posible el dano causado, excepto cuando el hacerlo implicaba perjuicio.",
@@ -110,10 +111,10 @@
             "Habiendo experimentado un despertar espiritual, tratamos de llevar este mensaje a otros alcoholicos."
         ];
         const LECTURAS = [
-            "Libro Grande de AA - Capitulo 5: Como funciona",
+            "Libro Grande de AA - Capítulo 5: Cómo funciona",
             "Viviendo Sobrio - Evitar el primer trago",
-            "Folleto: El miembro de mas edad en AA",
-            "Reflexiones Diarias - Un dia a la vez"
+            "Folleto: El miembro de más edad en AA",
+            "Reflexiones Diarias - Un día a la vez"
         ];
 
         function App() {
@@ -197,7 +198,7 @@
                             .eq('grupo_id', user.grupoId)
                             .eq('estado', 'rechazado')
                             .order('username', { ascending: true });
-                        if (rechazados) setSolicitudesRechazadas(rechados);
+                        if (rechazados) setSolicitudesRechazadas(rechazados);
                     }
                 } catch(e) {}
             }
@@ -620,6 +621,16 @@
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
+    </script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Service Worker registrado con éxito', reg))
+                    .catch(err => console.error('Error al registrar el Service Worker', err));
+            });
+        }
     </script>
 </body>
 </html>
