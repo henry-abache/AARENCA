@@ -3,268 +3,684 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nueva Vida - AA</title>
+    <title>Nueva Vida - Alcohólicos Anónimos</title>
     
-    <link rel="manifest" href="./manifest.json">
-    <meta name="theme-color" content="#121212">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Nueva Vida AA">
+    <meta name="theme-color" content="#0f172a">
     
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     
     <style>
         :root {
-            --bg-dark: #121212;
-            --card-bg: #1e1e1e;
-            --text-light: #ffffff;
-            --text-muted: #aaaaaa;
-            --accent: #3b82f6;
-            --success: #10b981;
-            --danger: #ef4444;
-            --border: #333333;
+            --bg-dark: #0f172a; --card-dark: #1e293b; --primary: #2563eb;
+            --accent: #16a34a; --warning: #d97706; --danger: #dc2626;
+            --text-main: #f8fafc; --text-muted: #cbd5e1;
         }
-
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-light);
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 480px;
-            padding: 16px;
-            box-sizing: border-box;
-        }
-
-        .card {
-            background-color: var(--card-bg);
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            margin-bottom: 20px;
-        }
-
-        .header-container {
-            text-align: center;
-            margin-bottom: 24px;
-            padding-top: 10px;
-        }
-
-        .app-icon-placeholder {
-            font-size: 50px;
-            margin-bottom: 10px;
-        }
-
-        h1, h2, h3 {
-            margin: 0 0 10px 0;
-            color: var(--text-light);
-        }
-
-        h1 { font-size: 26px; color: var(--accent); }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 6px;
-            color: var(--text-muted);
-            font-size: 14px;
-        }
-
-        input, select, textarea {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            background-color: #252525;
-            color: var(--text-light);
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
-
-        .btn {
-            width: 100%;
-            padding: 14px;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn-primary { background-color: var(--accent); }
-        .btn-success { background-color: var(--success); }
+        body { margin: 0; padding: 0; background-color: #020617; color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 19px; }
+        .app-container { max-width: 500px; margin: 0 auto; min-height: 100vh; background-color: var(--bg-dark); display: flex; flex-direction: column; position: relative; box-shadow: 0 0 25px rgba(0,0,0,0.7); padding-bottom: 110px; box-sizing: border-box; }
+        .header { padding: 24px; background-color: var(--card-dark); border-bottom: 2px solid #334155; text-align: center; }
+        .header h1 { margin: 0; font-size: 26px; }
+        .main-content { flex: 1; padding: 20px; overflow-y: auto; }
+        .card { background-color: var(--card-dark); border-radius: 20px; padding: 24px; margin-bottom: 20px; border: 2px solid #334155; }
+        .input-field, .select-field { width: 100%; padding: 16px; background-color: #0f172a; border: 2px solid #475569; border-radius: 14px; color: white; font-size: 18px; margin-top: 8px; margin-bottom: 20px; box-sizing: border-box; }
+        .btn { background-color: var(--primary); color: white; border: none; padding: 18px; border-radius: 16px; font-size: 20px; font-weight: bold; cursor: pointer; width: 100%; display: block; text-align: center; text-decoration: none; }
         .btn-danger { background-color: var(--danger); }
+        .btn-success { background-color: var(--accent); }
+        .btn-secondary { background-color: #475569; }
+        .btn-warning { background-color: var(--warning); color: #020617; }
+        .btn-sm { padding: 10px 18px; font-size: 16px; width: auto; border-radius: 12px; display: inline-block; }
+        .checkbox-group { background: #0f172a; padding: 14px; border-radius: 14px; margin-bottom: 15px; border: 2px solid #334155; }
+        .checkbox-label { display: flex; align-items: center; font-size: 21px; cursor: pointer; }
+        .checkbox-custom { width: 28px; height: 28px; margin-right: 15px; }
+        .progress-container { margin-bottom: 20px; }
+        .progress-label { display: flex; justify-content: space-between; font-weight: bold; font-size: 20px; margin-bottom: 8px; }
+        .progress-bar-bg { background-color: #020617; border-radius: 15px; height: 32px; width: 100%; overflow: hidden; border: 1px solid #475569; }
+        .progress-bar-fill { background: linear-gradient(90deg, #16a34a, #4ade80); height: 100%; transition: width 0.5s ease; }
+        .paso-row { display: flex; align-items: center; padding: 16px; background: #0f172a; border-radius: 14px; margin-bottom: 12px; cursor: pointer; border: 2px solid #334155; }
+        .paso-row.completado { border-color: var(--warning); background: #1e293b; }
+        .paso-numero { font-size: 26px; font-weight: bold; margin-right: 15px; min-width: 35px; color: var(--text-muted); }
+        .paso-row.completado .paso-numero { color: var(--warning); }
+        .star-icon { font-size: 28px; margin-left: auto; color: #475569; }
+        .star-icon.active { color: var(--warning); }
+        .popup-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 999; }
+        .popup-card { background: var(--card-dark); border-radius: 24px; padding: 30px; text-align: center; max-width: 410px; border: 3px solid var(--warning); }
+        .biblioteca-item { background: #0f172a; padding: 18px; border-radius: 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; border: 2px solid #334155; }
+        
+        .navbar { position: fixed; bottom: 0; left: 0; right: 0; max-width: 500px; margin: 0 auto; height: 95px; background-color: var(--card-dark); border-top: 2px solid #334155; display: flex; justify-content: space-around; align-items: center; z-index: 900; }
+        .nav-item { color: var(--text-muted); cursor: pointer; text-align: center; font-size: 13px; font-weight: bold; flex: 1; padding: 8px 0; }
+        .nav-item.active { color: var(--primary); }
+        .nav-icon { font-size: 26px; margin-bottom: 2px; }
 
-        .checkbox-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
+        .solicitud-card { background: #1e293b; border-radius: 16px; padding: 18px; margin-bottom: 14px; border: 2px solid #d97706; }
+        .solicitud-card.rechazada { border-color: #475569; background: #0f172a; opacity: 0.75; }
+        .solicitud-nombre { font-size: 20px; font-weight: bold; margin-bottom: 4px; color: #fff; }
+        .solicitud-info { font-size: 15px; color: var(--text-muted); margin-bottom: 6px; }
+        .solicitud-actions { display: flex; gap: 12px; margin-top: 10px; }
+        .badge-pendiente { background: #92400e; color: #fde68a; font-size: 13px; padding: 3px 10px; border-radius: 20px; display: inline-block; margin-bottom: 8px; }
+        .badge-rechazado { background: #334155; color: #cbd5e1; font-size: 13px; padding: 3px 10px; border-radius: 20px; display: inline-block; margin-bottom: 8px; }
+        
+        .acordeon-btn { background: #334155; color: #fff; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; text-align: center; margin-top: 25px; border: 1px solid #475569; user-select: none; }
+        .acordeon-contenido { background: #0b111e; padding: 15px; border-radius: 0 0 14px 14px; border: 2px solid #334155; border-top: none; }
 
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-            background: #252525;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-
-        .checkbox-item input { width: auto; margin-right: 8px; }
-
-        .nav-bar {
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 480px;
-            background-color: #1a1a1a;
-            display: flex;
-            justify-content: space-around;
-            padding: 12px 0;
-            border-top: 1px solid var(--border);
-            z-index: 100;
-        }
-
-        .nav-item {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 12px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-        }
-
-        .nav-item.active { color: var(--accent); font-weight: bold; }
-
-        .hidden { display: none !important; }
-
-        .counter-box {
-            background: linear-gradient(145deg, #222, #111);
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
-            margin-bottom: 15px;
-            border: 1px solid #333;
-        }
-
-        .counter-number {
-            font-size: 42px;
-            font-weight: bold;
-            color: var(--success);
-        }
+        .directorio-sede-seccion { margin-top: 20px; }
+        .directorio-sede-titulo { background: #334155; color: #fde68a; padding: 8px 16px; border-radius: 10px; font-size: 16px; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; }
+        .directorio-contacto { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .directorio-nombre { font-weight: bold; font-size: 18px; }
+        .directorio-rol { font-size: 13px; color: var(--text-muted); background: #1e293b; padding: 2px 8px; border-radius: 10px; margin-left: 6px; display: inline-block; }
+        
+        .evento-card { background: #1e293b; border-radius: 16px; padding: 20px; margin-bottom: 15px; border-left: 5px solid var(--primary); border-top: 1px solid #334155; border-right: 1px solid #334155; border-bottom: 1px solid #334155; }
+        .evento-titulo { font-size: 22px; font-weight: bold; color: #fff; margin-bottom: 6px; }
+        .evento-meta { font-size: 15px; color: var(--warning); margin-bottom: 8px; font-weight: 500; }
+        .evento-desc { font-size: 16px; color: var(--text-muted); line-height: 1.4; margin: 5px 0 0 0; }
     </style>
 </head>
 <body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const SUPABASE_URL = "https://xzkuywsitdwikzksiesf.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_8NSIOBCEbc4_mM9KWMKJvA_MPWW5Cv3";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    <div class="container" style="padding-bottom: 80px;">
-        
-        <div id="view-auth" class="card">
-            <div class="header-container">
-                <div class="app-icon-placeholder">✨</div>
-                <h1>Nueva Vida AA</h1>
-                <p style="color: var(--text-muted); font-size: 14px;">Unidad y Servicio</p>
-            </div>
+        const GRUPOS = [
+          { id: "san-jose-renca", nombre: "SAN JOSE DE RENCA" },
+          { id: "grupo-esperanza", nombre: "GRUPO ESPERANZA" }
+        ];
+        const ADICCIONES_DISPONIBLES = ["Alcohol", "Marihuana", "Cocaina", "Tabaco", "Juego Compulsivo"];
+        const PASOS_AA = [
+            "Admitimos que eramos impotentes ante el alcohol y nuestras vidas se habian vuelto ingobernables.",
+            "Llegamos a creer que un Poder superior a nosotros mismos podria devolvernos el sano juicio.",
+            "Decidimos poner nuestra voluntad y nuestras vidas al cuidado de Dios, tal como nosotros lo entendemiamos.",
+            "Sin miedo, hicimos un minucioso examen de conciencia de nosotros mismos.",
+            "Admitimos ante Dios, ante nosotros mismos y ante otro ser humano la naturaleza exacta de nuestros defectos.",
+            "Estuvimos enteramente dispuestos a dejar que Dios nos liberase de todos estos defectos de caracter.",
+            "Humildemente le pedimos que nos librase de nuestros defectos.",
+            "Hicimos una lista de todas aquellas personas a quienes habiamos ofendido y estuvimos dispuestos a reparar el dano.",
+            "Reparamos directamente a cuantos nos fue posible el dano causado, excepto cuando el hacerlo implicaba perjuicio.",
+            "Continuamos con nuestro examen de conciencia, admitiendo inmediatamente nuestros errores cuando los descobriamos.",
+            "Buscamos a traves de la oracion y la meditacion mejorar nuestro contacto con Dios.",
+            "Habiendo experimentado un despertar espiritual, tratamos de llevar este mensaje a otros alcoholicos."
+        ];
+        const LECTURAS = [
+            "Libro Grande de AA - Capitulo 5: Como funciona",
+            "Viviendo Sobrio - Evitar el primer trago",
+            "Folleto: El miembro de mas edad en AA",
+            "Reflexiones Diarias - Un dia a la vez"
+        ];
 
-            <div style="display: flex; margin-bottom: 20px; gap: 10px;">
-                <button class="btn btn-primary" id="btn-tab-login" onclick="switchAuthTab('login')">Ingresar</button>
-                <button class="btn btn-primary" id="btn-tab-reg" style="background-color: #333;" onclick="switchAuthTab('registro')">Registrarse</button>
-            </div>
+        function App() {
+            const [user, setUser] = React.useState(null);
+            const [activeTab, setActiveTab] = React.useState("inicio");
+            const [misAdicciones, setMisAdicciones] = React.useState({});
+            const [nuevaAdiccion, setNuevaAdiccion] = React.useState(""); 
+            const [pasoActual, setPasoActual] = React.useState(1);
+            const [biblioteca, setBiblioteca] = React.useState([]);
+            const [directorioUsuarios, setDirectorioUsuarios] = React.useState([]);
+            const [eventos, setEventos] = React.useState([]);
+            
+            const [mostrarAliento, setMostrarAliento] = React.useState(false);
+            const [lecturaRecomendada, setLecturaRecomendada] = React.useState("");
+            const [nombre, setNombre] = React.useState("");
+            const [sede, setSede] = React.useState("");
+            const [telefono, setTelefono] = React.useState("");
+            const [miTelefonoActual, setMiTelefonoActual] = React.useState("");
+            const [rol, setRol] = React.useState("basico");
+            const [mostrarCampoAdmin, setMostrarCampoAdmin] = React.useState(false);
+            const [codigoAdmin, setCodigoAdmin] = React.useState("");
+            
+            const CODIGO_SECRETO_ADMIN = "felices24";
+            const [checks, setChecks] = React.useState({});
+            const [fechas, setFechas] = React.useState({});
+            const [loginUsername, setLoginUsername] = React.useState("");
+            
+            const [nuevoTitulo, setNuevoTitulo] = React.useState("");
+            const [nuevoTipo, setNuevoTipo] = React.useState("Documento");
+            const [nuevoLink, setNuevoLink] = React.useState("");
+            
+            const [evTitulo, setEvTitulo] = React.useState("");
+            const [evDesc, setEvDesc] = React.useState("");
+            const [evFecha, setEvFecha] = React.useState("");
+            const [evHora, setEvHora] = React.useState("");
+            const [evDireccion, setEvDireccion] = React.useState("");
 
-            <div id="form-login">
-                <h3>Iniciar Sesión</h3>
-                <div class="form-group">
-                    <label>Nombre de Usuario único</label>
-                    <input type="text" id="login-username" placeholder="Ej: pedro_renca" required>
-                </div>
-                <button class="btn btn-primary" onclick="ejecutarLogin()">Entrar</button>
-            </div>
+            const [solicitudesPendientes, setSolicitudesPendientes] = React.useState([]);
+            const [solicitudesRechazadas, setSolicitudesRechazadas] = React.useState([]);
+            const [mostrarHistorialRechazados, setMostrarHistorialRechazados] = React.useState(false);
+            const [cargandoSolicitudes, setCargandoSolicitudes] = React.useState(false);
 
-            <div id="form-registro" class="hidden">
-                <h3>Crear Cuenta</h3>
-                <div class="form-group">
-                    <label>Nombre de Usuario (Sin espacios)</label>
-                    <input type="text" id="reg-username" placeholder="Ej: juan_renca" required>
-                </div>
-                <div class="form-group">
-                    <label>Nombre Completo o Alias</label>
-                    <input type="text" id="reg-nombre" placeholder="Ej: Juan Carlos" required>
-                </div>
-                <div class="form-group">
-                    <label>Sede / Grupo</label>
-                    <select id="reg-sede" required>
-                        <option value="san-jose-renca">San José de Renca</option>
-                        <option value="grupo-esperanza">Grupo Esperanza</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Padecimientos:</label>
-                    <div class="checkbox-group">
-                        <div class="checkbox-item"><input type="checkbox" class="pad-check" value="Alcohol"> Alcohol</div>
-                        <div class="checkbox-item"><input type="checkbox" class="pad-check" value="Marihuana"> Marihuana</div>
-                        <div class="checkbox-item"><input type="checkbox" class="pad-check" value="Cocaina"> Cocaína</div>
-                        <div class="checkbox-item"><input type="checkbox" class="pad-check" value="Tabaco"> Tabaco</div>
+            React.useEffect(() => {
+                if (!user) return;
+                cargarDatosNube();
+                const interval = setInterval(cargarDatosNube, 6000);
+                return () => clearInterval(interval);
+            }, [user]);
+
+            async function cargarDatosNube() {
+                try {
+                    const { data: uData } = await supabase.from('usuarios').select('*').eq('username', user.username).single();
+                    if (uData) {
+                        setMisAdicciones(uData.adicciones || {});
+                        setPasoActual(uData.paso_actual || 1);
+                        setMiTelefonoActual(uData.telefono || "");
+                        setUser(prev => ({ ...prev, estado: uData.estado, rol: uData.rol }));
+                    }
+                    
+                    const { data: bData } = await supabase.from('biblioteca').select('*').eq('grupo_id', user.grupoId).order('id', { ascending: false });
+                    if (bData) setBiblioteca(bData);
+
+                    const { data: dData } = await supabase.from('usuarios').select('nombre_real, grupo_nombre, grupo_id, telefono, rol').eq('estado', 'aprobado').order('grupo_nombre', { ascending: true });
+                    if (dData) setDirectorioUsuarios(dData);
+
+                    const { data: eData } = await supabase.from('eventos').select('*').order('id', { ascending: false });
+                    if (eData) setEventos(eData);
+
+                    if (user.rol === 'admin') {
+                        const { data: pendientes } = await supabase
+                            .from('usuarios')
+                            .select('*')
+                            .eq('grupo_id', user.grupoId)
+                            .eq('estado', 'pendiente')
+                            .order('username', { ascending: true });
+                        if (pendientes) setSolicitudesPendientes(pendientes);
+
+                        const { data: rechazados } = await supabase
+                            .from('usuarios')
+                            .select('*')
+                            .eq('grupo_id', user.grupoId)
+                            .eq('estado', 'rechazado')
+                            .order('username', { ascending: true });
+                        if (rechazados) setSolicitudesRechazadas(rechados);
+                    }
+                } catch(e) {}
+            }
+
+            const agregarAdiccion = async () => {
+                if (!nuevaAdiccion) return;
+                const hoy = new Date().toISOString().split('T')[0];
+                const nuevas = { ...misAdicciones, [nuevaAdiccion]: hoy };
+                const { error } = await supabase.from('usuarios').update({ adicciones: nuevas }).eq('username', user.username);
+                if (!error) { 
+                    setMisAdicciones(nuevas); 
+                    setNuevaAdiccion(""); 
+                    alert("✅ Contador agregado."); 
+                    cargarDatosNube();
+                }
+            };
+
+            const actualizarTelefonoPerfil = async (e) => {
+                e.preventDefault();
+                const { error } = await supabase.from('usuarios').update({ telefono: miTelefonoActual.trim() }).eq('username', user.username);
+                if (!error) {
+                    alert("📱 Teléfono guardado correctamente.");
+                    cargarDatosNube();
+                }
+            };
+
+            const aprobarUsuario = async (username) => {
+                setCargandoSolicitudes(true);
+                const { error } = await supabase.from('usuarios').update({ estado: 'aprobado' }).eq('username', username);
+                if (!error) {
+                    setSolicitudesPendientes(prev => prev.filter(u => u.username !== username));
+                    setSolicitudesRechazadas(prev => prev.filter(u => u.username !== username));
+                    alert("✅ Usuario aprobado.");
+                    cargarDatosNube();
+                }
+                setCargandoSolicitudes(false);
+            };
+
+            const rechazarUsuario = async (username) => {
+                const confirmar = confirm("¿Rechazar solicitud?");
+                if (!confirmar) return;
+                setCargandoSolicitudes(true);
+                const { error } = await supabase.from('usuarios').update({ estado: 'rechazado' }).eq('username', username);
+                if (!error) {
+                    setSolicitudesPendientes(prev => prev.filter(u => u.username !== username));
+                    alert("❌ Solicitud rechazada.");
+                    cargarDatosNube();
+                }
+                setCargandoSolicitudes(false);
+            };
+
+            const registrarCuenta = async (e) => {
+                e.preventDefault();
+                if (!nombre || !sede) return alert("Por favor complete los campos obligatorios");
+                if (rol === 'admin' && codigoAdmin.trim() !== CODIGO_SECRETO_ADMIN) {
+                    return alert("❌ Código incorrecto.");
+                }
+                const grupoSel = GRUPOS.find(g => g.id === sede);
+                const uid = nombre.replace(/\s+/g, "") + "_" + grupoSel.id;
+                const adiccionesConfig = {};
+                
+                ADICCIONES_DISPONIBLES.forEach(ad => {
+                    if (checks[ad]) adiccionesConfig[ad] = fechas[ad] || new Date().toISOString().split('T')[0];
+                });
+                
+                try {
+                    const { data: usuarioExistente } = await supabase.from('usuarios').select('*').eq('username', uid).maybeSingle();
+                    if (usuarioExistente) {
+                        setUser({ username: usuarioExistente.username, nombreReal: usuarioExistente.nombre_real, grupoId: usuarioExistente.grupo_id, grupoNombre: usuarioExistente.grupo_nombre, rol: usuarioExistente.rol, estado: usuarioExistente.estado });
+                        setMisAdicciones(usuarioExistente.adicciones || {});
+                        setPasoActual(usuarioExistente.paso_actual || 1);
+                        setMiTelefonoActual(usuarioExistente.telefono || "");
+                        return;
+                    }
+                    const nuevoUsuario = { username: uid, nombre_real: nombre, grupo_id: sede, grupo_nombre: grupoSel.nombre, rol: rol, estado: rol === 'admin' ? 'aprobado' : 'pendiente', adicciones: adiccionesConfig, paso_actual: 1, telefono: telefono.trim() };
+                    const { error } = await supabase.from('usuarios').insert([nuevoUsuario]);
+                    if (!error) {
+                        setUser({ username: uid, nombreReal: nombre, grupoId: sede, grupoNombre: grupoSel.nombre, rol, estado: nuevoUsuario.estado });
+                        setMisAdicciones(adiccionesConfig);
+                        setMiTelefonoActual(telefono.trim());
+                    }
+                } catch(err) { alert("Error de conexión"); }
+            };
+
+            const entrarCuenta = async (e) => {
+                e.preventDefault();
+                if (!loginUsername) return;
+                const { data } = await supabase.from('usuarios').select('*').eq('username', loginUsername).maybeSingle();
+                if (data) {
+                    setUser({ username: data.username, nombreReal: data.nombre_real, grupoId: data.grupo_id, grupoNombre: data.grupo_nombre, rol: data.rol, estado: data.estado });
+                    setMisAdicciones(data.adicciones || {});
+                    setPasoActual(data.paso_actual || 1);
+                    setMiTelefonoActual(data.telefono || "");
+                } else { alert("Identificador no encontrado."); }
+            };
+
+            const registrarRecaida = async (adiccion) => {
+                const hoyStr = new Date().toISOString().split('T')[0];
+                const nuevasAdicciones = { ...misAdicciones, [adiccion]: hoyStr };
+                const { error } = await supabase.from('usuarios').update({ adicciones: nuevasAdicciones }).eq('username', user.username);
+                if (!error) {
+                    setMisAdicciones(nuevasAdicciones);
+                    setLecturaRecomendada(LECTURAS[Math.floor(Math.random() * LECTURAS.length)]);
+                    setMostrarAliento(true);
+                }
+            };
+
+            const cambiarPaso = async (numeroPaso) => {
+                const { error } = await supabase.from('usuarios').update({ paso_actual: numeroPaso }).eq('username', user.username);
+                if (!error) setPasoActual(numeroPaso);
+            };
+
+            const subirMaterial = async (e) => {
+                e.preventDefault();
+                if (!nuevoTitulo || !nuevoLink) return alert("Completa título y enlace");
+                const { error } = await supabase.from('biblioteca').insert([{ grupo_id: user.grupoId, titulo: nuevoTitulo, tipo: nuevoTipo, link: nuevoLink }]);
+                if (!error) { setNuevoTitulo(""); setNuevoLink(""); cargarDatosNube(); alert("Publicado"); }
+            };
+
+            const crearEvento = async (e) => {
+                e.preventDefault();
+                if (!evTitulo || !evFecha) return alert("Título y fecha son obligatorios");
+                const nuevoEv = {
+                    titulo: evTitulo,
+                    descripcion: evDesc,
+                    fecha: evFecha,
+                    hora: evHora,
+                    direccion: evDireccion,
+                    creado_por: user.username,
+                    grupo_nombre_creador: user.grupoNombre
+                };
+                const { error } = await supabase.from('eventos').insert([nuevoEv]);
+                if (!error) {
+                    setEvTitulo(""); setEvDesc(""); setEvFecha(""); setEvHora(""); setEvDireccion("");
+                    cargarDatosNube();
+                    alert("🎉 Evento publicado.");
+                }
+            };
+
+            const calcularDias = (fechaStr) => {
+                if (!fechaStr) return 0;
+                const dias = Math.floor((new Date() - new Date(fechaStr)) / (1000 * 60 * 60 * 24));
+                return dias < 0 ? 0 : dias;
+            };
+
+            const directorioAgrupado = GRUPOS.map(grupo => {
+                const miembrosDeSede = directorioUsuarios.filter(u => u.grupo_id === grupo.id);
+                return { ...grupo, miembros: miembrosDeSede };
+            });
+
+            if (!user) {
+                return (
+                    <div className="app-container" style={{padding: '20px', justifyContent: 'center'}}>
+                        <div className="card">
+                            <h2 style={{color: '#3b82f6', fontSize: '30px', margin: '0 0 20px 0', textAlign: 'center'}}>Nueva Vida AA</h2>
+                            <form onSubmit={registrarCuenta}>
+                                <h4 style={{color: 'var(--accent)', marginBottom: '5px'}}>1. Registrarse</h4>
+                                <input type="text" className="input-field" placeholder="Su Nombre o Alias" value={nombre} onChange={e => setNombre(e.target.value)} />
+                                <select className="select-field" value={sede} onChange={e => setSede(e.target.value)}>
+                                    <option value="">-- Seleccionar Sede --</option>
+                                    {GRUPOS.map(g => <option key={g.id} value={g.id}>{g.nombre}</option>)}
+                                </select>
+                                <input type="tel" className="input-field" placeholder="WhatsApp ej: +56912345678 (Opcional)" value={telefono} onChange={e => setTelefono(e.target.value)} />
+                                <div style={{textAlign: 'right', marginBottom: '10px'}}>
+                                    <span style={{fontSize: '14px', color: '#475569', cursor: 'pointer', textDecoration: 'underline'}} onClick={() => setMostrarCampoAdmin(!mostrarCampoAdmin)}>¿Administrador?</span>
+                                </div>
+                                {mostrarCampoAdmin && (
+                                    <input type="password" className="input-field" placeholder="Código secreto admin" value={codigoAdmin} onChange={e => { setCodigoAdmin(e.target.value); setRol(e.target.value === CODIGO_SECRETO_ADMIN ? "admin" : "basico"); }} />
+                                )}
+                                <h4 style={{color: 'var(--warning)', fontSize: '18px', marginBottom: '10px'}}>Padecimientos iniciales:</h4>
+                                {ADICCIONES_DISPONIBLES.map(ad => (
+                                    <div key={ad} className="checkbox-group">
+                                        <label className="checkbox-label">
+                                            <input type="checkbox" className="checkbox-custom" checked={!!checks[ad]} onChange={e => setChecks({...checks, [ad]: e.target.checked})} />
+                                            {ad}
+                                        </label>
+                                        {checks[ad] && <input type="date" className="input-field" style={{marginBottom:0, marginTop:'8px'}} value={fechas[ad] || ""} onChange={e => setFechas({...fechas, [ad]: e.target.value})} />}
+                                    </div>
+                                ))}
+                                <button type="submit" className="btn btn-success" style={{marginTop: '15px'}}>Registrar e Ingresar</button>
+                            </form>
+                            <hr style={{borderColor: '#334155', margin: '30px 0'}} />
+                            <form onSubmit={entrarCuenta}>
+                                <h4 style={{color: '#fff', marginBottom: '5px'}}>2. Ya tengo cuenta</h4>
+                                <input type="text" className="input-field" placeholder="Ej: Pedro_san-jose-renca" value={loginUsername} onChange={e => setLoginUsername(e.target.value)} />
+                                <button type="submit" className="btn btn-secondary">Entrar</button>
+                            </form>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (user.estado === 'pendiente') {
+                return (
+                    <div className="app-container" style={{padding: '20px', justifyContent: 'center', textAlign: 'center'}}>
+                        <div className="card">
+                            <div style={{fontSize: '55px'}}>⏳</div>
+                            <h2>Cuenta en Revisión</h2>
+                            <p>Tu identificador de entrada es:</p>
+                            <p style={{background: '#020617', padding: '15px', borderRadius: '10px', color: 'var(--primary)', fontWeight: 'bold'}}>{user.username}</p>
+                            <button className="btn btn-secondary" onClick={() => setUser(null)}>Volver</button>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (user.estado === 'rechazado') {
+                return (
+                    <div className="app-container" style={{padding: '20px', justifyContent: 'center', textAlign: 'center'}}>
+                        <div className="card" style={{borderColor: 'var(--danger)'}}>
+                            <div style={{fontSize: '55px'}}>❌</div>
+                            <h2>Acceso Denegado</h2>
+                            <p>Tu solicitud ha sido rechazada por el administrador.</p>
+                            <button className="btn btn-secondary" onClick={() => setUser(null)}>Volver</button>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="app-container">
+                    {mostrarAliento && (
+                        <div className="popup-overlay">
+                            <div className="popup-card">
+                                <h2>Un paso a la vez</h2>
+                                <p>{lecturaRecomendada}</p>
+                                <button className="btn btn-success" onClick={() => setMostrarAliento(false)}>Aceptar</button>
+                            </div>
+                        </div>
+                    )}
+                    <div className="header">
+                        <h1>{user.grupoNombre}</h1>
+                        <span style={{color: 'var(--accent)', fontWeight: 'bold'}}>{user.nombreReal} {user.rol === 'admin' ? '(Admin)' : ''}</span>
+                    </div>
+                    <div className="main-content">
+                        {activeTab === "inicio" && (
+                            <div>
+                                <div className="card" style={{textAlign: 'center', borderColor: 'var(--warning)'}}>
+                                    <p style={{fontSize: '32px', fontWeight: 'bold', color: '#10b981', margin: 0}}>¡Solo por Hoy!</p>
+                                </div>
+
+                                <form onSubmit={actualizarTelefonoPerfil} className="card" style={{borderColor: '#475569'}}>
+                                    <h4 style={{margin: '0 0 5px 0', fontSize: '17px'}}>📱 Mi Número de Contacto</h4>
+                                    <div style={{display: 'flex', gap: '8px'}}>
+                                        <input type="tel" className="input-field" style={{marginBottom: 0, marginTop: 0, flex: 1}} placeholder="Ej: +56912345678" value={miTelefonoActual} onChange={e => setMiTelefonoActual(e.target.value)} />
+                                        <button type="submit" className="btn btn-success btn-sm">Guardar</button>
+                                    </div>
+                                </form>
+
+                                <h3>Mis Indicadores de Progreso</h3>
+                                {Object.keys(misAdicciones).length === 0
+                                    ? <p style={{color: 'var(--text-muted)'}}>No tienes contadores activos.</p>
+                                    : Object.keys(misAdicciones).map(ad => {
+                                        const dias = calcularDias(misAdicciones[ad]);
+                                        const porcentaje = Math.min((dias / 90) * 100, 100);
+                                        return (
+                                            <div key={ad} className="card">
+                                                <div className="progress-container">
+                                                    <div className="progress-label">
+                                                        <span>Libre de {ad}</span>
+                                                        <span style={{color: 'var(--accent)', fontSize: '24px'}}>{dias} Días</span>
+                                                    </div>
+                                                    <div className="progress-bar-bg">
+                                                        <div className="progress-bar-fill" style={{width: (porcentaje || 4) + "%"}}></div>
+                                                    </div>
+                                                </div>
+                                                <button className="btn btn-danger" style={{padding: '12px', fontSize: '16px'}} onClick={() => registrarRecaida(ad)}>
+                                                    Reiniciar Contador
+                                                </button>
+                                            </div>
+                                        );
+                                    })
+                                }
+
+                                <div className="card" style={{marginTop: '30px'}}>
+                                    <h4 style={{margin: '0 0 10px 0'}}>Añadir Nuevo Contador</h4>
+                                    <select className="select-field" value={nuevaAdiccion} onChange={e => setNuevaAdiccion(e.target.value)}>
+                                        <option value="">-- Seleccionar Padecimiento --</option>
+                                        {ADICCIONES_DISPONIBLES.filter(ad => !misAdicciones[ad]).map(ad => (
+                                            <option key={ad} value={ad}>{ad}</option>
+                                        ))}
+                                    </select>
+                                    <button className="btn btn-primary" onClick={agregarAdiccion}>Habilitar Contador</button>
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === "pasos" && (
+                            <div>
+                                <h3>Programa de los 12 Pasos</h3>
+                                <div className="card" style={{background: '#1e293b', marginBottom: '25px', borderColor: 'var(--primary)'}}>
+                                    <h4 style={{margin: '0 0 5px 0', color: 'var(--primary)'}}>Mi Progreso Actual</h4>
+                                    <p style={{margin: 0, fontSize: '18px'}}>Te encuentras trabajando en el <strong>Paso N° {pasoActual}</strong></p>
+                                </div>
+                                {PASOS_AA.map((texto, index) => {
+                                    const numero = index + 1;
+                                    const esCompletado = numero <= pasoActual;
+                                    return (
+                                        <div key={numero} className={`paso-row ${esCompletado ? 'completado' : ''}`} onClick={() => cambiarPaso(numero)}>
+                                            <div className="paso-numero">{numero}</div>
+                                            <div style={{fontSize: '16px', flex: 1, paddingRight: '10px', lineHeight: '1.4'}}>{texto}</div>
+                                            <div className={`star-icon ${esCompletado ? 'active' : ''}`}>★</div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+
+                        {activeTab === "biblioteca" && (
+                            <div>
+                                <h3>Biblioteca Compartida</h3>
+                                {user.rol === 'admin' && (
+                                    <form onSubmit={subirMaterial} className="card" style={{borderColor: 'var(--primary)'}}>
+                                        <h4 style={{margin: '0 0 15px 0', color: 'var(--primary)'}}>Subir Material de Estudio</h4>
+                                        <input type="text" className="input-field" placeholder="Título del Material" value={nuevoTitulo} onChange={e => setNuevoTitulo(e.target.value)} />
+                                        <select className="select-field" value={nuevoTipo} onChange={e => setNuevoTipo(e.target.value)}>
+                                            <option value="Documento">📄 Documento PDF / Texto</option>
+                                            <option value="Audio">🔊 Audio / Reunión Grabada</option>
+                                            <option value="Video">🎥 Video / Testimonio</option>
+                                        </select>
+                                        <input type="url" className="input-field" placeholder="Enlace (Link de Drive, YouTube, etc.)" value={nuevoLink} onChange={e => setNuevoLink(e.target.value)} />
+                                        <button type="submit" className="btn btn-primary">Publicar en Sede</button>
+                                    </form>
+                                )}
+
+                                <div style={{marginTop: '20px'}}>
+                                    {biblioteca.length === 0 
+                                        ? <p style={{color: 'var(--text-muted)'}}>No hay documentos publicados en esta sede aún.</p>
+                                        : biblioteca.map(item => (
+                                            <div key={item.id} className="biblioteca-item">
+                                                <div>
+                                                    <span style={{fontSize: '13px', background: '#1e293b', padding: '3px 8px', borderRadius: '8px', color: 'var(--warning)', marginRight: '8px'}}>{item.tipo}</span>
+                                                    <strong style={{fontSize: '17px', color: '#fff'}}>{item.titulo}</strong>
+                                                </div>
+                                                <a href={item.link} target="_blank" rel="noopener noreferrer" className="btn btn-success btn-sm">Abrir</a>
+                                            </div>
+                                        ))
+                                    }
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === "directorio" && (
+                            <div>
+                                <h3>Directorio de Contactos</h3>
+                                <p style={{fontSize: '15px', color: 'var(--text-muted)', marginBottom: '20px'}}>Lista de miembros activos para apoyo mutuo y apadrinamiento en momentos de necesidad.</p>
+                                
+                                {directorioAgrupado.map(grupo => (
+                                    <div key={grupo.id} className="directorio-sede-seccion">
+                                        <div className="directorio-sede-titulo">{grupo.nombre}</div>
+                                        {grupo.miembros.length === 0 ? (
+                                            <p style={{fontSize: '15px', color: '#475569', marginLeft: '10px'}}>No hay miembros registrados.</p>
+                                        ) : (
+                                            grupo.miembros.map((m, idx) => (
+                                                <div key={idx} className="directorio-contacto">
+                                                    <div>
+                                                        <span className="directorio-nombre">{m.nombre_real}</span>
+                                                        {m.rol === 'admin' && <span className="directorio-rol">Admin</span>}
+                                                    </div>
+                                                    {m.telefono ? (
+                                                        <a href={`https://wa.me/${m.telefono.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="btn btn-success btn-sm" style={{background: '#16a34a', borderColor: '#16a34a'}}>💬 WhatsApp</a>
+                                                    ) : (
+                                                        <span style={{fontSize: '14px', color: '#475569'}}>Sin número</span>
+                                                    )}
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {activeTab === "eventos" && (
+                            <div>
+                                <h3>Próximos Eventos y Aniversarios</h3>
+                                
+                                {user.rol === 'admin' && (
+                                    <form onSubmit={crearEvento} className="card" style={{borderColor: 'var(--warning)'}}>
+                                        <h4 style={{margin: '0 0 15px 0', color: 'var(--warning)'}}>Crear Anuncio o Convocatoria</h4>
+                                        <input type="text" className="input-field" placeholder="Título (Ej: Aniversario Grupo Esperanza)" value={evTitulo} onChange={e => setEvTitulo(e.target.value)} />
+                                        <textarea className="input-field" style={{height: '90px', resize: 'none'}} placeholder="Descripción del evento..." value={evDesc} onChange={e => setEvDesc(e.target.value)}></textarea>
+                                        <div style={{display: 'flex', gap: '10px'}}>
+                                            <input type="date" className="input-field" value={evFecha} onChange={e => setEvFecha(e.target.value)} />
+                                            <input type="time" className="input-field" value={evHora} onChange={e => setEvHora(e.target.value)} />
+                                        </div>
+                                        <input type="text" className="input-field" placeholder="Dirección o Enlace de Zoom" value={evDireccion} onChange={e => setEvDireccion(e.target.value)} />
+                                        <button type="submit" className="btn btn-warning">Publicar Evento General</button>
+                                    </form>
+                                )}
+
+                                <div style={{marginTop: '25px'}}>
+                                    {eventos.length === 0 
+                                        ? <p style={{color: 'var(--text-muted)'}}>No hay eventos programados en este momento.</p>
+                                        : eventos.map(ev => (
+                                            <div key={ev.id} className="evento-card">
+                                                <div className="evento-titulo">{ev.titulo}</div>
+                                                <div className="evento-meta">🗓️ {ev.fecha} {ev.hora ? `| ⏰ ${ev.hora}` : ''}</div>
+                                                {ev.direccion && <div style={{fontSize: '15px', color: '#fff', marginBottom: '8px'}}>📍 {ev.direccion}</div>}
+                                                {ev.descripcion && <p className="evento-desc">{ev.descripcion}</p>}
+                                                <div style={{marginTop: '10px', fontSize: '12px', color: 'var(--text-muted)', textAlign: 'right'}}>Organiza: {ev.grupo_nombre_creador}</div>
+                                            </div>
+                                        ))
+                                    }
+                                </div>
+                            </div>
+                        )}
+
+                        {activeTab === "admin" && user.rol === 'admin' && (
+                            <div>
+                                <h3>Panel de Administración</h3>
+                                <p style={{fontSize: '15px', color: 'var(--text-muted)'}}>Gestión y control de accesos para la sede <strong>{user.grupoNombre}</strong></p>
+                                
+                                <div className="card" style={{borderColor: 'var(--primary)', marginTop: '20px'}}>
+                                    <h4 style={{margin: '0 0 15px 0'}}>Solicitudes de Ingreso ({solicitudesPendientes.length})</h4>
+                                    {cargandoSolicitudes && <p>Procesando cambio en la base de datos...</p>}
+                                    {solicitudesPendientes.length === 0 ? (
+                                        <p style={{color: 'var(--text-muted)', margin: 0, fontSize: '16px'}}>No hay solicitudes pendientes de aprobación.</p>
+                                    ) : (
+                                        solicitudesPendientes.map(sol => (
+                                            <div key={sol.username} className="solicitud-card">
+                                                <div className="badge-pendiente">Pendiente de Aprobación</div>
+                                                <div className="solicitud-nombre">{sol.nombre_real}</div>
+                                                <div className="solicitud-info">🆔 ID de Usuario: {sol.username}</div>
+                                                {sol.telefono && <div className="solicitud-info">📱 Teléfono: {sol.telefono}</div>}
+                                                <div className="solicitud-actions">
+                                                    <button className="btn btn-success btn-sm" onClick={() => aprobarUsuario(sol.username)}>Aprobar Miembro</button>
+                                                    <button className="btn btn-danger btn-sm" onClick={() => rechazarUsuario(sol.username)}>Rechazar</button>
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+
+                                <div className="acordeon-btn" onClick={() => setMostrarHistorialRechazados(!mostrarHistorialRechazados)}>
+                                    {mostrarHistorialRechazados ? "👇 Ocultar Historial de Rechazados" : "👉 Ver Historial de Rechazados"}
+                                </div>
+                                {mostrarHistorialRechazados && (
+                                    <div className="acordeon-contenido">
+                                        {solicitudesRechazadas.length === 0 ? (
+                                            <p style={{color: 'var(--text-muted)', margin: 0, fontSize: '15px'}}>No tienes usuarios en la lista de rechazados.</p>
+                                        ) : (
+                                            solicitudesRechazadas.map(sol => (
+                                                <div key={sol.username} className="solicitud-card solicitud-rechazada">
+                                                    <div className="badge-rechazado">Acceso Denegado</div>
+                                                    <div className="solicitud-nombre">{sol.nombre_real}</div>
+                                                    <div className="solicitud-info">🆔 ID: {sol.username}</div>
+                                                    <div style={{marginTop: '10px'}}>
+                                                        <button className="btn btn-success btn-sm" onClick={() => aprobarUsuario(sol.username)}>Reconsiderar y Aprobar</button>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="navbar">
+                        <div className={`nav-item ${activeTab === "inicio" ? "active" : ""}`} onClick={() => setActiveTab("inicio")}>
+                            <div className="nav-icon">⏳</div>Contadores
+                        </div>
+                        <div className={`nav-item ${activeTab === "pasos" ? "active" : ""}`} onClick={() => setActiveTab("pasos")}>
+                            <div className="nav-icon">📜</div>Pasos
+                        </div>
+                        <div className={`nav-item ${activeTab === "biblioteca" ? "active" : ""}`} onClick={() => setActiveTab("biblioteca")}>
+                            <div className="nav-icon">📚</div>Lecturas
+                        </div>
+                        <div className={`nav-item ${activeTab === "directorio" ? "active" : ""}`} onClick={() => setActiveTab("directorio")}>
+                            <div className="nav-icon">👥</div>Apoyo
+                        </div>
+                        <div className={`nav-item ${activeTab === "eventos" ? "active" : ""}`} onClick={() => setActiveTab("eventos")}>
+                            <div className="nav-icon">🎉</div>Eventos
+                        </div>
+                        {user.rol === 'admin' && (
+                            <div className={`nav-item ${activeTab === "admin" ? "active" : ""}`} onClick={() => setActiveTab("admin")}>
+                                <div className="nav-icon">⚙️</div>Admin
+                            </div>
+                        )}
                     </div>
                 </div>
-                <button class="btn btn-success" onclick="ejecutarRegistro()">Enviar Registro</button>
-            </div>
-        </div>
+            );
+        }
 
-        <div id="view-inicio" class="hidden">
-            <div class="card">
-                <h2 id="welcome-user">Hola</h2>
-                <p id="user-meta" style="color: var(--text-muted); margin-bottom: 20px;"></p>
-                
-                <div class="counter-box">
-                    <h3>Tiempo de Sobriedad</h3>
-                    <div class="counter-number" id="sobriety-days">0</div>
-                    <p style="margin: 5px 0 0 0; color: var(--text-muted);">Días Limpios</p>
-                </div>
-
-                <button class="btn btn-danger" style="margin-top: 15px;" onclick="reiniciarContador()">Anotar Recaída (Reiniciar)</button>
-            </div>
-        </div>
-
-        <div id="view-biblioteca" class="hidden">
-            <div class="card">
-                <h2>Biblioteca Compartida</h2>
-                <div id="lista-biblioteca" style="margin-top: 15px;">Cargando archivos...</div>
-            </div>
-        </div>
-
-        <div id="view-admin" class="hidden">
-            <div class="card">
-                <h2>Panel de Control (Admin)</h2>
-                <h3>Aprobación de Nuevos Socios</h3>
-                <div id="lista-pendientes" style="margin-top: 10px; color: var(--text-muted);">No hay solicitudes pendientes.</div>
-            </div>
-        </div>
-
-    </div>
-
-    <div id="main-nav" class="nav-bar hidden">
-        <div class="nav-item active" id="nav-inicio" onclick="showView('inicio')">🏠<br>Inicio</div>
-        <div class="nav-item" id="nav-biblioteca" onclick="showView('biblioteca')">📚<br>Biblioteca</div>
-        <div id="nav-admin-link" class="nav-item hidden" onclick="showView('admin')">⚙️<br>Admin</div>
-        <div class="nav-item" style="color: var(--danger);" onclick="cerrarSesion()">🚪<br>Salir</div>
-    </div>
-
-    <script>
-        const SUPABASE_URL = "https://xzkuywsitdwikzksiesf.supabase.co"; 
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6a3V5d3NpdGR3aWt6a3NpZXNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMTI0NjksImV4cCI6MjA5NDU4ODQ2OX0.FnVW
+        const container = document.getElementById('root');
+        const root = ReactDOM.createRoot(container);
+        root.render(<App />);
+    </script>
+</body>
+</html>
