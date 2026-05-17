@@ -37,7 +37,7 @@
             --danger: #dc2626;
         }
 
-        /* Variables para el Tema Claro */
+        /* Variables para el Tema Claro (Alto Contraste para Adultos Mayores) */
         [data-theme="light"] {
             --bg-main: #f1f5f9;
             --bg-dark: #ffffff; 
@@ -77,6 +77,10 @@
             box-sizing: border-box; 
             transition: background-color 0.3s ease;
         }
+
+        .login-container {
+            padding-bottom: 30px;
+        }
         
         .header { 
             padding: 24px; 
@@ -87,7 +91,7 @@
         }
         .header h1 { margin: 0; font-size: 26px; }
         
-        /* Botón de cambio de tema */
+        /* Botón flotante de cambio de tema superior */
         .theme-toggle-btn {
             position: absolute;
             right: 15px;
@@ -103,6 +107,7 @@
             align-items: center;
             justify-content: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 999;
         }
 
         .main-content { flex: 1; padding: 20px; overflow-y: auto; }
@@ -250,28 +255,34 @@
             const [mostrarHistorialRechazados, setMostrarHistorialRechazados] = React.useState(false);
             const [cargandoSolicitudes, setCargandoSolicitudes] = React.useState(false);
 
-            // Cargar preferencia de tema guardado al iniciar
+            // DETECTAR PREFERENCIA DEL TELÉFONO O MANUAL AL INICIAR
             React.useEffect(() => {
                 const temaGuardado = localStorage.getItem("app-theme");
-                if (temaGuardado === "light") {
-                    setDarkTheme(false);
-                    document.documentElement.setAttribute("data-theme", "light");
+                
+                if (temaGuardado) {
+                    // Si el usuario ya eligió un tema manualmente en el pasado
+                    aplicarTema(temaGuardado === "dark");
                 } else {
-                    setDarkTheme(true);
-                    document.documentElement.setAttribute("data-theme", "dark");
+                    // Si es la primera vez, leer la configuración del sistema del celular
+                    const prefiereClaroEnCelular = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+                    aplicarTema(!prefiereClaroEnCelular);
                 }
             }, []);
 
-            const toggleTheme = () => {
-                if (darkTheme) {
-                    document.documentElement.setAttribute("data-theme", "light");
-                    localStorage.setItem("app-theme", "light");
-                    setDarkTheme(false);
-                } else {
-                    document.documentElement.setAttribute("data-theme", "dark");
-                    localStorage.setItem("app-theme", "dark");
+            function aplicarTema(esOscuro) {
+                if (esOscuro) {
+                    document.documentElement.removeAttribute("data-theme");
                     setDarkTheme(true);
+                } else {
+                    document.documentElement.setAttribute("data-theme", "light");
+                    setDarkTheme(false);
                 }
+            }
+
+            const toggleTheme = () => {
+                const nuevoEstadoOscuro = !darkTheme;
+                aplicarTema(nuevoEstadoOscuro);
+                localStorage.setItem("app-theme", nuevoEstadoOscuro ? "dark" : "light");
             };
 
             React.useEffect(() => {
@@ -468,10 +479,11 @@
 
             if (!user) {
                 return (
-                    <div className="app-container" style={{padding: '20px', justifyContent: 'center'}}>
-                        <div className="header" style={{borderBottom: 'none', background: 'transparent'}}>
-                            <button className="theme-toggle-btn" onClick={toggleTheme}>
-                                {darkTheme ? "☀️" : "🌙"}
+                    <div className="app-container login-container" style={{padding: '20px', justifyContent: 'flex-start'}}>
+                        {/* BOTÓN DE TEMA VISIBLE APENAS SE ABRE LA APP */}
+                        <div style={{width: '100%', display: 'flex', justifyContent: 'flex-end', paddingBottom: '10px'}}>
+                            <button className="theme-toggle-btn" style={{position: 'static', marginTop: '10px'}} onClick={toggleTheme}>
+                                {darkTheme ? "☀️ Modo Claro" : "🌙 Modo Oscuro"}
                             </button>
                         </div>
                         <div className="card">
@@ -723,7 +735,7 @@
                                                 <div key={sol.username} className="solicitud-card rechazada">
                                                     <div className="badge-rechazado">Rechazado</div>
                                                     <div className="solicitud-nombre">{sol.nombre_real}</div>
-                                                    <button className="btn btn-success btn-sm" onClick={() => aprobarUsuario(sol.username)}>Reautorizar</button>
+                                                    <button className="btn btn-success btn-sm" onClick={() => aprobarUsuario(sol.username)}>Aprobar</button>
                                                 </div>
                                             ))
                                         )}
