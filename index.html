@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest.json">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nueva Vida - Alcohólicos Anónimos</title>
@@ -23,12 +23,12 @@
         }
         body { margin: 0; padding: 0; background-color: #020617; color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 19px; }
         .app-container { max-width: 500px; margin: 0 auto; min-height: 100vh; background-color: var(--bg-dark); display: flex; flex-direction: column; position: relative; box-shadow: 0 0 25px rgba(0,0,0,0.7); padding-bottom: 95px; box-sizing: border-box; }
-        .header { padding: 24px; background-color: var(--card-dark); border-bottom: 2px solid #334155; text-align: center; }
-        .header h1 { margin: 0; font-size: 26px; }
+        .header { padding: 18px 24px; background-color: var(--card-dark); border-bottom: 2px solid #334155; text-align: center; }
+        .header h1 { margin: 4px 0 0 0; font-size: 22px; }
         .main-content { flex: 1; padding: 20px; overflow-y: auto; }
         .card { background-color: var(--card-dark); border-radius: 20px; padding: 24px; margin-bottom: 20px; border: 2px solid #334155; }
         .input-field, .select-field { width: 100%; padding: 16px; background-color: #0f172a; border: 2px solid #475569; border-radius: 14px; color: white; font-size: 18px; margin-top: 8px; margin-bottom: 20px; box-sizing: border-box; }
-        .btn { background-color: var(--primary); color: white; border: none; padding: 18px; border-radius: 16px; font-size: 20px; font-weight: bold; cursor: pointer; width: 100%; display: block; text-align: center; text-decoration: none; }
+        .btn { background-color: var(--primary); color: white; border: none; padding: 18px; border-radius: 16px; font-size: 20px; font-weight: bold; cursor: pointer; width: 100%; display: block; text-align: center; text-decoration: none; box-sizing: border-box; }
         .btn-danger { background-color: var(--danger); }
         .btn-success { background-color: var(--accent); }
         .btn-secondary { background-color: #475569; }
@@ -50,11 +50,9 @@
         .popup-card { background: var(--card-dark); border-radius: 24px; padding: 30px; text-align: center; max-width: 410px; border: 3px solid var(--warning); }
         .biblioteca-item { background: #0f172a; padding: 18px; border-radius: 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; border: 2px solid #334155; }
         .navbar { position: absolute; bottom: 0; left: 0; right: 0; height: 90px; background-color: var(--card-dark); border-top: 2px solid #334155; display: flex; justify-content: space-around; align-items: center; }
-        .nav-item { color: var(--text-muted); cursor: pointer; text-align: center; font-size: 13px; font-weight: bold; flex: 1; }
+        .nav-item { color: var(--text-muted); cursor: pointer; text-align: center; font-size: 12px; font-weight: bold; flex: 1; padding: 5px 0; }
         .nav-item.active { color: var(--primary); }
-        .nav-icon { font-size: 24px; margin-bottom: 2px; }
-
-        /* Estilos optimizados para la Administración */
+        .nav-icon { font-size: 22px; margin-bottom: 2px; }
         .solicitud-card { background: #1e293b; border-radius: 16px; padding: 18px; margin-bottom: 14px; border: 2px solid #d97706; }
         .solicitud-card.rechazada { border-color: #64748b; background: #0f172a; opacity: 0.8; }
         .solicitud-nombre { font-size: 20px; font-weight: bold; margin-bottom: 4px; color: #fff; }
@@ -62,11 +60,7 @@
         .solicitud-actions { display: flex; gap: 12px; margin-top: 10px; }
         .badge-pendiente { background: #92400e; color: #fde68a; font-size: 13px; padding: 3px 10px; border-radius: 20px; display: inline-block; margin-bottom: 8px; }
         .badge-rechazado { background: #334155; color: #cbd5e1; font-size: 13px; padding: 3px 10px; border-radius: 20px; display: inline-block; margin-bottom: 8px; }
-        
         .acordeon-btn { background: #334155; color: #fff; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; text-align: center; margin-top: 25px; border: 1px solid #475569; }
-        .acordeon-contenido { background: #0b111e; padding: 15px; border-radius: 0 0 14px 14px; border: 2px solid #334155; border-top: none; }
-
-        /* Estilos para el Directorio */
         .directorio-sede-seccion { margin-top: 20px; }
         .directorio-sede-titulo { background: #334155; color: #fde68a; padding: 8px 16px; border-radius: 10px; font-size: 16px; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; }
         .directorio-contacto { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
@@ -81,9 +75,10 @@
         const SUPABASE_KEY = "sb_publishable_8NSIOBCEbc4_mM9KWMKJvA_MPWW5Cv3";
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        const CODIGO_SECRETO_ADMIN = "felices24";
         const GRUPOS = [
-          { id: "san-jose-renca", nombre: "SAN JOSE DE RENCA" },
-          { id: "grupo-esperanza", nombre: "GRUPO ESPERANZA" }
+            { id: "san-jose-renca", nombre: "SAN JOSE DE RENCA" },
+            { id: "grupo-esperanza", nombre: "GRUPO ESPERANZA" }
         ];
         const ADICCIONES_DISPONIBLES = ["Alcohol", "Marihuana", "Cocaina", "Tabaco", "Juego Compulsivo"];
         const PASOS_AA = [
@@ -96,7 +91,7 @@
             "Humildemente le pedimos que nos librase de nuestros defectos.",
             "Hicimos una lista de todas aquellas personas a quienes habiamos ofendido y estuvimos dispuestos a reparar el dano.",
             "Reparamos directamente a cuantos nos fue posible el dano causado, excepto cuando el hacerlo implicaba perjuicio.",
-            "Continuamos con nuestro examen de conciencia, admitiendo inmediatamente nuestros errores cuando los descobriamos.",
+            "Continuamos con nuestro examen de conciencia, admitiendo inmediatamente nuestros errores cuando los descubriamos.",
             "Buscamos a traves de la oracion y la meditacion mejorar nuestro contacto con Dios.",
             "Habiendo experimentado un despertar espiritual, tratamos de llevar este mensaje a otros alcoholicos."
         ];
@@ -123,15 +118,12 @@
             const [rol, setRol] = React.useState("basico");
             const [mostrarCampoAdmin, setMostrarCampoAdmin] = React.useState(false);
             const [codigoAdmin, setCodigoAdmin] = React.useState("");
-            
-            const CODIGO_SECRETO_ADMIN = "felices24";
             const [checks, setChecks] = React.useState({});
             const [fechas, setFechas] = React.useState({});
             const [loginUsername, setLoginUsername] = React.useState("");
             const [nuevoTitulo, setNuevoTitulo] = React.useState("");
             const [nuevoTipo, setNuevoTipo] = React.useState("Documento");
             const [nuevoLink, setNuevoLink] = React.useState("");
-
             const [solicitudesPendientes, setSolicitudesPendientes] = React.useState([]);
             const [solicitudesRechazadas, setSolicitudesRechazadas] = React.useState([]);
             const [mostrarHistorialRechazados, setMostrarHistorialRechazados] = React.useState(false);
@@ -140,7 +132,8 @@
             React.useEffect(() => {
                 if (!user) return;
                 cargarDatosNube();
-                const interval = setInterval(cargarDatosNube, 6000);
+                // CORRECCIÓN: intervalo reducido a 20s para no sobrecargar Supabase
+                const interval = setInterval(cargarDatosNube, 20000);
                 return () => clearInterval(interval);
             }, [user]);
 
@@ -156,27 +149,14 @@
                     const { data: bData } = await supabase.from('biblioteca').select('*').eq('grupo_id', user.grupoId).order('id', { ascending: false });
                     if (bData) setBiblioteca(bData);
 
-                    // Traer todos los aprobados y administradores para el Directorio Global ordenados por Sede
                     const { data: dData } = await supabase.from('usuarios').select('nombre_real, grupo_nombre, grupo_id, telefono, rol').eq('estado', 'aprobado').order('grupo_nombre', { ascending: true });
                     if (dData) setDirectorioUsuarios(dData);
 
                     if (user.rol === 'admin') {
-                        // Traer pendientes
-                        const { data: pendientes } = await supabase
-                            .from('usuarios')
-                            .select('*')
-                            .eq('grupo_id', user.grupoId)
-                            .eq('estado', 'pendiente')
-                            .order('username', { ascending: true });
+                        const { data: pendientes } = await supabase.from('usuarios').select('*').eq('grupo_id', user.grupoId).eq('estado', 'pendiente').order('username', { ascending: true });
                         if (pendientes) setSolicitudesPendientes(pendientes);
 
-                        // Traer rechazados
-                        const { data: rechazados } = await supabase
-                            .from('usuarios')
-                            .select('*')
-                            .eq('grupo_id', user.grupoId)
-                            .eq('estado', 'rechazado')
-                            .order('username', { ascending: true });
+                        const { data: rechazados } = await supabase.from('usuarios').select('*').eq('grupo_id', user.grupoId).eq('estado', 'rechazado').order('username', { ascending: true });
                         if (rechazados) setSolicitudesRechazadas(rechazados);
                     }
                 } catch(e) {}
@@ -184,17 +164,29 @@
 
             const aprobarUsuario = async (username) => {
                 setCargandoSolicitudes(true);
-                const { error } = await supabase
-                    .from('usuarios')
-                    .update({ estado: 'aprobado' })
-                    .eq('username', username);
+                const { error } = await supabase.from('usuarios').update({ estado: 'aprobado' }).eq('username', username);
                 if (!error) {
                     setSolicitudesPendientes(prev => prev.filter(u => u.username !== username));
                     setSolicitudesRechazadas(prev => prev.filter(u => u.username !== username));
-                    alert("✅ Usuario aprobado con éxito.");
+                    alert("Usuario aprobado con exito.");
                     cargarDatosNube();
                 } else {
                     alert("Error al aprobar: " + error.message);
+                }
+                setCargandoSolicitudes(false);
+            };
+
+            const rechazarUsuario = async (username) => {
+                const confirmar = confirm("Deseas rechazar la solicitud de " + username + "?");
+                if (!confirmar) return;
+                setCargandoSolicitudes(true);
+                const { error } = await supabase.from('usuarios').update({ estado: 'rechazado' }).eq('username', username);
+                if (!error) {
+                    setSolicitudesPendientes(prev => prev.filter(u => u.username !== username));
+                    alert("Solicitud rechazada.");
+                    cargarDatosNube();
+                } else {
+                    alert("Error al rechazar: " + error.message);
                 }
                 setCargandoSolicitudes(false);
             };
@@ -203,40 +195,17 @@
                 e.preventDefault();
                 const { error } = await supabase.from('usuarios').update({ telefono: miTelefonoActual }).eq('username', user.username);
                 if (!error) {
-                    alert("📱 Teléfono de contacto guardado correctamente.");
-                    cargarDatosNube();
+                    alert("Telefono guardado correctamente.");
                 } else {
                     alert("Error al actualizar: " + error.message);
                 }
             };
 
-            const rechazarUsuario = async (username) => {
-                const confirmar = confirm("¿Deseas rechazar la solicitud de " + username + "? Pasará a la lista oculta de respaldo.");
-                if (!confirmar) return;
-                setCargandoSolicitudes(true);
-                
-                const { error } = await supabase
-                    .from('usuarios')
-                    .update({ estado: 'rechazado' })
-                    .eq('username', username);
-                    
-                if (!error) {
-                    setSolicitudesPendientes(prev => prev.filter(u => u.username !== username));
-                    alert("❌ Solicitud rechazada. Se movió al historial oculto.");
-                    cargarDatosNube();
-                } else {
-                    alert("Error al rechazar: " + error.message);
-                }
-                setCargandoSolicitudes(false);
-            };
-
             const registrarCuenta = async (e) => {
                 e.preventDefault();
-                if (!nombre || !sede) return alert("Por favor complete los campos");
-                if (rol === 'admin') {
-                    if (codigoAdmin.trim() !== CODIGO_SECRETO_ADMIN) {
-                        return alert("❌ Código de administrador incorrecto.\nContacta al responsable de tu sede.");
-                    }
+                if (!nombre || !sede) return alert("Por favor complete los campos obligatorios");
+                if (rol === 'admin' && codigoAdmin.trim() !== CODIGO_SECRETO_ADMIN) {
+                    return alert("Codigo de administrador incorrecto.");
                 }
                 const grupoSel = GRUPOS.find(g => g.id === sede);
                 const uid = nombre.replace(/\s+/g, "") + "_" + grupoSel.id;
@@ -253,7 +222,13 @@
                         setMiTelefonoActual(usuarioExistente.telefono || "");
                         return;
                     }
-                    const nuevoUsuario = { username: uid, nombre_real: nombre, grupo_id: sede, grupo_nombre: grupoSel.nombre, rol: rol, estado: rol === 'admin' ? 'aprobado' : 'pendiente', adicciones: adiccionesConfig, paso_actual: 1, telefono: telefono.trim() };
+                    const nuevoUsuario = {
+                        username: uid, nombre_real: nombre, grupo_id: sede,
+                        grupo_nombre: grupoSel.nombre, rol: rol,
+                        estado: rol === 'admin' ? 'aprobado' : 'pendiente',
+                        adicciones: adiccionesConfig, paso_actual: 1,
+                        telefono: telefono.trim()
+                    };
                     const { error } = await supabase.from('usuarios').insert([nuevoUsuario]);
                     if (error) {
                         alert("ERROR: " + error.message);
@@ -270,7 +245,7 @@
             const entrarCuenta = async (e) => {
                 e.preventDefault();
                 if (!loginUsername) return;
-                const { data, error } = await supabase.from('usuarios').select('*').eq('username', loginUsername).maybeSingle();
+                const { data } = await supabase.from('usuarios').select('*').eq('username', loginUsername).maybeSingle();
                 if (data) {
                     setUser({ username: data.username, nombreReal: data.nombre_real, grupoId: data.grupo_id, grupoNombre: data.grupo_nombre, rol: data.rol, estado: data.estado });
                     setMisAdicciones(data.adicciones || {});
@@ -310,12 +285,12 @@
                 return dias < 0 ? 0 : dias;
             };
 
-            // Agrupar los usuarios del directorio por su sede correspondiente
-            const directorioAgrupado = GRUPOS.map(grupo => {
-                const miembrosDeSede = directorioUsuarios.filter(u => u.grupo_id === grupo.id);
-                return { ...grupo, miembros: miembrosDeSede };
-            });
+            const directorioAgrupado = GRUPOS.map(grupo => ({
+                ...grupo,
+                miembros: directorioUsuarios.filter(u => u.grupo_id === grupo.id)
+            }));
 
+            // ── PANTALLA LOGIN ──────────────────────────────────────────
             if (!user) {
                 return (
                     <div className="app-container" style={{padding: '20px', justifyContent: 'center'}}>
@@ -328,34 +303,19 @@
                                     <option value="">-- Seleccionar Sede (Obligatorio) --</option>
                                     {GRUPOS.map(g => <option key={g.id} value={g.id}>{g.nombre}</option>)}
                                 </select>
-                                
                                 <input type="tel" className="input-field" placeholder="WhatsApp ej: +56912345678 (Opcional)" value={telefono} onChange={e => setTelefono(e.target.value)} />
-
                                 <div style={{textAlign: 'right', marginBottom: '10px'}}>
-                                    <span
-                                        style={{fontSize: '13px', color: '#475569', cursor: 'pointer', textDecoration: 'underline'}}
-                                        onClick={() => { setMostrarCampoAdmin(!mostrarCampoAdmin); setRol("basico"); setCodigoAdmin(""); }}
-                                    >
-                                        ¿Soy administrador autorizado?
+                                    <span style={{fontSize: '13px', color: '#475569', cursor: 'pointer', textDecoration: 'underline'}} onClick={() => { setMostrarCampoAdmin(!mostrarCampoAdmin); setRol("basico"); setCodigoAdmin(""); }}>
+                                        Soy administrador autorizado
                                     </span>
                                 </div>
                                 {mostrarCampoAdmin && (
                                     <div style={{background: '#1e1a2e', border: '2px solid #7c3aed', borderRadius: '14px', padding: '16px', marginBottom: '20px'}}>
-                                        <label style={{fontSize: '15px', color: '#a78bfa', fontWeight: 'bold'}}>🔐 Código de Administrador:</label>
-                                        <input
-                                            type="password"
-                                            className="input-field"
-                                            placeholder="Ingrese el código secreto"
-                                            value={codigoAdmin}
-                                            style={{marginBottom: '8px'}}
-                                            onChange={e => {
-                                                setCodigoAdmin(e.target.value);
-                                                setRol(e.target.value === CODIGO_SECRETO_ADMIN ? "admin" : "basico");
-                                            }}
-                                        />
+                                        <label style={{fontSize: '15px', color: '#a78bfa', fontWeight: 'bold'}}>Codigo de Administrador:</label>
+                                        <input type="password" className="input-field" placeholder="Ingrese el codigo secreto" value={codigoAdmin} style={{marginBottom: '8px'}} onChange={e => { setCodigoAdmin(e.target.value); setRol(e.target.value === CODIGO_SECRETO_ADMIN ? "admin" : "basico"); }} />
                                         {codigoAdmin.length > 0 && (
                                             <div style={{fontSize: '14px', marginTop: '4px', color: rol === 'admin' ? '#4ade80' : '#f87171'}}>
-                                                {rol === 'admin' ? '✅ Código correcto — se registrará como Administrador' : '❌ Código incorrecto'}
+                                                {rol === 'admin' ? 'Codigo correcto - se registrara como Administrador' : 'Codigo incorrecto'}
                                             </div>
                                         )}
                                     </div>
@@ -385,6 +345,7 @@
                 );
             }
 
+            // ── PANTALLA PENDIENTE ──────────────────────────────────────
             if (user.estado === 'pendiente') {
                 return (
                     <div className="app-container" style={{padding: '20px', justifyContent: 'center', textAlign: 'center'}}>
@@ -400,19 +361,21 @@
                 );
             }
 
+            // ── PANTALLA RECHAZADO ──────────────────────────────────────
             if (user.estado === 'rechazado') {
                 return (
                     <div className="app-container" style={{padding: '20px', justifyContent: 'center', textAlign: 'center'}}>
                         <div className="card" style={{borderColor: 'var(--danger)'}}>
                             <div style={{fontSize: '55px'}}>❌</div>
                             <h2>Acceso Denegado</h2>
-                            <p style={{color: 'var(--text-muted)'}}>Tu solicitud de registro ha sido rechazada por el administrador de la sede.</p>
-                            <button className="btn btn-secondary" onClick={() => setUser(null)}>Volver al Inicio</button>
+                            <p style={{color: 'var(--text-muted)'}}>Tu solicitud fue rechazada por el administrador de la sede.</p>
+                            <button className="btn btn-secondary" style={{marginTop: '15px'}} onClick={() => setUser(null)}>Volver al Inicio</button>
                         </div>
                     </div>
                 );
             }
 
+            // ── APP PRINCIPAL ───────────────────────────────────────────
             return (
                 <div className="app-container">
                     {mostrarAliento && (
@@ -429,29 +392,30 @@
                             </div>
                         </div>
                     )}
+
                     <div className="header">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/AA_logo.svg/80px-AA_logo.svg.png" alt="AA" style={{width: '52px', height: '52px', marginBottom: '6px', filter: 'drop-shadow(0 0 6px rgba(255,200,0,0.4))'}} />
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/AA_logo.svg/80px-AA_logo.svg.png" alt="AA" style={{width: '46px', height: '46px', marginBottom: '4px', filter: 'drop-shadow(0 0 6px rgba(255,200,0,0.4))'}} />
                         <h1>{user.grupoNombre}</h1>
-                        <span style={{color: 'var(--accent)', fontWeight: 'bold'}}>{user.nombreReal} {user.rol === 'admin' ? '(Admin)' : ''}</span>
+                        <span style={{color: 'var(--accent)', fontWeight: 'bold', fontSize: '17px'}}>{user.nombreReal} {user.rol === 'admin' ? '(Admin)' : ''}</span>
                     </div>
+
                     <div className="main-content">
+
+                        {/* ── TAB INICIO ── */}
                         {activeTab === "inicio" && (
                             <div>
                                 <div className="card" style={{textAlign: 'center', borderColor: 'var(--warning)'}}>
                                     <h3 style={{margin: 0, color: 'var(--warning)'}}>Mi Meta de Hoy</h3>
                                     <p style={{fontSize: '32px', fontWeight: 'bold', color: '#10b981', margin: '5px 0'}}>Solo por Hoy!</p>
                                 </div>
-
-                                {/* Nueva Sección para Actualizar el Teléfono Propio */}
                                 <form onSubmit={actualizarTelefonoPerfil} className="card" style={{borderColor: '#475569'}}>
-                                    <h4 style={{margin: '0 0 5px 0', fontSize: '17px', color: 'white'}}>📱 Mi Número de Contacto</h4>
-                                    <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 10px 0'}}>Agrégalo para aparecer en el directorio general.</p>
-                                    <div style={{display: 'flex', gap: '8px'}}>
+                                    <h4 style={{margin: '0 0 5px 0', fontSize: '17px', color: 'white'}}>Mi Numero de Contacto</h4>
+                                    <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 10px 0'}}>Agregalo para aparecer en el directorio general.</p>
+                                    <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
                                         <input type="tel" className="input-field" style={{marginBottom: 0, marginTop: 0, flex: 1, padding: '12px'}} placeholder="Ej: +56912345678" value={miTelefonoActual} onChange={e => setMiTelefonoActual(e.target.value)} />
-                                        <button type="submit" className="btn btn-success btn-sm" style={{borderRadius: '14px', fontSize: '15px'}}>Guardar</button>
+                                        <button type="submit" className="btn btn-success btn-sm">Guardar</button>
                                     </div>
                                 </form>
-
                                 <h3>Mis Indicadores de Progreso</h3>
                                 {Object.keys(misAdicciones).length === 0
                                     ? <p style={{color: 'var(--text-muted)'}}>No tienes contadores activos.</p>
@@ -478,6 +442,8 @@
                                 }
                             </div>
                         )}
+
+                        {/* ── TAB PASOS ── */}
                         {activeTab === "pasos" && (
                             <div>
                                 <h3>Los 12 Pasos</h3>
@@ -495,88 +461,161 @@
                                 })}
                             </div>
                         )}
+
+                        {/* ── TAB BIBLIOTECA ── */}
                         {activeTab === "biblioteca" && (
                             <div>
                                 <h3>Biblioteca de Sede</h3>
                                 {user.rol === 'admin' && (
                                     <form onSubmit={subirMaterial} className="card" style={{borderColor: 'var(--primary)'}}>
-                                        <h4 style={{margin:'0 0 10px 0', color:'var(--primary)'}}>Añadir Recurso</h4>
-                                        <input type="text" placeholder="Título del texto" className="input-field" value={nuevoTitulo} onChange={e=>setNuevoTitulo(e.target.value)} />
-                                        <select className="select-field" value={nuevoTipo} onChange={e=>setNuevoTipo(e.target.value)}>
-                                            <option value="Documento">📄 Documento / PDF</option>
-                                            <option value="Audio">🎵 Audio / Reunión</option>
-                                            <option value="Video">🎥 Video Motivacional</option>
+                                        <h4 style={{margin: '0 0 10px 0', color: 'var(--primary)'}}>Anadir Recurso</h4>
+                                        <input type="text" placeholder="Titulo del texto" className="input-field" value={nuevoTitulo} onChange={e => setNuevoTitulo(e.target.value)} />
+                                        <select className="select-field" value={nuevoTipo} onChange={e => setNuevoTipo(e.target.value)}>
+                                            <option value="Documento">Documento / PDF</option>
+                                            <option value="Audio">Audio / Reunion</option>
+                                            <option value="Video">Video Motivacional</option>
                                         </select>
-                                        <input type="text" placeholder="Enlace URL del recurso" className="input-field" value={nuevoLink} onChange={e=>setNuevoLink(e.target.value)} />
+                                        <input type="text" placeholder="Enlace URL del recurso" className="input-field" value={nuevoLink} onChange={e => setNuevoLink(e.target.value)} />
                                         <button type="submit" className="btn btn-success">Publicar en Sede</button>
                                     </form>
                                 )}
-                                {biblioteca.length === 0 ? (
-                                    <p style={{color:'var(--text-muted)'}}>No hay material publicado para esta sede.</p>
-                                ) : (
-                                    biblioteca.map(b => (
+                                {biblioteca.length === 0
+                                    ? <p style={{color: 'var(--text-muted)'}}>No hay material publicado para esta sede.</p>
+                                    : biblioteca.map(b => (
                                         <div key={b.id} className="biblioteca-item">
                                             <div>
-                                                <div style={{fontWeight:'bold'}}>{b.titulo}</div>
-                                                <div style={{fontSize:'14px', color:'var(--text-muted)'}}>{b.tipo}</div>
+                                                <div style={{fontWeight: 'bold'}}>{b.titulo}</div>
+                                                <div style={{fontSize: '14px', color: 'var(--text-muted)'}}>{b.tipo}</div>
                                             </div>
-                                            <a href={b.link} target="_blank" rel="noreferrer" className="btn btn-sm var(--primary)" style={{textDecoration:'none', textAlign:'center'}}>Abrir</a>
+                                            {/* CORRECCIÓN: clase CSS inválida eliminada */}
+                                            <a href={b.link} target="_blank" rel="noreferrer" className="btn btn-sm btn-success" style={{textDecoration: 'none'}}>Abrir</a>
                                         </div>
                                     ))
-                                )}
+                                }
                             </div>
                         )}
 
-                        {/* Nueva Pestaña del Directorio Telefónico */}
+                        {/* ── TAB DIRECTORIO ── */}
                         {activeTab === "directorio" && (
                             <div>
                                 <h3>Directorio Inter-Sedes</h3>
-                                <p style={{fontSize:'15px', color:'var(--text-muted)', marginBottom: '20px'}}>Haz clic en cualquier compañero que posea un número asignado para iniciar una conversación en WhatsApp.</p>
-                                
+                                <p style={{fontSize: '15px', color: 'var(--text-muted)', marginBottom: '20px'}}>Haz clic en cualquier companero con numero asignado para iniciar un chat en WhatsApp.</p>
                                 {directorioAgrupado.map(grupo => (
                                     <div key={grupo.id} className="directorio-sede-seccion">
                                         <div className="directorio-sede-titulo">📍 {grupo.nombre}</div>
-                                        {grupo.miembros.length === 0 ? (
-                                            <p style={{fontSize: '15px', color: 'var(--text-muted)', paddingLeft: '10px'}}>No hay miembros registrados con teléfono en esta sede.</p>
-                                        ) : (
-                                            grupo.miembros.map((m, idx) => {
+                                        {grupo.miembros.length === 0
+                                            ? <p style={{fontSize: '15px', color: 'var(--text-muted)', paddingLeft: '10px'}}>No hay miembros con telefono registrado.</p>
+                                            : grupo.miembros.map((m, idx) => {
                                                 const tieneTelefono = m.telefono && m.telefono.trim().length > 0;
                                                 const linkWa = tieneTelefono ? "https://wa.me/" + m.telefono.replace(/[^0-9]/g, "") : null;
-                                                
                                                 return (
                                                     <div key={idx} className="directorio-contacto">
                                                         <div>
                                                             <span className="directorio-nombre">{m.nombre_real}</span>
                                                             {m.rol === 'admin' && <span className="directorio-rol">Admin</span>}
                                                             <div style={{fontSize: '14px', color: tieneTelefono ? '#4ade80' : '#64748b', marginTop: '3px'}}>
-                                                                {tieneTelefono ? "📞 " + m.telefono : "❌ Sin teléfono registrado"}
+                                                                {tieneTelefono ? m.telefono : "Sin telefono registrado"}
                                                             </div>
                                                         </div>
                                                         {tieneTelefono && (
-                                                            <a href={linkWa} target="_blank" rel="noreferrer" className="btn btn-success btn-sm" style={{padding: '8px 14px', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '5px'}}>
+                                                            <a href={linkWa} target="_blank" rel="noreferrer" className="btn btn-success btn-sm" style={{display: 'flex', alignItems: 'center', gap: '5px'}}>
                                                                 💬 Chat
                                                             </a>
                                                         )}
                                                     </div>
                                                 );
                                             })
-                                        )}
+                                        }
                                     </div>
                                 ))}
                             </div>
                         )}
 
-                        {activeTab === "admin" && (
+                        {/* ── TAB ADMIN (solo visible para admins) ── */}
+                        {activeTab === "admin" && user.rol === 'admin' && (
                             <div>
-                                <h3>Panel de Administración</h3>
-                                <p style={{fontSize:'15px', color:'var(--text-muted)'}}>Usuarios esperando aprobación en tu sede:</p>
-                                
-                                {solicitudesPendientes.length === 0 ? (
-                                    <div style={{background: '#0f172a', padding: '15px', borderRadius: '12px', textAlign: 'center', border: '1px solid #334155', color: 'var(--text-muted)'}}>
-                                        No hay solicitudes pendientes de acceso.
-                                    </div>
-                                ) : (
-                                    solicitudesPendientes.map(sol => (
+                                <h3>Panel de Administracion</h3>
+                                <p style={{fontSize: '15px', color: 'var(--text-muted)'}}>Solicitudes pendientes en tu sede:</p>
+                                {cargandoSolicitudes && <p style={{color: 'var(--warning)', textAlign: 'center'}}>Procesando...</p>}
+                                {solicitudesPendientes.length === 0
+                                    ? <div style={{background: '#0f172a', padding: '15px', borderRadius: '12px', textAlign: 'center', border: '1px solid #334155', color: 'var(--text-muted)'}}>
+                                        No hay solicitudes pendientes.
+                                      </div>
+                                    : solicitudesPendientes.map(sol => (
                                         <div key={sol.username} className="solicitud-card">
-                                            <div className="badge-pendiente">Pendiente de Autorización</div>
-                                            <div className="solicitud-
+                                            <div className="badge-pendiente">Pendiente de Autorizacion</div>
+                                            <div className="solicitud-nombre">{sol.nombre_real}</div>
+                                            <div className="solicitud-info">ID: {sol.username}</div>
+                                            <div className="solicitud-info">Telefono: {sol.telefono || "No registrado"}</div>
+                                            {sol.adicciones && Object.keys(sol.adicciones).length > 0 && (
+                                                <div className="solicitud-info">Padecimientos: {Object.keys(sol.adicciones).join(", ")}</div>
+                                            )}
+                                            <div className="solicitud-actions">
+                                                <button className="btn btn-success btn-sm" onClick={() => aprobarUsuario(sol.username)} disabled={cargandoSolicitudes}>
+                                                    Aprobar
+                                                </button>
+                                                <button className="btn btn-danger btn-sm" onClick={() => rechazarUsuario(sol.username)} disabled={cargandoSolicitudes}>
+                                                    Rechazar
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))
+                                }
+                                {solicitudesRechazadas.length > 0 && (
+                                    <div>
+                                        <div className="acordeon-btn" onClick={() => setMostrarHistorialRechazados(!mostrarHistorialRechazados)}>
+                                            {mostrarHistorialRechazados ? "Ocultar" : "Ver"} historial de rechazados ({solicitudesRechazadas.length})
+                                        </div>
+                                        {mostrarHistorialRechazados && (
+                                            <div style={{marginTop: '10px'}}>
+                                                {solicitudesRechazadas.map(sol => (
+                                                    <div key={sol.username} className="solicitud-card rechazada">
+                                                        <div className="badge-rechazado">Rechazado</div>
+                                                        <div className="solicitud-nombre">{sol.nombre_real}</div>
+                                                        <div className="solicitud-info">ID: {sol.username}</div>
+                                                        <div className="solicitud-actions">
+                                                            <button className="btn btn-success btn-sm" onClick={() => aprobarUsuario(sol.username)} disabled={cargandoSolicitudes}>
+                                                                Aprobar de todas formas
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                    </div>
+
+                    {/* ── NAVBAR ── CORRECCIÓN: pestaña admin solo visible para admins */}
+                    <div className="navbar">
+                        <div className={"nav-item" + (activeTab === 'inicio' ? ' active' : '')} onClick={() => setActiveTab("inicio")}>
+                            <div className="nav-icon">📊</div><span>Inicio</span>
+                        </div>
+                        <div className={"nav-item" + (activeTab === 'pasos' ? ' active' : '')} onClick={() => setActiveTab("pasos")}>
+                            <div className="nav-icon">⭐</div><span>12 Pasos</span>
+                        </div>
+                        <div className={"nav-item" + (activeTab === 'biblioteca' ? ' active' : '')} onClick={() => setActiveTab("biblioteca")}>
+                            <div className="nav-icon">📚</div><span>Biblioteca</span>
+                        </div>
+                        <div className={"nav-item" + (activeTab === 'directorio' ? ' active' : '')} onClick={() => setActiveTab("directorio")}>
+                            <div className="nav-icon">📞</div><span>Directorio</span>
+                        </div>
+                        {user.rol === 'admin' && (
+                            <div className={"nav-item" + (activeTab === 'admin' ? ' active' : '')} onClick={() => setActiveTab("admin")}>
+                                <div className="nav-icon">⚙️</div><span>Admin</span>
+                            </div>
+                        )}
+                    </div>
+
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
