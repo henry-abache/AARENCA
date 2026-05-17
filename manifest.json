@@ -7,12 +7,12 @@
   "theme_color": "#121212",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/AA_logo.svg/240px-AA_logo.svg.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icon-512.png",
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/AA_logo.svg/240px-AA_logo.svg.png",
       "sizes": "512x512",
       "type": "image/png"
     }
