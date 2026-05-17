@@ -10,52 +10,130 @@
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
+        /* Variables por defecto: Modo Oscuro */
         :root {
-            --bg-dark: #0f172a; --card-dark: #1e293b; --primary: #2563eb;
-            --accent: #16a34a; --warning: #d97706; --danger: #dc2626;
-            --text-main: #f8fafc; --text-muted: #cbd5e1;
+            --bg-app: #0f172a; 
+            --bg-body: #020617;
+            --card-bg: #1e293b; 
+            --border-color: #334155;
+            --input-bg: #0f172a;
+            --input-border: #475569;
+            --text-main: #f8fafc; 
+            --text-muted: #cbd5e1;
+            
+            --primary: #2563eb;
+            --accent: #16a34a; 
+            --warning: #d97706; 
+            --danger: #dc2626;
         }
-        body { margin: 0; padding: 0; background-color: #020617; color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 19px; }
-        .app-container { max-width: 500px; margin: 0 auto; min-height: 100vh; background-color: var(--bg-dark); display: flex; flex-direction: column; position: relative; box-shadow: 0 0 25px rgba(0,0,0,0.7); padding-bottom: 95px; box-sizing: border-box; }
-        .header { padding: 24px; background-color: var(--card-dark); border-bottom: 2px solid #334155; text-align: center; }
+
+        /* Variables: Modo Claro */
+        .light-theme {
+            --bg-app: #f8fafc;
+            --bg-body: #e2e8f0;
+            --card-bg: #ffffff;
+            --border-color: #cbd5e1;
+            --input-bg: #ffffff;
+            --input-border: #94a3b8;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            
+            --primary: #1d4ed8;
+            --accent: #15803d;
+            --warning: #b45309;
+            --danger: #b91c1c;
+        }
+
+        body { 
+            margin: 0; 
+            padding: 0; 
+            background-color: var(--bg-body); 
+            color: var(--text-main); 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            font-size: 19px; 
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .app-container { 
+            max-width: 500px; 
+            margin: 0 auto; 
+            min-height: 100vh; 
+            background-color: var(--bg-app); 
+            display: flex; 
+            flex-direction: column; 
+            position: relative; 
+            box-shadow: 0 0 25px rgba(0,0,0,0.3); 
+            padding-bottom: 95px; 
+            box-sizing: border-box; 
+            transition: background-color 0.3s;
+        }
+        .header { 
+            padding: 24px; 
+            background-color: var(--card-bg); 
+            border-bottom: 2px solid var(--border-color); 
+            text-align: center; 
+            position: relative;
+        }
         .header h1 { margin: 0; font-size: 26px; }
+        
+        .theme-toggle-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-app);
+            border: 2px solid var(--border-color);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
         .main-content { flex: 1; padding: 20px; overflow-y: auto; }
-        .card { background-color: var(--card-dark); border-radius: 20px; padding: 24px; margin-bottom: 20px; border: 2px solid #334155; }
-        .input-field, .select-field { width: 100%; padding: 16px; background-color: #0f172a; border: 2px solid #475569; border-radius: 14px; color: white; font-size: 18px; margin-top: 8px; margin-bottom: 20px; box-sizing: border-box; }
+        .card { background-color: var(--card-bg); border-radius: 20px; padding: 24px; margin-bottom: 20px; border: 2px solid var(--border-color); }
+        .input-field, .select-field { width: 100%; padding: 16px; background-color: var(--input-bg); border: 2px solid var(--input-border); border-radius: 14px; color: var(--text-main); font-size: 18px; margin-top: 8px; margin-bottom: 20px; box-sizing: border-box; }
         .btn { background-color: var(--primary); color: white; border: none; padding: 18px; border-radius: 16px; font-size: 20px; font-weight: bold; cursor: pointer; width: 100%; display: block; text-align: center; text-decoration: none; }
         .btn-danger { background-color: var(--danger); }
         .btn-success { background-color: var(--accent); }
-        .btn-secondary { background-color: #475569; }
-        .checkbox-group { background: #0f172a; padding: 14px; border-radius: 14px; margin-bottom: 15px; border: 2px solid #334155; }
+        .btn-secondary { background-color: var(--input-border); color: var(--text-main); }
+        
+        .checkbox-group { background: var(--input-bg); padding: 14px; border-radius: 14px; margin-bottom: 15px; border: 2px solid var(--border-color); }
         .checkbox-label { display: flex; align-items: center; font-size: 21px; cursor: pointer; }
         .checkbox-custom { width: 28px; height: 28px; margin-right: 15px; }
+        
         .progress-container { margin-bottom: 20px; }
         .progress-label { display: flex; justify-content: space-between; font-weight: bold; font-size: 20px; margin-bottom: 8px; }
-        .progress-bar-bg { background-color: #020617; border-radius: 15px; height: 32px; width: 100%; overflow: hidden; border: 1px solid #475569; }
+        .progress-bar-bg { background-color: var(--bg-body); border-radius: 15px; height: 32px; width: 100%; overflow: hidden; border: 1px solid var(--input-border); }
         .progress-bar-fill { background: linear-gradient(90deg, #16a34a, #4ade80); height: 100%; transition: width 0.5s ease; }
-        .paso-row { display: flex; align-items: center; padding: 16px; background: #0f172a; border-radius: 14px; margin-bottom: 12px; cursor: pointer; border: 2px solid #334155; }
-        .paso-row.completado { border-color: var(--warning); background: #1e293b; }
+        
+        .paso-row { display: flex; align-items: center; padding: 16px; background: var(--input-bg); border-radius: 14px; margin-bottom: 12px; cursor: pointer; border: 2px solid var(--border-color); }
+        .paso-row.completado { border-color: var(--warning); background: var(--card-bg); }
         .paso-numero { font-size: 26px; font-weight: bold; margin-right: 15px; min-width: 35px; color: var(--text-muted); }
         .paso-row.completado .paso-numero { color: var(--warning); }
-        .star-icon { font-size: 28px; margin-left: auto; color: #475569; }
+        .star-icon { font-size: 28px; margin-left: auto; color: var(--input-border); }
         .star-icon.active { color: var(--warning); }
+        
         .popup-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 999; }
-        .popup-card { background: var(--card-dark); border-radius: 24px; padding: 30px; text-align: center; max-width: 410px; border: 3px solid var(--warning); }
-        .biblioteca-item, .evento-item { background: #0f172a; padding: 18px; border-radius: 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; border: 2px solid #334155; }
-        .navbar { position: absolute; bottom: 0; left: 0; right: 0; height: 90px; background-color: var(--card-dark); border-top: 2px solid #334155; display: flex; justify-content: space-around; align-items: center; }
+        .popup-card { background: var(--card-bg); border-radius: 24px; padding: 30px; text-align: center; max-width: 410px; border: 3px solid var(--warning); }
+        
+        .biblioteca-item, .evento-item { background: var(--input-bg); padding: 18px; border-radius: 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; border: 2px solid var(--border-color); }
+        
+        .navbar { position: absolute; bottom: 0; left: 0; right: 0; height: 90px; background-color: var(--card-bg); border-top: 2px solid var(--border-color); display: flex; justify-content: space-around; align-items: center; }
         .nav-item { color: var(--text-muted); cursor: pointer; text-align: center; font-size: 14px; font-weight: bold; }
         .nav-item.active { color: var(--primary); }
         .nav-icon { font-size: 26px; margin-bottom: 2px; }
+        
         .admin-habitos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 15px; }
-        .admin-habito-card { background: #0f172a; padding: 10px; border-radius: 12px; border: 1px solid #334155; text-align: center; }
+        .admin-habito-card { background: var(--input-bg); padding: 10px; border-radius: 12px; border: 1px solid var(--border-color); text-align: center; }
         .admin-habito-card img { width: 45px; height: 45px; object-fit: cover; border-radius: 8px; margin-bottom: 5px; }
         .admin-habito-card div { font-size: 15px; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         
-        .admin-toggle-link { display: block; text-align: right; color: #4b5563; font-size: 15px; text-decoration: underline; cursor: pointer; margin-top: -10px; margin-bottom: 20px; transition: color 0.2s; }
-        .admin-toggle-link:hover { color: #9ca3af; }
+        .solicitud-box { background: var(--input-bg); border: 2px solid var(--warning); padding: 14px; border-radius: 14px; margin-bottom: 10px; }
+        .solicitud-acciones { display: flex; gap: 10px; margin-top: 10px; }
+        .btn-small { padding: 8px 12px; font-size: 15px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; width: auto; flex: 1; text-align: center; color: white;}
+
+        .admin-toggle-link { display: block; text-align: right; color: var(--text-muted); font-size: 15px; text-decoration: underline; cursor: pointer; margin-top: -10px; margin-bottom: 20px; }
         .status-msg { font-size: 15px; font-weight: bold; margin-top: 4px; display: block; }
-        .status-error { color: #ef4444; }
-        .status-success { color: #10b981; }
     </style>
 </head>
 <body>
@@ -72,7 +150,6 @@
           { id: "grupo-esperanza", nombre: "GRUPO ESPERANZA" }
         ];
         
-        // Exclusión del juego compulsivo completada
         const ADICCIONES_DISPONIBLES = ["Alcohol", "Marihuana", "Cocaina", "Tabaco"];
         
         const PASOS_AA = [
@@ -99,521 +176,9 @@
         function App() {
             const [user, setUser] = React.useState(null);
             const [activeTab, setActiveTab] = React.useState("inicio");
+            const [isDarkMode, setIsDarkMode] = React.useState(true);
             const [misAdicciones, setMisAdicciones] = React.useState({});
             const [pasoActual, setPasoActual] = React.useState(1);
             const [biblioteca, setBiblioteca] = React.useState([]);
             const [eventos, setEventos] = React.useState([]);
-            const [mostrarAliento, setMostrarAliento] = React.useState(false);
-            const [lecturaRecomendada, setLecturaRecomendada] = React.useState("");
-            const [nombre, setNombre] = React.useState("");
-            const [sede, setSede] = React.useState("");
-            
-            const [whatsapp, setWhatsapp] = React.useState("+569"); 
-            
-            const [mostrarCampoAdmin, setMostrarCampoAdmin] = React.useState(false);
-            const [claveAdminIngresada, setClaveAdminIngresada] = React.useState("");
-
-            const [checks, setChecks] = React.useState({});
-            const [fechas, setFechas] = React.useState({});
-            const [loginUsername, setLoginUsername] = React.useState("");
-            
-            const [nuevoTitulo, setNuevoTitulo] = React.useState("");
-            const [nuevoTipo, setNuevoTipo] = React.useState("Documento");
-            const [nuevoLink, setNuevoLink] = React.useState("");
-            const [evTitulo, setEvTitulo] = React.useState("");
-            const [evFecha, setEvFecha] = React.useState("");
-            const [evHora, setEvHora] = React.useState("");
-            const [evLugar, setEvLugar] = React.useState("");
-            const [evLat, setEvLat] = React.useState("");
-            const [evLon, setEvLon] = React.useState("");
-            const [evNota, setEvNota] = React.useState("");
-            const [habitosLista, setHabitosLista] = React.useState([]);
-            const [nuevoHabitoNombre, setNuevoHabitoNombre] = React.useState("");
-            const [nuevoHabitoImagen, setNuevoHabitoImagen] = React.useState("");
-
-            React.useEffect(() => {
-                const sesionGuardada = localStorage.getItem("sesion_nueva_vida");
-                if (sesionGuardada) {
-                    try {
-                        const datosUsuario = JSON.parse(sesionGuardada);
-                        setUser(datosUsuario);
-                    } catch(e) {
-                        localStorage.removeItem("sesion_nueva_vida");
-                    }
-                }
-            }, []);
-
-            React.useEffect(() => {
-                if (!user) return;
-                cargarDatosNube();
-                const interval = setInterval(cargarDatosNube, 6000);
-                return () => clearInterval(interval);
-            }, [user]);
-
-            async function cargarDatosNube() {
-                try {
-                    const { data: uData } = await supabase.from('usuarios').select('*').eq('username', user.username).single();
-                    if (uData) {
-                        setMisAdicciones(uData.adicciones || {});
-                        setPasoActual(uData.paso_actual || 1);
-                        
-                        setUser(prev => {
-                            const act = { ...prev, estado: uData.estado };
-                            localStorage.setItem("sesion_nueva_vida", JSON.stringify(act));
-                            return act;
-                        });
-                    }
-                    const { data: bData } = await supabase.from('biblioteca').select('*').eq('grupo_id', user.grupoId).order('id', { ascending: false });
-                    if (bData) setBiblioteca(bData);
-                    
-                    const { data: eData } = await supabase.from('eventos').select('*').eq('grupo_id', user.grupoId).order('fecha', { ascending: true });
-                    if (eData) setEventos(eData);
-
-                    const { data: hData } = await supabase.from('habitos').select('*').order('nombre', { ascending: true });
-                    if (hData) setHabitosLista(hData);
-                } catch(e) {}
-            }
-
-            const registrarCuenta = async (e) => {
-                e.preventDefault();
-                if (!nombre || !sede) return alert("Por favor complete los campos obligatorios");
-                
-                const tlfLimpio = whatsapp.replace(/\s+/g, "");
-
-                if (tlfLimpio.trim().length > 0) {
-                    if (!tlfLimpio.startsWith("+")) {
-                        return alert("Formato de WhatsApp incorrecto. Debe incluir el símbolo '+' seguido del código internacional de su país (Ejemplo para Chile: +56934449767).");
-                    }
-                    if (tlfLimpio.length < 11 || tlfLimpio.length > 15) {
-                        return alert("La longitud del número telefónico ingresado no parece válida. Por favor, revíselo bien.");
-                    }
-                    const soloNumeros = tlfLimpio.substring(1);
-                    if (!/^\d+$/.test(soloNumeros)) {
-                        return alert("El número de WhatsApp solo debe contener dígitos numéricos luego del signo '+'.");
-                    }
-                }
-
-                let rolFinal = "basico";
-                let estadoFinal = "pendiente"; 
-
-                if (mostrarCampoAdmin) {
-                    if (claveAdminIngresada !== CLAVE_SECRETA_ADMIN) {
-                        return alert("La contraseña de administrador es incorrecta.");
-                    } else {
-                        rolFinal = "admin";
-                        estadoFinal = "autorizado"; 
-                    }
-                }
-
-                const grupoSel = GRUPOS.find(g => g.id === sede);
-                const nombreLimpio = nombre.replace(/\s+/g, "");
-                const uid = nombreLimpio + "_" + grupoSel.id;
-
-                try {
-                    const { data: usuarioExistente } = await supabase.from('usuarios').select('*').eq('username', uid).maybeSingle();
-                    
-                    if (usuarioExistente) {
-                        return alert(`El nombre "${nombre}" ya está ocupado en esta sede. Por favor, ingresa tu nombre acompañado de tu apellido o una inicial distintiva.`);
-                    }
-                    
-                    const adiccionesConfig = {};
-                    ADICCIONES_DISPONIBLES.forEach(ad => {
-                        if (checks[ad]) adiccionesConfig[ad] = fechas[ad] || new Date().toISOString().split('T')[0];
-                    });
-
-                    const telefonosJSON = tlfLimpio.trim() ? [tlfLimpio.trim()] : [];
-
-                    const nuevoUsuario = { 
-                        username: uid, 
-                        nombre_real: nombre, 
-                        grupo_id: sede, 
-                        grupo_nombre: grupoSel.nombre, 
-                        rol: rolFinal, 
-                        estado: estadoFinal, 
-                        adicciones: adiccionesConfig, 
-                        telefonos: telefonosJSON,
-                        paso_actual: 1 
-                    };
-                    
-                    const { error } = await supabase.from('usuarios').insert([nuevoUsuario]);
-                    if (error) {
-                        alert("ERROR Supabase: " + error.message + "\n\nSugerencia: Si el error menciona 'row-level security policy', asegúrate de correr el script SQL de políticas en la consola de Supabase.");
-                    } else {
-                        const datosSesion = { username: uid, nombreReal: nombre, grupoId: sede, grupoNombre: grupoSel.nombre, rol: rolFinal, estado: estadoFinal };
-                        localStorage.setItem("sesion_nueva_vida", JSON.stringify(datosSesion));
-                        setUser(datosSesion);
-                        setMisAdicciones(adiccionesConfig);
-                    }
-                } catch(err) {
-                    alert("Error de conexión: " + err.message);
-                }
-            };
-
-            const entrarCuenta = async (e) => {
-                e.preventDefault();
-                if (!loginUsername) return;
-                const { data, error } = await supabase.from('usuarios').select('*').eq('username', loginUsername).maybeSingle();
-                if (data) {
-                    const datosSesion = { username: data.username, nombre_real: data.nombre_real, grupoId: data.grupo_id, grupoNombre: data.grupo_nombre, rol: data.rol, estado: data.estado };
-                    localStorage.setItem("sesion_nueva_vida", JSON.stringify(datosSesion));
-                    
-                    setUser({ username: data.username, nombreReal: data.nombre_real, grupoId: data.grupo_id, grupoNombre: data.grupo_nombre, rol: data.rol, estado: data.estado });
-                    setMisAdicciones(data.adicciones || {});
-                    setPasoActual(data.paso_actual || 1);
-                } else {
-                    alert("Identificador no encontrado.");
-                }
-            };
-
-            const cerrarSesionApp = () => {
-                localStorage.removeItem("sesion_nueva_vida");
-                setUser(null);
-            };
-
-            const registrarRecaida = async (adiccion) => {
-                const hoyStr = new Date().toISOString().split('T')[0];
-                const nuevasAdicciones = { ...misAdicciones, [adiccion]: hoyStr };
-                const { error } = await supabase.from('usuarios').update({ adicciones: nuevasAdicciones }).eq('username', user.username);
-                if (!error) {
-                    setMisAdicciones(nuevasAdicciones);
-                    setLecturaRecomendada(LECTURAS[Math.floor(Math.random() * LECTURAS.length)]);
-                    setMostrarAliento(true);
-                }
-            };
-
-            const cambiarPaso = async (numeroPaso) => {
-                const { error } = await supabase.from('usuarios').update({ paso_actual: numeroPaso }).eq('username', user.username);
-                if (!error) setPasoActual(numeroPaso);
-            };
-
-            const subirMaterial = async (e) => {
-                e.preventDefault();
-                if (!nuevoTitulo || !nuevoLink) return alert("Completa el título y enlace");
-                const { error } = await supabase.from('biblioteca').insert([{ grupo_id: user.grupoId, titulo: nuevoTitulo, tipo: nuevoTipo, link: nuevoLink }]);
-                if (!error) { setNuevoTitulo(""); setNuevoLink(""); cargarDatosNube(); alert("Publicado con éxito"); }
-            };
-
-            const crearEventoAdmin = async (e) => {
-                e.preventDefault();
-                if (!evTitulo || !evFecha || !evHora || !evLugar) return alert("Completa los campos obligatorios del evento");
-                const { error } = await supabase.from('eventos').insert([{
-                    grupo_id: user.grupoId,
-                    titulo: evTitulo,
-                    fecha: evFecha,
-                    hora: evHora,
-                    lugar: evLugar,
-                    latitud: evLat ? parseFloat(evLat) : null,
-                    longitud: evLon ? parseFloat(evLon) : null,
-                    nota: evNota
-                }]);
-                if (!error) {
-                    alert("Evento creado con éxito!");
-                    setEvTitulo(""); setEvFecha(""); setEvHora(""); setEvLugar(""); setEvLat(""); setEvLon(""); setEvNota("");
-                    cargarDatosNube();
-                } else {
-                    alert("Error: " + error.message);
-                }
-            };
-
-            const crearHabitoAdmin = async (e) => {
-                e.preventDefault();
-                if (!nuevoHabitoNombre || !nuevoHabitoImagen) return alert("Escribe nombre y URL de imagen");
-                const seguro = confirm("¿Crear hábito: " + nuevoHabitoNombre.toUpperCase() + "?");
-                if (!seguro) return;
-                const { error } = await supabase.from('habitos').insert([{ nombre: nuevoHabitoNombre.trim(), imagen_url: nuevoHabitoImagen.trim() }]);
-                if (error) {
-                    alert(error.code === '23505' ? "El hábito ya existe." : "Error: " + error.message);
-                } else {
-                    alert("¡Hábito creado!"); setNuevoHabitoNombre(""); setNuevoHabitoImagen(""); cargarDatosNube();
-                }
-            };
-
-            const calcularDias = (fechaStr) => {
-                if (!fechaStr) return 0;
-                const dias = Math.floor((new Date() - new Date(fechaStr)) / (1000 * 60 * 60 * 24));
-                return dias < 0 ? 0 : dias;
-            };
-
-            if (!user) {
-                const esClaveCorrecta = claveAdminIngresada === CLAVE_SECRETA_ADMIN;
-                const tieneTexto = claveAdminIngresada.length > 0;
-
-                return (
-                    <div className="app-container" style={{padding: '20px', justifyContent: 'center'}}>
-                        <div className="card">
-                            <h2 style={{color: '#3b82f6', fontSize: '30px', textAlign: 'center', marginTop: '5px'}}>Nueva Vida AA</h2>
-                            <form onSubmit={registrarCuenta}>
-                                <h4 style={{color: 'var(--accent)', marginBottom: '15px', fontSize: '20px'}}>1. Registrarse</h4>
-                                
-                                <input type="text" className="input-field" placeholder="Su Nombre o Alias" value={nombre} onChange={e => setNombre(e.target.value)} />
-                                
-                                <select className="select-field" value={sede} onChange={e => setSede(e.target.value)}>
-                                    <option value="">-- Seleccionar Sede --</option>
-                                    {GRUPOS.map(g => <option key={g.id} value={g.id}>{g.nombre}</option>)}
-                                </select>
-
-                                <span className="admin-toggle-link" onClick={() => setMostrarCampoAdmin(!mostrarCampoAdmin)}>
-                                    ¿Soy administrador autorizado?
-                                </span>
-
-                                {mostrarCampoAdmin && (
-                                    <div style={{background: '#0f172a', padding: '15px', borderRadius: '14px', marginBottom: '20px', border: '1px dashed #4b5563'}}>
-                                        <label style={{color: 'var(--text-muted)', fontSize: '15px', fontWeight: 'bold'}}>Contraseña de Administrador:</label>
-                                        <input type="password" className="input-field" style={{marginBottom: '5px', marginTop: '5px', borderColor: tieneTexto ? (esClaveCorrecta ? '#10b981' : '#ef4444') : '#475569'}} placeholder="Escriba la palabra clave" value={claveAdminIngresada} onChange={e => setClaveAdminIngresada(e.target.value)} />
-                                        
-                                        {tieneTexto && (
-                                            <span className={`status-msg ${esClaveCorrecta ? 'status-success' : 'status-error'}`}>
-                                                {esClaveCorrecta ? '✓ Palabra clave correcta. Acceso Admin listo.' : '✗ La palabra clave no es felices24'}
-                                            </span>
-                                        )}
-                                    </div>
-                                )}
-
-                                <label style={{fontSize: '15px', color: 'var(--text-muted)', fontWeight: 'bold'}}>WhatsApp (Con código de país):</label>
-                                <input type="text" className="input-field" style={{marginTop: '4px'}} placeholder="Ej: +56934449767" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} />
-
-                                <h4 style={{color: 'var(--warning)', fontSize: '18px', marginBottom: '12px', marginTop: '10px'}}>Padecimientos y Último consumo:</h4>
-                                {ADICCIONES_DISPONIBLES.map(ad => (
-                                    <div key={ad} className="checkbox-group">
-                                        <label className="checkbox-label">
-                                            <input type="checkbox" className="checkbox-custom" checked={!!checks[ad]} onChange={e => setChecks({...checks, [ad]: e.target.checked})} />
-                                            {ad}
-                                        </label>
-                                        {checks[ad] && (
-                                            <input type="date" className="input-field" style={{marginBottom:0, marginTop:'8px'}} value={fechas[ad] || ""} onChange={e => setFechas({...fechas, [ad]: e.target.value})} />
-                                        )}
-                                    </div>
-                                ))}
-                                <button type="submit" className="btn btn-success" style={{marginTop: '20px'}}>Registrar e Ingresar</button>
-                            </form>
-                            
-                            <hr style={{borderColor: '#334155', margin: '35px 0'}} />
-                            
-                            <form onSubmit={entrarCuenta}>
-                                <h4 style={{color: '#fff', marginBottom: '5px'}}>2. Ya tengo cuenta (Identificador)</h4>
-                                <input type="text" className="input-field" placeholder="Ej: Pedro_san-jose-renca" value={loginUsername} onChange={e => setLoginUsername(e.target.value)} />
-                                <button type="submit" className="btn btn-secondary">Entrar</button>
-                            </form>
-                        </div>
-                    </div>
-                );
-            }
-
-            if (user.estado === 'pendiente') {
-                return (
-                    <div className="app-container" style={{padding: '20px', justifyContent: 'center', textAlign: 'center'}}>
-                        <div className="card">
-                            <div style={{fontSize: '55px'}}>⏳</div>
-                            <h2>Cuenta en Revisión</h2>
-                            <p style={{color: 'var(--text-muted)'}}>Tu identificador para entrar es:</p>
-                            <p style={{background: '#020617', padding: '15px', borderRadius: '10px', color: 'var(--primary)', fontFamily: 'monospace', fontWeight: 'bold', fontSize: '20px'}}>{user.username}</p>
-                            <p style={{color: 'var(--warning)'}}>Tu solicitud de afición ha sido guardada con éxito.</p>
-                            <p style={{color: 'var(--text-muted)', fontSize: '16px'}}>Pídele al administrador de tu sede que acepte tu solicitud en la base de datos para poder ingresar.</p>
-                            <button className="btn btn-secondary" style={{marginTop: '15px'}} onClick={cerrarSesionApp}>Volver al Inicio</button>
-                        </div>
-                    </div>
-                );
-            }
-
-            return (
-                <div className="app-container">
-                    {mostrarAliento && (
-                        <div className="popup-overlay">
-                            <div className="popup-card">
-                                <div style={{fontSize: '55px'}}>❤️</div>
-                                <h2>Un paso a la vez</h2>
-                                <p style={{lineHeight: '1.6'}}>Tu avance anterior no se pierde, hoy es un nuevo comienzo. Mantente fuerte por las próximas 24 horas.</p>
-                                <div style={{background: '#020617', padding: '14px', borderRadius: '12px', textAlign: 'left', margin: '15px 0'}}>
-                                    <strong style={{color: 'var(--warning)'}}>Sugerencia de lectura:</strong>
-                                    <p style={{margin: '4px 0 0 0', fontSize: '17px'}}>{lecturaRecomendada}</p>
-                                </div>
-                                <button className="btn btn-success" onClick={() => setMostrarAliento(false)}>Aceptar y Continuar</button>
-                            </div>
-                        </div>
-                    )}
-                    <div className="header">
-                        <h1>{user.grupoNombre}</h1>
-                        <span style={{color: 'var(--accent)', fontWeight: 'bold'}}>{user.nombreReal} {user.rol === 'admin' && "(Admin)"}</span>
-                    </div>
-                    <div className="main-content">
-                        {activeTab === "inicio" && (
-                            <div>
-                                <div className="card" style={{textAlign: 'center', borderColor: 'var(--warning)'}}>
-                                    <h3 style={{margin: 0, color: 'var(--warning)'}}>Mi Meta de Hoy</h3>
-                                    <p style={{fontSize: '32px', fontWeight: 'bold', color: '#10b981', margin: '5px 0'}}>¡Solo por Hoy!</p>
-                                </div>
-                                <h3>Mis Indicadores de Progreso</h3>
-                                {Object.keys(misAdicciones).length === 0
-                                    ? <p style={{color: 'var(--text-muted)'}}>No tienes contadores activos.</p>
-                                    : Object.keys(misAdicciones).map(ad => {
-                                        const dias = calcularDias(misAdicciones[ad]);
-                                        const porcentaje = Math.min((dias / 90) * 100, 100);
-                                        return (
-                                            <div key={ad} className="card">
-                                                <div className="progress-container">
-                                                    <div className="progress-label">
-                                                        <span>Libre de {ad}</span>
-                                                        <span style={{color: 'var(--accent)', fontSize: '24px'}}>{dias} Días</span>
-                                                    </div>
-                                                    <div className="progress-bar-bg">
-                                                        <div className="progress-bar-fill" style={{width: (porcentaje || 4) + "%"}}></div>
-                                                    </div>
-                                                </div>
-                                                <button className="btn btn-danger" style={{padding: '12px', fontSize: '16px'}} onClick={() => registrarRecaida(ad)}>
-                                                    Registrar Recaída / Reiniciar
-                                                </button>
-                                            </div>
-                                        );
-                                    })
-                                }
-                            </div>
-                        )}
-                        {activeTab === "pasos" && (
-                            <div>
-                                <h3>Los 12 Pasos</h3>
-                                <p style={{fontSize: '16px', color: 'var(--text-muted)', marginBottom: '15px'}}>Toca el paso en el que te encuentras trabajando:</p>
-                                {PASOS_AA.map((texto, i) => {
-                                    const num = i + 1;
-                                    const activo = pasoActual === num;
-                                    return (
-                                        <div key={num} className={"paso-row" + (activo ? " completado" : "")} onClick={() => cambiarPaso(num)}>
-                                            <div className="paso-numero">{num}</div>
-                                            <div style={{fontSize: '17px', lineHeight: '1.4'}}>{texto}</div>
-                                            <div className={"star-icon" + (activo ? " active" : "")}>★</div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
-                        {activeTab === "eventos" && (
-                            <div>
-                                <h3>Próximos Eventos y Reuniones</h3>
-                                {user.rol === 'admin' && (
-                                    <div className="card" style={{borderColor: 'var(--primary)'}}>
-                                        <h4 style={{color: 'var(--primary)'}}>Crear Evento (Admin)</h4>
-                                        <form onSubmit={crearEventoAdmin}>
-                                            <input type="text" className="input-field" placeholder="Título del Evento" value={evTitulo} onChange={e => setEvTitulo(e.target.value)} />
-                                            <input type="date" className="input-field" value={evFecha} onChange={e => setEvFecha(e.target.value)} />
-                                            <input type="text" className="input-field" placeholder="Hora (ej: 20:00 Hrs)" value={evHora} onChange={e => setEvHora(e.target.value)} />
-                                            <input type="text" className="input-field" placeholder="Dirección / Lugar" value={evLugar} onChange={e => setEvLugar(e.target.value)} />
-                                            <input type="number" step="any" className="input-field" placeholder="Latitud (Opcional)" value={evLat} onChange={e => setEvLat(e.target.value)} />
-                                            <input type="number" step="any" className="input-field" placeholder="Longitud (Opcional)" value={evLon} onChange={e => setEvLon(e.target.value)} />
-                                            <textarea className="input-field" placeholder="Nota adicional..." value={evNota} onChange={e => setEvNota(e.target.value)} style={{height: '80px', resize: 'none'}} />
-                                            <button type="submit" className="btn btn-success">Publicar Evento</button>
-                                        </form>
-                                    </div>
-                                )}
-                                {eventos.length === 0
-                                    ? <p style={{color: 'var(--text-muted)'}}>No hay eventos programados.</p>
-                                    : eventos.map(ev => {
-                                        const mapUrl = ev.latitud 
-                                            ? `https://www.google.com/maps/search/?api=1&query=${ev.latitud},${ev.longitud}` 
-                                            : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.lugar)}`;
-                                        return (
-                                            <div key={ev.id} className="evento-item" style={{flexDirection: 'column', alignItems: 'flex-start'}}>
-                                                <div style={{width: '100%', marginBottom: '10px'}}>
-                                                    <span style={{color: 'var(--warning)', fontSize: '14px', fontWeight: 'bold'}}>{ev.fecha} - {ev.hora}</span>
-                                                    <h4 style={{margin: '4px 0', fontSize: '20px'}}>{ev.titulo}</h4>
-                                                    <p style={{margin: '2px 0', fontSize: '16px', color: 'var(--text-muted)'}}>📍 {ev.lugar}</p>
-                                                    {ev.nota && <p style={{margin: '6px 0 0 0', fontSize: '15px', color: '#94a3b8'}}><i>Nota: {ev.nota}</i></p>}
-                                                </div>
-                                                <a href={mapUrl} target="_blank" rel="noreferrer" className="btn btn-secondary" style={{padding: '10px', fontSize: '16px', width: '100%'}}>Ver en Google Maps</a>
-                                            </div>
-                                        );
-                                    })
-                                }
-                            </div>
-                        )}
-                        {activeTab === "biblioteca" && (
-                            <div>
-                                <h3>Biblioteca del Grupo</h3>
-                                {user.rol === 'admin' && (
-                                    <div className="card" style={{borderColor: 'var(--primary)'}}>
-                                        <h4 style={{color: 'var(--primary)'}}>Subir Recurso (Admin)</h4>
-                                        <form onSubmit={subirMaterial}>
-                                            <input type="text" className="input-field" placeholder="Título del archivo o video" value={nuevoTitulo} onChange={e => setNuevoTitulo(e.target.value)} />
-                                            <input type="text" className="input-field" placeholder="Enlace (URL de Drive, Youtube, etc.)" value={nuevoLink} onChange={e => setNuevoLink(e.target.value)} />
-                                            <select className="select-field" value={nuevoTipo} onChange={e => setNuevoTipo(e.target.value)}>
-                                                <option value="Documento">PDF / Documento</option>
-                                                <option value="Audio">Audio / Grabación</option>
-                                                <option value="Video">Video / Canal</option>
-                                            </select>
-                                            <button type="submit" className="btn btn-success">Publicar Material</button>
-                                        </form>
-                                    </div>
-                                )}
-                                {biblioteca.length === 0
-                                    ? <p style={{color: 'var(--text-muted)'}}>No hay material disponible todavía.</p>
-                                    : biblioteca.map(b => (
-                                        <div key={b.id} className="biblioteca-item">
-                                            <div>
-                                                <strong>{b.titulo}</strong>
-                                                <div style={{fontSize: '14px', color: 'var(--text-muted)'}}>{b.tipo}</div>
-                                            </div>
-                                            <a href={b.link} target="_blank" rel="noreferrer" className="btn" style={{width: 'auto', padding: '10px 20px', textDecoration: 'none', fontSize: '16px'}}>Abrir</a>
-                                        </div>
-                                    ))
-                                }
-                            </div>
-                        )}
-                        {activeTab === "perfil" && (
-                            <div>
-                                <div className="card" style={{textAlign: 'center'}}>
-                                    <h3>Mi Información</h3>
-                                    <p><strong>Identificador de Entrada:</strong><br/><span style={{color: 'var(--primary)'}}>{user.username}</span></p>
-                                    <p style={{fontSize: '15px', color: 'var(--text-muted)'}}>Su teléfono recordará la cuenta de forma automática al abrir la aplicación.</p>
-                                    <button className="btn btn-danger" style={{marginTop: '25px'}} onClick={cerrarSesionApp}>Cerrar Sesión</button>
-                                </div>
-                                {user.rol === 'admin' && (
-                                    <div className="card" style={{borderColor: 'var(--warning)', marginTop: '20px', textAlign: 'left'}}>
-                                        <h3 style={{margin: '0 0 10px 0', color: 'var(--warning)', fontSize: '22px'}}>Gestión de Hábitos (Admin)</h3>
-                                        <form onSubmit={crearHabitoAdmin}>
-                                            <label style={{fontSize: '16px', fontWeight: 'bold'}}>Nombre del Hábito:</label>
-                                            <input type="text" className="input-field" placeholder="Ej: Meditación, Lectura" value={nuevoHabitoNombre} onChange={e => setNuevoHabitoNombre(e.target.value)} />
-                                            <label style={{fontSize: '16px', fontWeight: 'bold'}}>URL de la Imagen / Icono:</label>
-                                            <input type="url" className="input-field" placeholder="https://enlace.com/imagen.png" value={nuevoHabitoImagen} onChange={e => setNuevoHabitoImagen(e.target.value)} />
-                                            <button type="submit" className="btn btn-success" style={{fontSize: '18px', padding: '12px'}}>Guardar Hábito</button>
-                                        </form>
-                                        <h4 style={{marginTop: '25px', marginBottom: '5px', fontSize: '18px'}}>Hábitos Existentes</h4>
-                                        {habitosLista.length === 0
-                                            ? <p style={{fontSize: '15px', color: 'var(--text-muted)'}}>No hay hábitos guardados.</p>
-                                            : <div className="admin-habitos-grid">
-                                                {habitosLista.map(h => (
-                                                    <div key={h.id} className="admin-habito-card">
-                                                        <img src={h.imagen_url} alt={h.nombre} onError={e => { e.target.src = 'https://cdn-icons-png.flaticon.com/512/1043/1043469.png'; }} />
-                                                        <div>{h.nombre}</div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        }
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
-                    <div className="navbar">
-                        <div className={"nav-item" + (activeTab === 'inicio' ? ' active' : '')} onClick={() => setActiveTab("inicio")}>
-                            <div className="nav-icon">📊</div><span>Progreso</span>
-                        </div>
-                        <div className={"nav-item" + (activeTab === 'pasos' ? ' active' : '')} onClick={() => setActiveTab("pasos")}>
-                            <div className="nav-icon">⭐</div><span>12 Pasos</span>
-                        </div>
-                        <div className={"nav-item" + (activeTab === 'eventos' ? ' active' : '')} onClick={() => setActiveTab("eventos")}>
-                            <div className="nav-icon">📅</div><span>Eventos</span>
-                        </div>
-                        <div className={"nav-item" + (activeTab === 'biblioteca' ? ' active' : '')} onClick={() => setActiveTab("biblioteca")}>
-                            <div className="nav-icon">📚</div><span>Biblioteca</span>
-                        </div>
-                        <div className={"nav-item" + (activeTab === 'perfil' ? ' active' : '')} onClick={() => setActiveTab("perfil")}>
-                            <div className="nav-icon">👤</div><span>Perfil</span>
-                        </div>
-                    </div>
-                </div>
-            );
-        }
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render((<App />));
-    </script>
-</body>
-</html>
+            const
