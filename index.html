@@ -59,6 +59,8 @@
         const SUPABASE_KEY = "sb_publishable_8NSIOBCEbc4_mM9KWMKJvA_MPWW5Cv3";
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        const CLAVE_SECRETA_ADMIN = "1234"; // <-- Esta es tu contraseña secreta para el rol Admin
+
         const GRUPOS = [
           { id: "san-jose-renca", nombre: "SAN JOSE DE RENCA" },
           { id: "grupo-esperanza", nombre: "GRUPO ESPERANZA" }
@@ -98,11 +100,12 @@
             const [sede, setSede] = React.useState("");
             const [whatsapp, setWhatsapp] = React.useState("");
             const [rol, setRol] = React.useState("basico");
+            const [claveAdminIngresada, setClaveAdminIngresada] = React.useState("");
             const [checks, setChecks] = React.useState({});
             const [fechas, setFechas] = React.useState({});
             const [loginUsername, setLoginUsername] = React.useState("");
             
-            // Estados Formularios Admin
+            // Estados Admin
             const [nuevoTitulo, setNuevoTitulo] = React.useState("");
             const [nuevoTipo, setNuevoTipo] = React.useState("Documento");
             const [nuevoLink, setNuevoLink] = React.useState("");
@@ -146,6 +149,11 @@
             const registrarCuenta = async (e) => {
                 e.preventDefault();
                 if (!nombre || !sede) return alert("Por favor complete los campos obligatorios");
+                
+                if (rol === "admin" && claveAdminIngresada !== CLAVE_SECRETA_ADMIN) {
+                    return alert("Código de Autorización Admin Incorrecto. No puede registrarse como administrador.");
+                }
+
                 const grupoSel = GRUPOS.find(g => g.id === sede);
                 const uid = nombre.replace(/\s+/g, "") + "_" + grupoSel.id;
                 
@@ -171,7 +179,7 @@
                         grupo_id: sede, 
                         grupo_nombre: grupoSel.nombre, 
                         rol: rol, 
-                        estado: 'pendiente', 
+                        estado: rol === 'admin' ? 'autorizado' : 'pendiente', 
                         adicciones: adiccionesConfig, 
                         telefonos: telefonosJSON,
                         paso_actual: 1 
@@ -179,7 +187,7 @@
                     
                     const { error } = await supabase.from('usuarios').insert([nuevoUsuario]);
                     if (error) {
-                        alert("ERROR: " + error.message);
+                        alert("ERROR DE SUPABASE: " + error.message);
                     } else {
                         setUser({ username: uid, nombreReal: nombre, grupoId: sede, grupoNombre: grupoSel.nombre, rol, estado: nuevoUsuario.estado });
                         setMisAdicciones(adiccionesConfig);
@@ -286,6 +294,13 @@
                                     <option value="basico">Miembro de la Sede</option>
                                     <option value="admin">Administrador autorizado</option>
                                 </select>
+
+                                {rol === "admin" && (
+                                    <div>
+                                        <label style={{color: 'var(--warning)', fontWeight: 'bold', fontSize: '16px'}}>Palabra Secreta / Clave Admin:</label>
+                                        <input type="password" className="input-field" style={{borderColor: 'var(--warning)'}} placeholder="Escriba la clave secreta admin" value={claveAdminIngresada} onChange={e => setClaveAdminIngresada(e.target.value)} />
+                                    </div>
+                                )}
 
                                 <h4 style={{color: 'var(--warning)', fontSize: '18px', marginBottom: '10px'}}>Padecimientos iniciales:</h4>
                                 {ADICCIONES_DISPONIBLES.map(ad => (
@@ -419,8 +434,8 @@
                                     ? <p style={{color: 'var(--text-muted)'}}>No hay eventos programados.</p>
                                     : eventos.map(ev => {
                                         const mapUrl = ev.latitud 
-                                            ? `https://www.google.com/maps/search/?api=1&query=${ev.latitud},${ev.longitud}` 
-                                            : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.lugar)}`;
+                                            ? `http://googleusercontent.com/maps.google.com/maps?q=${ev.latitud},${ev.longitud}` 
+                                            : `http://googleusercontent.com/maps.google.com/maps?q=${encodeURIComponent(ev.lugar)}`;
                                         return (
                                             <div key={ev.id} className="evento-item" style={{flexDirection: 'column', alignItems: 'flex-start'}}>
                                                 <div style={{width: '100%', marginBottom: '10px'}}>
