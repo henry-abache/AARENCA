@@ -80,7 +80,7 @@
         .evento-card { background: #1e293b; border-radius: 16px; padding: 20px; margin-bottom: 15px; border-left: 5px solid var(--primary); border-top: 1px solid #334155; border-right: 1px solid #334155; border-bottom: 1px solid #334155; }
         .evento-titulo { font-size: 22px; font-weight: bold; color: #fff; margin-bottom: 6px; }
         .evento-meta { font-size: 15px; color: var(--warning); margin-bottom: 8px; font-weight: 500; }
-        .evento-desc { font-size: 16px; color: var(--text-muted); line-height: 1.4; margin: 5px 0 0 0; }
+        .evento-desc { font-size: 16px; color: var(--text-muted); line-height: 1.4; margin: 5px 0 10px 0; }
     </style>
 </head>
 <body>
@@ -157,12 +157,33 @@
             const [mostrarHistorialRechazados, setMostrarHistorialRechazados] = React.useState(false);
             const [cargandoSolicitudes, setCargandoSolicitudes] = React.useState(false);
 
+            // AUTO-LOGIN: Cargar usuario guardado al abrir la aplicación
+            React.useEffect(() => {
+                const usuarioGuardado = localStorage.getItem("sesion_usuario_aa");
+                if (usuarioGuardado) {
+                    comprobarYEntrarID(usuarioGuardado);
+                }
+            }, []);
+
             React.useEffect(() => {
                 if (!user) return;
                 cargarDatosNube();
                 const interval = setInterval(cargarDatosNube, 6000);
                 return () => clearInterval(interval);
             }, [user]);
+
+            async function comprobarYEntrarID(idABuscar) {
+                try {
+                    const { data } = await supabase.from('usuarios').select('*').eq('username', idABuscar).maybeSingle();
+                    if (data) {
+                        setUser({ username: data.username, nombreReal: data.nombre_real, grupoId: data.grupo_id, grupoNombre: data.grupo_nombre, rol: data.rol, estado: data.estado });
+                        setMisAdicciones(data.adicciones || {});
+                        setPasoActual(data.paso_actual || 1);
+                        setMiTelefonoActual(data.telefono || "");
+                        localStorage.setItem("sesion_usuario_aa", data.username);
+                    }
+                } catch(e) {}
+            }
 
             async function cargarDatosNube() {
                 try {
@@ -237,6 +258,11 @@
                 setCargandoSolicitudes(false);
             };
 
+            const locCerrarSesion = () => {
+                localStorage.removeItem("sesion_usuario_aa");
+                setUser(null);
+            };
+
             const rechazarUsuario = async (username) => {
                 const confirmar = confirm("¿Rechazar solicitud?");
                 if (!confirmar) return;
@@ -256,27 +282,28 @@
                 if (rol === 'admin' && codigoAdmin.trim() !== CODIGO_SECRETO_ADMIN) {
                     return alert("❌ Código incorrecto.");
                 }
-                const grupoSel = GRUPOS.find(g => g.id === sede);
-                const uid = nombre.replace(/\s+/g, "") + "_" + grupoSel.id;
-                const adiccionesConfig = {};
                 
-                ADICCIONES_DISPONIBLES.forEach(ad => {
-                    if (checks[ad]) adiccionesConfig[ad] = fechas[ad] || new Date().toISOString().split('T')[0];
-                });
+                const grupoSel = GRUPOS.find(g => g.id === sede);
+                // El ID único junta el nombre y el ID de la sede
+                const uid = nombre.trim().replace(/\s+/g, "") + "_" + grupoSel.id;
                 
                 try {
+                    // VALIDACIÓN COMPLETA: Verificar si este usuario exacto ya existe en esta sede
                     const { data: usuarioExistente } = await supabase.from('usuarios').select('*').eq('username', uid).maybeSingle();
                     if (usuarioExistente) {
-                        setUser({ username: usuarioExistente.username, nombreReal: usuarioExistente.nombre_real, grupoId: usuarioExistente.grupo_id, grupoNombre: usuarioExistente.grupo_nombre, rol: usuarioExistente.rol, estado: usuarioExistente.estado });
-                        setMisAdicciones(usuarioExistente.adicciones || {});
-                        setPasoActual(usuarioExistente.paso_actual || 1);
-                        setMiTelefonoActual(usuarioExistente.telefono || "");
-                        return;
+                        return alert("⚠️ Error: Ya existe un usuario registrado con este mismo nombre en la sede " + grupoSel.nombre + ". Intenta agregando tu apellido o un alias diferente.");
                     }
-                    const nuevoUsuario = { username: uid, nombre_real: nombre, grupo_id: sede, grupo_nombre: grupoSel.nombre, rol: rol, estado: rol === 'admin' ? 'aprobado' : 'pendiente', adicciones: adiccionesConfig, paso_actual: 1, telefono: telefono.trim() };
+                    
+                    const adiccionesConfig = {};
+                    ADICCIONES_DISPONIBLES.forEach(ad => {
+                        if (checks[ad]) adiccionesConfig[ad] = fechas[ad] || new Date().toISOString().split('T')[0];
+                    });
+                    
+                    const nuevoUsuario = { username: uid, nombre_real: nombre.trim(), grupo_id: sede, grupo_nombre: grupoSel.nombre, rol: rol, estado: rol === 'admin' ? 'aprobado' : 'pendiente', adicciones: adiccionesConfig, paso_actual: 1, telefono: telefono.trim() };
                     const { error } = await supabase.from('usuarios').insert([nuevoUsuario]);
                     if (!error) {
-                        setUser({ username: uid, nombreReal: nombre, grupoId: sede, grupoNombre: grupoSel.nombre, rol, estado: nuevoUsuario.estado });
+                        localStorage.setItem("sesion_usuario_aa", uid); // Recordar sesión
+                        setUser({ username: uid, nombreReal: nombre.trim(), grupoId: sede, grupoNombre: grupoSel.nombre, rol, estado: nuevoUsuario.estado });
                         setMisAdicciones(adiccionesConfig);
                         setMiTelefonoActual(telefono.trim());
                     }
@@ -286,8 +313,9 @@
             const entrarCuenta = async (e) => {
                 e.preventDefault();
                 if (!loginUsername) return;
-                const { data } = await supabase.from('usuarios').select('*').eq('username', loginUsername).maybeSingle();
+                const { data } = await supabase.from('usuarios').select('*').eq('username', loginUsername.trim()).maybeSingle();
                 if (data) {
+                    localStorage.setItem("sesion_usuario_aa", data.username); // Recordar sesión
                     setUser({ username: data.username, nombreReal: data.nombre_real, grupoId: data.grupo_id, grupoNombre: data.grupo_nombre, rol: data.rol, estado: data.estado });
                     setMisAdicciones(data.adicciones || {});
                     setPasoActual(data.paso_actual || 1);
@@ -399,7 +427,7 @@
                             <h2>Cuenta en Revisión</h2>
                             <p>Tu identificador de entrada es:</p>
                             <p style={{background: '#020617', padding: '15px', borderRadius: '10px', color: 'var(--primary)', fontWeight: 'bold'}}>{user.username}</p>
-                            <button className="btn btn-secondary" onClick={() => setUser(null)}>Volver</button>
+                            <button className="btn btn-secondary" onClick={locCerrarSesion}>Volver al Inicio</button>
                         </div>
                     </div>
                 );
@@ -412,7 +440,7 @@
                             <div style={{fontSize: '55px'}}>❌</div>
                             <h2>Acceso Denegado</h2>
                             <p>Tu solicitud ha sido rechazada por el administrador.</p>
-                            <button className="btn btn-secondary" onClick={() => setUser(null)}>Volver</button>
+                            <button className="btn btn-secondary" onClick={locCerrarSesion}>Volver al Inicio</button>
                         </div>
                     </div>
                 );
@@ -487,6 +515,10 @@
                                         </button>
                                     </div>
                                 )}
+                                
+                                <button className="btn btn-secondary" style={{marginTop: '40px', padding: '12px', fontSize: '16px'}} onClick={locCerrarSesion}>
+                                    🚪 Cerrar Sesión en este Teléfono
+                                </button>
                             </div>
                         )}
                         {activeTab === "pasos" && (
@@ -543,7 +575,7 @@
                         )}
                         {activeTab === "eventos" && (
                             <div>
-                                <h3>Próximos Eventos</h3>
+                                <h3>Próximos Eventos y Reuniones</h3>
                                 {user.rol === 'admin' && (
                                     <form onSubmit={crearEvento} className="card" style={{borderColor: 'var(--accent)'}}>
                                         <h4 style={{margin: '0 0 10px 0', color: 'var(--accent)'}}>Organizar Nuevo Evento</h4>
@@ -564,7 +596,15 @@
                                         <div key={ev.id} className="evento-card">
                                             <div className="evento-titulo">{ev.titulo}</div>
                                             <div className="evento-meta">🗓️ {ev.fecha} — ⏰ {ev.hora}</div>
-                                            {ev.direccion && <div style={{fontSize:'14px', color:'#fde68a', marginBottom:'4px'}}>📍 {ev.direccion}</div>}
+                                            {ev.direccion && (
+                                                <div style={{marginBottom:'10px'}}>
+                                                    <div style={{fontSize:'16px', color:'#fde68a', marginBottom:'6px'}}>📍 {ev.direccion}</div>
+                                                    {/* MAPS LINK ENLACE GENERADO */}
+                                                    <a href={"https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(ev.direccion)} target="_blank" rel="noreferrer" className="btn btn-success btn-sm" style={{fontSize:'14px', padding:'6px 12px'}}>
+                                                        🗺️ Ver en Google Maps
+                                                    </a>
+                                                </div>
+                                            )}
                                             {ev.descripcion && <p className="evento-desc">{ev.descripcion}</p>}
                                         </div>
                                     ))
@@ -587,7 +627,7 @@
                                 ))}
                                 
                                 <div className="acordeon-btn" onClick={() => setMostrarHistorialRechazados(!mostrarHistorialRechazados)}>
-                                    {mostrarHistorialRechazados ? "⬇️ Ocultar Rechazados" : "➡️ Ver Historial de Rechazados (" + solicitudesRechazadas.length + ")"}
+                                    {mostrarHistorialRechazados ? "⬇️ Ocultar Reichazados" : "➡️ Ver Historial de Rechazados (" + solicitudesRechazadas.length + ")"}
                                 </div>
                                 {mostrarHistorialRechazados && (
                                     <div className="acordeon-contenido">
