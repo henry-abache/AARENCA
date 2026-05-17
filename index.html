@@ -1,9 +1,16 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<link rel="manifest" href="manifest.json">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nueva Vida - Alcohólicos Anónimos</title>
+    <link rel="icon" type="image/png" href="https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/AA_logo.svg/240px-AA_logo.svg.png">
+    <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/AA_logo.svg/240px-AA_logo.svg.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Nueva Vida AA">
+    <meta name="theme-color" content="#0f172a">
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -21,10 +28,11 @@
         .main-content { flex: 1; padding: 20px; overflow-y: auto; }
         .card { background-color: var(--card-dark); border-radius: 20px; padding: 24px; margin-bottom: 20px; border: 2px solid #334155; }
         .input-field, .select-field { width: 100%; padding: 16px; background-color: #0f172a; border: 2px solid #475569; border-radius: 14px; color: white; font-size: 18px; margin-top: 8px; margin-bottom: 20px; box-sizing: border-box; }
-        .btn { background-color: var(--primary); color: white; border: none; padding: 18px; border-radius: 16px; font-size: 20px; font-weight: bold; cursor: pointer; width: 100%; display: block; }
+        .btn { background-color: var(--primary); color: white; border: none; padding: 18px; border-radius: 16px; font-size: 20px; font-weight: bold; cursor: pointer; width: 100%; display: block; text-align: center; text-decoration: none; }
         .btn-danger { background-color: var(--danger); }
         .btn-success { background-color: var(--accent); }
         .btn-secondary { background-color: #475569; }
+        .btn-sm { padding: 10px 18px; font-size: 16px; width: auto; border-radius: 12px; display: inline-block; }
         .checkbox-group { background: #0f172a; padding: 14px; border-radius: 14px; margin-bottom: 15px; border: 2px solid #334155; }
         .checkbox-label { display: flex; align-items: center; font-size: 21px; cursor: pointer; }
         .checkbox-custom { width: 28px; height: 28px; margin-right: 15px; }
@@ -42,13 +50,28 @@
         .popup-card { background: var(--card-dark); border-radius: 24px; padding: 30px; text-align: center; max-width: 410px; border: 3px solid var(--warning); }
         .biblioteca-item { background: #0f172a; padding: 18px; border-radius: 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; border: 2px solid #334155; }
         .navbar { position: absolute; bottom: 0; left: 0; right: 0; height: 90px; background-color: var(--card-dark); border-top: 2px solid #334155; display: flex; justify-content: space-around; align-items: center; }
-        .nav-item { color: var(--text-muted); cursor: pointer; text-align: center; font-size: 15px; font-weight: bold; }
+        .nav-item { color: var(--text-muted); cursor: pointer; text-align: center; font-size: 13px; font-weight: bold; flex: 1; }
         .nav-item.active { color: var(--primary); }
-        .nav-icon { font-size: 28px; margin-bottom: 2px; }
-        .admin-habitos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 15px; }
-        .admin-habito-card { background: #0f172a; padding: 10px; border-radius: 12px; border: 1px solid #334155; text-align: center; }
-        .admin-habito-card img { width: 45px; height: 45px; object-fit: cover; border-radius: 8px; margin-bottom: 5px; }
-        .admin-habito-card div { font-size: 15px; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .nav-icon { font-size: 24px; margin-bottom: 2px; }
+
+        /* Estilos optimizados para la Administración */
+        .solicitud-card { background: #1e293b; border-radius: 16px; padding: 18px; margin-bottom: 14px; border: 2px solid #d97706; }
+        .solicitud-card.rechazada { border-color: #64748b; background: #0f172a; opacity: 0.8; }
+        .solicitud-nombre { font-size: 20px; font-weight: bold; margin-bottom: 4px; color: #fff; }
+        .solicitud-info { font-size: 15px; color: var(--text-muted); margin-bottom: 6px; }
+        .solicitud-actions { display: flex; gap: 12px; margin-top: 10px; }
+        .badge-pendiente { background: #92400e; color: #fde68a; font-size: 13px; padding: 3px 10px; border-radius: 20px; display: inline-block; margin-bottom: 8px; }
+        .badge-rechazado { background: #334155; color: #cbd5e1; font-size: 13px; padding: 3px 10px; border-radius: 20px; display: inline-block; margin-bottom: 8px; }
+        
+        .acordeon-btn { background: #334155; color: #fff; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; text-align: center; margin-top: 25px; border: 1px solid #475569; }
+        .acordeon-contenido { background: #0b111e; padding: 15px; border-radius: 0 0 14px 14px; border: 2px solid #334155; border-top: none; }
+
+        /* Estilos para el Directorio */
+        .directorio-sede-seccion { margin-top: 20px; }
+        .directorio-sede-titulo { background: #334155; color: #fde68a; padding: 8px 16px; border-radius: 10px; font-size: 16px; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; }
+        .directorio-contacto { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .directorio-nombre { font-weight: bold; font-size: 18px; }
+        .directorio-rol { font-size: 13px; color: var(--text-muted); background: #1e293b; padding: 2px 8px; border-radius: 10px; margin-left: 6px; display: inline-block; }
     </style>
 </head>
 <body>
@@ -90,20 +113,29 @@
             const [misAdicciones, setMisAdicciones] = React.useState({});
             const [pasoActual, setPasoActual] = React.useState(1);
             const [biblioteca, setBiblioteca] = React.useState([]);
+            const [directorioUsuarios, setDirectorioUsuarios] = React.useState([]);
             const [mostrarAliento, setMostrarAliento] = React.useState(false);
             const [lecturaRecomendada, setLecturaRecomendada] = React.useState("");
             const [nombre, setNombre] = React.useState("");
             const [sede, setSede] = React.useState("");
+            const [telefono, setTelefono] = React.useState("");
+            const [miTelefonoActual, setMiTelefonoActual] = React.useState("");
             const [rol, setRol] = React.useState("basico");
+            const [mostrarCampoAdmin, setMostrarCampoAdmin] = React.useState(false);
+            const [codigoAdmin, setCodigoAdmin] = React.useState("");
+            
+            const CODIGO_SECRETO_ADMIN = "felices24";
             const [checks, setChecks] = React.useState({});
             const [fechas, setFechas] = React.useState({});
             const [loginUsername, setLoginUsername] = React.useState("");
             const [nuevoTitulo, setNuevoTitulo] = React.useState("");
             const [nuevoTipo, setNuevoTipo] = React.useState("Documento");
             const [nuevoLink, setNuevoLink] = React.useState("");
-            const [habitosLista, setHabitosLista] = React.useState([]);
-            const [nuevoHabitoNombre, setNuevoHabitoNombre] = React.useState("");
-            const [nuevoHabitoImagen, setNuevoHabitoImagen] = React.useState("");
+
+            const [solicitudesPendientes, setSolicitudesPendientes] = React.useState([]);
+            const [solicitudesRechazadas, setSolicitudesRechazadas] = React.useState([]);
+            const [mostrarHistorialRechazados, setMostrarHistorialRechazados] = React.useState(false);
+            const [cargandoSolicitudes, setCargandoSolicitudes] = React.useState(false);
 
             React.useEffect(() => {
                 if (!user) return;
@@ -118,18 +150,94 @@
                     if (uData) {
                         setMisAdicciones(uData.adicciones || {});
                         setPasoActual(uData.paso_actual || 1);
+                        setMiTelefonoActual(uData.telefono || "");
                         setUser(prev => ({ ...prev, estado: uData.estado }));
                     }
                     const { data: bData } = await supabase.from('biblioteca').select('*').eq('grupo_id', user.grupoId).order('id', { ascending: false });
                     if (bData) setBiblioteca(bData);
-                    const { data: hData } = await supabase.from('habitos').select('*').order('nombre', { ascending: true });
-                    if (hData) setHabitosLista(hData);
+
+                    // Traer todos los aprobados y administradores para el Directorio Global ordenados por Sede
+                    const { data: dData } = await supabase.from('usuarios').select('nombre_real, grupo_nombre, grupo_id, telefono, rol').eq('estado', 'aprobado').order('grupo_nombre', { ascending: true });
+                    if (dData) setDirectorioUsuarios(dData);
+
+                    if (user.rol === 'admin') {
+                        // Traer pendientes
+                        const { data: pendientes } = await supabase
+                            .from('usuarios')
+                            .select('*')
+                            .eq('grupo_id', user.grupoId)
+                            .eq('estado', 'pendiente')
+                            .order('username', { ascending: true });
+                        if (pendientes) setSolicitudesPendientes(pendientes);
+
+                        // Traer rechazados
+                        const { data: rechazados } = await supabase
+                            .from('usuarios')
+                            .select('*')
+                            .eq('grupo_id', user.grupoId)
+                            .eq('estado', 'rechazado')
+                            .order('username', { ascending: true });
+                        if (rechazados) setSolicitudesRechazadas(rechazados);
+                    }
                 } catch(e) {}
             }
+
+            const aprobarUsuario = async (username) => {
+                setCargandoSolicitudes(true);
+                const { error } = await supabase
+                    .from('usuarios')
+                    .update({ estado: 'aprobado' })
+                    .eq('username', username);
+                if (!error) {
+                    setSolicitudesPendientes(prev => prev.filter(u => u.username !== username));
+                    setSolicitudesRechazadas(prev => prev.filter(u => u.username !== username));
+                    alert("✅ Usuario aprobado con éxito.");
+                    cargarDatosNube();
+                } else {
+                    alert("Error al aprobar: " + error.message);
+                }
+                setCargandoSolicitudes(false);
+            };
+
+            const actualizarTelefonoPerfil = async (e) => {
+                e.preventDefault();
+                const { error } = await supabase.from('usuarios').update({ telefono: miTelefonoActual }).eq('username', user.username);
+                if (!error) {
+                    alert("📱 Teléfono de contacto guardado correctamente.");
+                    cargarDatosNube();
+                } else {
+                    alert("Error al actualizar: " + error.message);
+                }
+            };
+
+            const rechazarUsuario = async (username) => {
+                const confirmar = confirm("¿Deseas rechazar la solicitud de " + username + "? Pasará a la lista oculta de respaldo.");
+                if (!confirmar) return;
+                setCargandoSolicitudes(true);
+                
+                const { error } = await supabase
+                    .from('usuarios')
+                    .update({ estado: 'rechazado' })
+                    .eq('username', username);
+                    
+                if (!error) {
+                    setSolicitudesPendientes(prev => prev.filter(u => u.username !== username));
+                    alert("❌ Solicitud rechazada. Se movió al historial oculto.");
+                    cargarDatosNube();
+                } else {
+                    alert("Error al rechazar: " + error.message);
+                }
+                setCargandoSolicitudes(false);
+            };
 
             const registrarCuenta = async (e) => {
                 e.preventDefault();
                 if (!nombre || !sede) return alert("Por favor complete los campos");
+                if (rol === 'admin') {
+                    if (codigoAdmin.trim() !== CODIGO_SECRETO_ADMIN) {
+                        return alert("❌ Código de administrador incorrecto.\nContacta al responsable de tu sede.");
+                    }
+                }
                 const grupoSel = GRUPOS.find(g => g.id === sede);
                 const uid = nombre.replace(/\s+/g, "") + "_" + grupoSel.id;
                 const adiccionesConfig = {};
@@ -142,15 +250,17 @@
                         setUser({ username: usuarioExistente.username, nombreReal: usuarioExistente.nombre_real, grupoId: usuarioExistente.grupo_id, grupoNombre: usuarioExistente.grupo_nombre, rol: usuarioExistente.rol, estado: usuarioExistente.estado });
                         setMisAdicciones(usuarioExistente.adicciones || {});
                         setPasoActual(usuarioExistente.paso_actual || 1);
+                        setMiTelefonoActual(usuarioExistente.telefono || "");
                         return;
                     }
-                    const nuevoUsuario = { username: uid, nombre_real: nombre, grupo_id: sede, grupo_nombre: grupoSel.nombre, rol: rol, estado: rol === 'admin' ? 'aprobado' : 'pendiente', adicciones: adiccionesConfig, paso_actual: 1 };
+                    const nuevoUsuario = { username: uid, nombre_real: nombre, grupo_id: sede, grupo_nombre: grupoSel.nombre, rol: rol, estado: rol === 'admin' ? 'aprobado' : 'pendiente', adicciones: adiccionesConfig, paso_actual: 1, telefono: telefono.trim() };
                     const { error } = await supabase.from('usuarios').insert([nuevoUsuario]);
                     if (error) {
                         alert("ERROR: " + error.message);
                     } else {
                         setUser({ username: uid, nombreReal: nombre, grupoId: sede, grupoNombre: grupoSel.nombre, rol, estado: nuevoUsuario.estado });
                         setMisAdicciones(adiccionesConfig);
+                        setMiTelefonoActual(telefono.trim());
                     }
                 } catch(err) {
                     alert("Error de conexion: " + err.message);
@@ -165,6 +275,7 @@
                     setUser({ username: data.username, nombreReal: data.nombre_real, grupoId: data.grupo_id, grupoNombre: data.grupo_nombre, rol: data.rol, estado: data.estado });
                     setMisAdicciones(data.adicciones || {});
                     setPasoActual(data.paso_actual || 1);
+                    setMiTelefonoActual(data.telefono || "");
                 } else {
                     alert("Identificador no encontrado.");
                 }
@@ -193,24 +304,17 @@
                 if (!error) { setNuevoTitulo(""); setNuevoLink(""); cargarDatosNube(); alert("Publicado con exito"); }
             };
 
-            const crearHabitoAdmin = async (e) => {
-                e.preventDefault();
-                if (!nuevoHabitoNombre || !nuevoHabitoImagen) return alert("Escribe nombre y URL de imagen");
-                const seguro = confirm("Crear habito: " + nuevoHabitoNombre.toUpperCase() + "?");
-                if (!seguro) return;
-                const { error } = await supabase.from('habitos').insert([{ nombre: nuevoHabitoNombre.trim(), imagen_url: nuevoHabitoImagen.trim() }]);
-                if (error) {
-                    alert(error.code === '23505' ? "El habito ya existe." : "Error: " + error.message);
-                } else {
-                    alert("Habito creado!"); setNuevoHabitoNombre(""); setNuevoHabitoImagen(""); cargarDatosNube();
-                }
-            };
-
             const calcularDias = (fechaStr) => {
                 if (!fechaStr) return 0;
                 const dias = Math.floor((new Date() - new Date(fechaStr)) / (1000 * 60 * 60 * 24));
                 return dias < 0 ? 0 : dias;
             };
+
+            // Agrupar los usuarios del directorio por su sede correspondiente
+            const directorioAgrupado = GRUPOS.map(grupo => {
+                const miembrosDeSede = directorioUsuarios.filter(u => u.grupo_id === grupo.id);
+                return { ...grupo, miembros: miembrosDeSede };
+            });
 
             if (!user) {
                 return (
@@ -219,15 +323,43 @@
                             <h2 style={{textAlign: 'center', color: '#3b82f6', fontSize: '30px'}}>Nueva Vida AA</h2>
                             <form onSubmit={registrarCuenta}>
                                 <h4 style={{color: 'var(--accent)', marginBottom: '5px'}}>1. Registrarse</h4>
-                                <input type="text" className="input-field" placeholder="Su Nombre o Alias" value={nombre} onChange={e => setNombre(e.target.value)} />
+                                <input type="text" className="input-field" placeholder="Su Nombre o Alias (Obligatorio)" value={nombre} onChange={e => setNombre(e.target.value)} />
                                 <select className="select-field" value={sede} onChange={e => setSede(e.target.value)}>
-                                    <option value="">-- Seleccionar Sede --</option>
+                                    <option value="">-- Seleccionar Sede (Obligatorio) --</option>
                                     {GRUPOS.map(g => <option key={g.id} value={g.id}>{g.nombre}</option>)}
                                 </select>
-                                <select className="select-field" value={rol} onChange={e => setRol(e.target.value)}>
-                                    <option value="basico">Miembro de la Sede</option>
-                                    <option value="admin">Administrador autorizado</option>
-                                </select>
+                                
+                                <input type="tel" className="input-field" placeholder="WhatsApp ej: +56912345678 (Opcional)" value={telefono} onChange={e => setTelefono(e.target.value)} />
+
+                                <div style={{textAlign: 'right', marginBottom: '10px'}}>
+                                    <span
+                                        style={{fontSize: '13px', color: '#475569', cursor: 'pointer', textDecoration: 'underline'}}
+                                        onClick={() => { setMostrarCampoAdmin(!mostrarCampoAdmin); setRol("basico"); setCodigoAdmin(""); }}
+                                    >
+                                        ¿Soy administrador autorizado?
+                                    </span>
+                                </div>
+                                {mostrarCampoAdmin && (
+                                    <div style={{background: '#1e1a2e', border: '2px solid #7c3aed', borderRadius: '14px', padding: '16px', marginBottom: '20px'}}>
+                                        <label style={{fontSize: '15px', color: '#a78bfa', fontWeight: 'bold'}}>🔐 Código de Administrador:</label>
+                                        <input
+                                            type="password"
+                                            className="input-field"
+                                            placeholder="Ingrese el código secreto"
+                                            value={codigoAdmin}
+                                            style={{marginBottom: '8px'}}
+                                            onChange={e => {
+                                                setCodigoAdmin(e.target.value);
+                                                setRol(e.target.value === CODIGO_SECRETO_ADMIN ? "admin" : "basico");
+                                            }}
+                                        />
+                                        {codigoAdmin.length > 0 && (
+                                            <div style={{fontSize: '14px', marginTop: '4px', color: rol === 'admin' ? '#4ade80' : '#f87171'}}>
+                                                {rol === 'admin' ? '✅ Código correcto — se registrará como Administrador' : '❌ Código incorrecto'}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                                 <h4 style={{color: 'var(--warning)', fontSize: '18px', marginBottom: '10px'}}>Padecimientos y Ultimo consumo:</h4>
                                 {ADICCIONES_DISPONIBLES.map(ad => (
                                     <div key={ad} className="checkbox-group">
@@ -268,6 +400,19 @@
                 );
             }
 
+            if (user.estado === 'rechazado') {
+                return (
+                    <div className="app-container" style={{padding: '20px', justifyContent: 'center', textAlign: 'center'}}>
+                        <div className="card" style={{borderColor: 'var(--danger)'}}>
+                            <div style={{fontSize: '55px'}}>❌</div>
+                            <h2>Acceso Denegado</h2>
+                            <p style={{color: 'var(--text-muted)'}}>Tu solicitud de registro ha sido rechazada por el administrador de la sede.</p>
+                            <button className="btn btn-secondary" onClick={() => setUser(null)}>Volver al Inicio</button>
+                        </div>
+                    </div>
+                );
+            }
+
             return (
                 <div className="app-container">
                     {mostrarAliento && (
@@ -285,8 +430,9 @@
                         </div>
                     )}
                     <div className="header">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/AA_logo.svg/80px-AA_logo.svg.png" alt="AA" style={{width: '52px', height: '52px', marginBottom: '6px', filter: 'drop-shadow(0 0 6px rgba(255,200,0,0.4))'}} />
                         <h1>{user.grupoNombre}</h1>
-                        <span style={{color: 'var(--accent)', fontWeight: 'bold'}}>{user.nombreReal}</span>
+                        <span style={{color: 'var(--accent)', fontWeight: 'bold'}}>{user.nombreReal} {user.rol === 'admin' ? '(Admin)' : ''}</span>
                     </div>
                     <div className="main-content">
                         {activeTab === "inicio" && (
@@ -295,6 +441,17 @@
                                     <h3 style={{margin: 0, color: 'var(--warning)'}}>Mi Meta de Hoy</h3>
                                     <p style={{fontSize: '32px', fontWeight: 'bold', color: '#10b981', margin: '5px 0'}}>Solo por Hoy!</p>
                                 </div>
+
+                                {/* Nueva Sección para Actualizar el Teléfono Propio */}
+                                <form onSubmit={actualizarTelefonoPerfil} className="card" style={{borderColor: '#475569'}}>
+                                    <h4 style={{margin: '0 0 5px 0', fontSize: '17px', color: 'white'}}>📱 Mi Número de Contacto</h4>
+                                    <p style={{fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 10px 0'}}>Agrégalo para aparecer en el directorio general.</p>
+                                    <div style={{display: 'flex', gap: '8px'}}>
+                                        <input type="tel" className="input-field" style={{marginBottom: 0, marginTop: 0, flex: 1, padding: '12px'}} placeholder="Ej: +56912345678" value={miTelefonoActual} onChange={e => setMiTelefonoActual(e.target.value)} />
+                                        <button type="submit" className="btn btn-success btn-sm" style={{borderRadius: '14px', fontSize: '15px'}}>Guardar</button>
+                                    </div>
+                                </form>
+
                                 <h3>Mis Indicadores de Progreso</h3>
                                 {Object.keys(misAdicciones).length === 0
                                     ? <p style={{color: 'var(--text-muted)'}}>No tienes contadores activos.</p>
@@ -340,91 +497,86 @@
                         )}
                         {activeTab === "biblioteca" && (
                             <div>
-                                <h3>Biblioteca del Grupo</h3>
+                                <h3>Biblioteca de Sede</h3>
                                 {user.rol === 'admin' && (
-                                    <div className="card" style={{borderColor: 'var(--primary)'}}>
-                                        <h4 style={{color: 'var(--primary)'}}>Subir Recurso (Admin)</h4>
-                                        <form onSubmit={subirMaterial}>
-                                            <input type="text" className="input-field" placeholder="Titulo del archivo o video" value={nuevoTitulo} onChange={e => setNuevoTitulo(e.target.value)} />
-                                            <input type="text" className="input-field" placeholder="Enlace (URL de Drive, Youtube, etc.)" value={nuevoLink} onChange={e => setNuevoLink(e.target.value)} />
-                                            <select className="select-field" value={nuevoTipo} onChange={e => setNuevoTipo(e.target.value)}>
-                                                <option value="Documento">PDF / Documento</option>
-                                                <option value="Audio">Audio / Grabacion</option>
-                                                <option value="Video">Video / Canal</option>
-                                            </select>
-                                            <button type="submit" className="btn btn-success">Publicar Material</button>
-                                        </form>
-                                    </div>
+                                    <form onSubmit={subirMaterial} className="card" style={{borderColor: 'var(--primary)'}}>
+                                        <h4 style={{margin:'0 0 10px 0', color:'var(--primary)'}}>Añadir Recurso</h4>
+                                        <input type="text" placeholder="Título del texto" className="input-field" value={nuevoTitulo} onChange={e=>setNuevoTitulo(e.target.value)} />
+                                        <select className="select-field" value={nuevoTipo} onChange={e=>setNuevoTipo(e.target.value)}>
+                                            <option value="Documento">📄 Documento / PDF</option>
+                                            <option value="Audio">🎵 Audio / Reunión</option>
+                                            <option value="Video">🎥 Video Motivacional</option>
+                                        </select>
+                                        <input type="text" placeholder="Enlace URL del recurso" className="input-field" value={nuevoLink} onChange={e=>setNuevoLink(e.target.value)} />
+                                        <button type="submit" className="btn btn-success">Publicar en Sede</button>
+                                    </form>
                                 )}
-                                {biblioteca.length === 0
-                                    ? <p style={{color: 'var(--text-muted)'}}>No hay material disponible todavia.</p>
-                                    : biblioteca.map(b => (
+                                {biblioteca.length === 0 ? (
+                                    <p style={{color:'var(--text-muted)'}}>No hay material publicado para esta sede.</p>
+                                ) : (
+                                    biblioteca.map(b => (
                                         <div key={b.id} className="biblioteca-item">
                                             <div>
-                                                <strong>{b.titulo}</strong>
-                                                <div style={{fontSize: '14px', color: 'var(--text-muted)'}}>{b.tipo}</div>
+                                                <div style={{fontWeight:'bold'}}>{b.titulo}</div>
+                                                <div style={{fontSize:'14px', color:'var(--text-muted)'}}>{b.tipo}</div>
                                             </div>
-                                            <a href={b.link} target="_blank" rel="noreferrer" className="btn" style={{width: 'auto', padding: '10px 20px', textDecoration: 'none', fontSize: '16px'}}>Abrir</a>
+                                            <a href={b.link} target="_blank" rel="noreferrer" className="btn btn-sm var(--primary)" style={{textDecoration:'none', textAlign:'center'}}>Abrir</a>
                                         </div>
                                     ))
-                                }
-                            </div>
-                        )}
-                        {activeTab === "perfil" && (
-                            <div>
-                                <div className="card" style={{textAlign: 'center'}}>
-                                    <h3>Mi Informacion</h3>
-                                    <p><strong>Identificador de Entrada:</strong><br/><span style={{color: 'var(--primary)'}}>{user.username}</span></p>
-                                    <p style={{fontSize: '15px', color: 'var(--text-muted)'}}>Guarde este identificador para volver a entrar desde cualquier celular.</p>
-                                    <button className="btn btn-danger" style={{marginTop: '25px'}} onClick={() => setUser(null)}>Cerrar Sesion</button>
-                                </div>
-                                {user.rol === 'admin' && (
-                                    <div className="card" style={{borderColor: 'var(--warning)', marginTop: '20px', textAlign: 'left'}}>
-                                        <h3 style={{margin: '0 0 10px 0', color: 'var(--warning)', fontSize: '22px'}}>Gestion de Habitos (Admin)</h3>
-                                        <form onSubmit={crearHabitoAdmin}>
-                                            <label style={{fontSize: '16px', fontWeight: 'bold'}}>Nombre del Habito:</label>
-                                            <input type="text" className="input-field" placeholder="Ej: Meditacion, Lectura" value={nuevoHabitoNombre} onChange={e => setNuevoHabitoNombre(e.target.value)} />
-                                            <label style={{fontSize: '16px', fontWeight: 'bold'}}>URL de la Imagen / Icono:</label>
-                                            <input type="url" className="input-field" placeholder="https://enlace.com/imagen.png" value={nuevoHabitoImagen} onChange={e => setNuevoHabitoImagen(e.target.value)} />
-                                            <button type="submit" className="btn btn-success" style={{fontSize: '18px', padding: '12px'}}>Guardar Habito</button>
-                                        </form>
-                                        <h4 style={{marginTop: '25px', marginBottom: '5px', fontSize: '18px'}}>Habitos Existentes</h4>
-                                        {habitosLista.length === 0
-                                            ? <p style={{fontSize: '15px', color: 'var(--text-muted)'}}>No hay habitos guardados.</p>
-                                            : <div className="admin-habitos-grid">
-                                                {habitosLista.map(h => (
-                                                    <div key={h.id} className="admin-habito-card">
-                                                        <img src={h.imagen_url} alt={h.nombre} onError={e => { e.target.src = 'https://cdn-icons-png.flaticon.com/512/1043/1043469.png'; }} />
-                                                        <div>{h.nombre}</div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        }
-                                    </div>
                                 )}
                             </div>
                         )}
-                    </div>
-                    <div className="navbar">
-                        <div className={"nav-item" + (activeTab === 'inicio' ? ' active' : '')} onClick={() => setActiveTab("inicio")}>
-                            <div className="nav-icon">📊</div><span>Progreso</span>
-                        </div>
-                        <div className={"nav-item" + (activeTab === 'pasos' ? ' active' : '')} onClick={() => setActiveTab("pasos")}>
-                            <div className="nav-icon">⭐</div><span>12 Pasos</span>
-                        </div>
-                        <div className={"nav-item" + (activeTab === 'biblioteca' ? ' active' : '')} onClick={() => setActiveTab("biblioteca")}>
-                            <div className="nav-icon">📚</div><span>Biblioteca</span>
-                        </div>
-                        <div className={"nav-item" + (activeTab === 'perfil' ? ' active' : '')} onClick={() => setActiveTab("perfil")}>
-                            <div className="nav-icon">👤</div><span>Perfil</span>
-                        </div>
-                    </div>
-                </div>
-            );
-        }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
-</body>
-</html>
+                        {/* Nueva Pestaña del Directorio Telefónico */}
+                        {activeTab === "directorio" && (
+                            <div>
+                                <h3>Directorio Inter-Sedes</h3>
+                                <p style={{fontSize:'15px', color:'var(--text-muted)', marginBottom: '20px'}}>Haz clic en cualquier compañero que posea un número asignado para iniciar una conversación en WhatsApp.</p>
+                                
+                                {directorioAgrupado.map(grupo => (
+                                    <div key={grupo.id} className="directorio-sede-seccion">
+                                        <div className="directorio-sede-titulo">📍 {grupo.nombre}</div>
+                                        {grupo.miembros.length === 0 ? (
+                                            <p style={{fontSize: '15px', color: 'var(--text-muted)', paddingLeft: '10px'}}>No hay miembros registrados con teléfono en esta sede.</p>
+                                        ) : (
+                                            grupo.miembros.map((m, idx) => {
+                                                const tieneTelefono = m.telefono && m.telefono.trim().length > 0;
+                                                const linkWa = tieneTelefono ? "https://wa.me/" + m.telefono.replace(/[^0-9]/g, "") : null;
+                                                
+                                                return (
+                                                    <div key={idx} className="directorio-contacto">
+                                                        <div>
+                                                            <span className="directorio-nombre">{m.nombre_real}</span>
+                                                            {m.rol === 'admin' && <span className="directorio-rol">Admin</span>}
+                                                            <div style={{fontSize: '14px', color: tieneTelefono ? '#4ade80' : '#64748b', marginTop: '3px'}}>
+                                                                {tieneTelefono ? "📞 " + m.telefono : "❌ Sin teléfono registrado"}
+                                                            </div>
+                                                        </div>
+                                                        {tieneTelefono && (
+                                                            <a href={linkWa} target="_blank" rel="noreferrer" className="btn btn-success btn-sm" style={{padding: '8px 14px', fontSize: '15px', display: 'flex', alignItems: 'center', gap: '5px'}}>
+                                                                💬 Chat
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {activeTab === "admin" && (
+                            <div>
+                                <h3>Panel de Administración</h3>
+                                <p style={{fontSize:'15px', color:'var(--text-muted)'}}>Usuarios esperando aprobación en tu sede:</p>
+                                
+                                {solicitudesPendientes.length === 0 ? (
+                                    <div style={{background: '#0f172a', padding: '15px', borderRadius: '12px', textAlign: 'center', border: '1px solid #334155', color: 'var(--text-muted)'}}>
+                                        No hay solicitudes pendientes de acceso.
+                                    </div>
+                                ) : (
+                                    solicitudesPendientes.map(sol => (
+                                        <div key={sol.username} className="solicitud-card">
+                                            <div className="badge-pendiente">Pendiente de Autorización</div>
+                                            <div className="solicitud-
