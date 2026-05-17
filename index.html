@@ -71,7 +71,10 @@
           { id: "san-jose-renca", nombre: "SAN JOSE DE RENCA" },
           { id: "grupo-esperanza", nombre: "GRUPO ESPERANZA" }
         ];
-        const ADICCIONES_DISPONIBLES = ["Alcohol", "Marihuana", "Cocaina", "Tabaco", "Juego Compulsivo"];
+        
+        // Exclusión del juego compulsivo completada
+        const ADICCIONES_DISPONIBLES = ["Alcohol", "Marihuana", "Cocaina", "Tabaco"];
+        
         const PASOS_AA = [
             "Admitimos que eramos impotentes ante el alcohol y nuestras vidas se habian vuelto ingobernables.",
             "Llegamos a creer que un Poder superior a nosotros mismos podria devolvernos el sano juicio.",
@@ -105,7 +108,6 @@
             const [nombre, setNombre] = React.useState("");
             const [sede, setSede] = React.useState("");
             
-            // +569 por defecto en Chile, pero editable para otros países
             const [whatsapp, setWhatsapp] = React.useState("+569"); 
             
             const [mostrarCampoAdmin, setMostrarCampoAdmin] = React.useState(false);
@@ -115,7 +117,6 @@
             const [fechas, setFechas] = React.useState({});
             const [loginUsername, setLoginUsername] = React.useState("");
             
-            // Estados Admin Internos
             const [nuevoTitulo, setNuevoTitulo] = React.useState("");
             const [nuevoTipo, setNuevoTipo] = React.useState("Documento");
             const [nuevoLink, setNuevoLink] = React.useState("");
@@ -130,7 +131,6 @@
             const [nuevoHabitoNombre, setNuevoHabitoNombre] = React.useState("");
             const [nuevoHabitoImagen, setNuevoHabitoImagen] = React.useState("");
 
-            // EFECTO 1: Auto-Login al arrancar en el teléfono móvil
             React.useEffect(() => {
                 const sesionGuardada = localStorage.getItem("sesion_nueva_vida");
                 if (sesionGuardada) {
@@ -143,7 +143,6 @@
                 }
             }, []);
 
-            // EFECTO 2: Sincronización en la Nube periódica
             React.useEffect(() => {
                 if (!user) return;
                 cargarDatosNube();
@@ -179,21 +178,15 @@
                 e.preventDefault();
                 if (!nombre || !sede) return alert("Por favor complete los campos obligatorios");
                 
-                // LÓGICA DE VALIDACIÓN DEL TELÉFONO WHATSAPP
-                // 1. Limpiamos todos los espacios en blanco que el usuario haya puesto por comodidad
                 const tlfLimpio = whatsapp.replace(/\s+/g, "");
 
                 if (tlfLimpio.trim().length > 0) {
-                    // 2. Debe empezar estrictamente por un '+' seguido de código de país
                     if (!tlfLimpio.startsWith("+")) {
                         return alert("Formato de WhatsApp incorrecto. Debe incluir el símbolo '+' seguido del código internacional de su país (Ejemplo para Chile: +56934449767).");
                     }
-                    // 3. Validar longitud mínima y máxima global (E.164 estándar)
-                    // Un teléfono chileno válido con +569 tiene un mínimo de 12 caracteres (+569XXXXXXXX)
                     if (tlfLimpio.length < 11 || tlfLimpio.length > 15) {
                         return alert("La longitud del número telefónico ingresado no parece válida. Por favor, revíselo bien.");
                     }
-                    // 4. Asegurarse que solo contenga números después del símbolo '+'
                     const soloNumeros = tlfLimpio.substring(1);
                     if (!/^\d+$/.test(soloNumeros)) {
                         return alert("El número de WhatsApp solo debe contener dígitos numéricos luego del signo '+'.");
@@ -217,11 +210,10 @@
                 const uid = nombreLimpio + "_" + grupoSel.id;
 
                 try {
-                    // VALIDACIÓN DE DUPLICADOS EN LA SEDE
                     const { data: usuarioExistente } = await supabase.from('usuarios').select('*').eq('username', uid).maybeSingle();
                     
                     if (usuarioExistente) {
-                        return alert(`El nombre "${nombre}" ya está ocupado en esta sede. Por favor, ingresa tu nombre acompañado de tu apellido o una inicial distintiva (Ejemplo: ${nombre} Pérez o ${nombre} M) para evitar confusiones.`);
+                        return alert(`El nombre "${nombre}" ya está ocupado en esta sede. Por favor, ingresa tu nombre acompañado de tu apellido o una inicial distintiva.`);
                     }
                     
                     const adiccionesConfig = {};
@@ -229,7 +221,6 @@
                         if (checks[ad]) adiccionesConfig[ad] = fechas[ad] || new Date().toISOString().split('T')[0];
                     });
 
-                    // Guardamos el teléfono completamente limpio sin espacios en la BD
                     const telefonosJSON = tlfLimpio.trim() ? [tlfLimpio.trim()] : [];
 
                     const nuevoUsuario = { 
@@ -246,7 +237,7 @@
                     
                     const { error } = await supabase.from('usuarios').insert([nuevoUsuario]);
                     if (error) {
-                        alert("ERROR: " + error.message);
+                        alert("ERROR Supabase: " + error.message + "\n\nSugerencia: Si el error menciona 'row-level security policy', asegúrate de correr el script SQL de políticas en la consola de Supabase.");
                     } else {
                         const datosSesion = { username: uid, nombreReal: nombre, grupoId: sede, grupoNombre: grupoSel.nombre, rol: rolFinal, estado: estadoFinal };
                         localStorage.setItem("sesion_nueva_vida", JSON.stringify(datosSesion));
@@ -416,7 +407,7 @@
                             <h2>Cuenta en Revisión</h2>
                             <p style={{color: 'var(--text-muted)'}}>Tu identificador para entrar es:</p>
                             <p style={{background: '#020617', padding: '15px', borderRadius: '10px', color: 'var(--primary)', fontFamily: 'monospace', fontWeight: 'bold', fontSize: '20px'}}>{user.username}</p>
-                            <p style={{color: 'var(--warning)'}}>Tu solicitud de afiliación ha sido guardada con éxito.</p>
+                            <p style={{color: 'var(--warning)'}}>Tu solicitud de afición ha sido guardada con éxito.</p>
                             <p style={{color: 'var(--text-muted)', fontSize: '16px'}}>Pídele al administrador de tu sede que acepte tu solicitud en la base de datos para poder ingresar.</p>
                             <button className="btn btn-secondary" style={{marginTop: '15px'}} onClick={cerrarSesionApp}>Volver al Inicio</button>
                         </div>
@@ -516,8 +507,8 @@
                                     ? <p style={{color: 'var(--text-muted)'}}>No hay eventos programados.</p>
                                     : eventos.map(ev => {
                                         const mapUrl = ev.latitud 
-                                            ? `http://maps.google.com/?q=${ev.latitud},${ev.longitud}` 
-                                            : `http://maps.google.com/?q=${encodeURIComponent(ev.lugar)}`;
+                                            ? `https://www.google.com/maps/search/?api=1&query=${ev.latitud},${ev.longitud}` 
+                                            : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.lugar)}`;
                                         return (
                                             <div key={ev.id} className="evento-item" style={{flexDirection: 'column', alignItems: 'flex-start'}}>
                                                 <div style={{width: '100%', marginBottom: '10px'}}>
