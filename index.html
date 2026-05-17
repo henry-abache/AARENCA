@@ -82,7 +82,7 @@
             "Humildemente le pedimos que nos librase de nuestros defectos.",
             "Hicimos una lista de todas aquellas personas a quienes habiamos ofendido y estuvimos dispuestos a reparar el dano.",
             "Reparamos directamente a cuantos nos fue posible el dano causado, excepto cuando el hacerlo implicaba perjuicio.",
-            "Continuamos con nuestro examen de conciencia, admitiendo inmediatamente nuestros errores cuando los descobriamos.",
+            "Continuamos con original examen de conciencia, admitiendo inmediatamente nuestros errores cuando los descobriamos.",
             "Buscamos a traves de la oracion y la meditacion mejorar nuestro contacto con Dios.",
             "Habiendo experimentado un despertar espiritual, tratamos de llevar este mensaje a otros alcoholicos."
         ];
@@ -104,7 +104,9 @@
             const [lecturaRecomendada, setLecturaRecomendada] = React.useState("");
             const [nombre, setNombre] = React.useState("");
             const [sede, setSede] = React.useState("");
-            const [whatsapp, setWhatsapp] = React.useState("");
+            
+            // +569 por defecto en Chile, pero editable para otros países
+            const [whatsapp, setWhatsapp] = React.useState("+569"); 
             
             const [mostrarCampoAdmin, setMostrarCampoAdmin] = React.useState(false);
             const [claveAdminIngresada, setClaveAdminIngresada] = React.useState("");
@@ -156,7 +158,6 @@
                         setMisAdicciones(uData.adicciones || {});
                         setPasoActual(uData.paso_actual || 1);
                         
-                        // Actualizar el estado dinámicamente si el Admin aprueba la cuenta
                         setUser(prev => {
                             const act = { ...prev, estado: uData.estado };
                             localStorage.setItem("sesion_nueva_vida", JSON.stringify(act));
@@ -178,6 +179,27 @@
                 e.preventDefault();
                 if (!nombre || !sede) return alert("Por favor complete los campos obligatorios");
                 
+                // LÓGICA DE VALIDACIÓN DEL TELÉFONO WHATSAPP
+                // 1. Limpiamos todos los espacios en blanco que el usuario haya puesto por comodidad
+                const tlfLimpio = whatsapp.replace(/\s+/g, "");
+
+                if (tlfLimpio.trim().length > 0) {
+                    // 2. Debe empezar estrictamente por un '+' seguido de código de país
+                    if (!tlfLimpio.startsWith("+")) {
+                        return alert("Formato de WhatsApp incorrecto. Debe incluir el símbolo '+' seguido del código internacional de su país (Ejemplo para Chile: +56934449767).");
+                    }
+                    // 3. Validar longitud mínima y máxima global (E.164 estándar)
+                    // Un teléfono chileno válido con +569 tiene un mínimo de 12 caracteres (+569XXXXXXXX)
+                    if (tlfLimpio.length < 11 || tlfLimpio.length > 15) {
+                        return alert("La longitud del número telefónico ingresado no parece válida. Por favor, revíselo bien.");
+                    }
+                    // 4. Asegurarse que solo contenga números después del símbolo '+'
+                    const soloNumeros = tlfLimpio.substring(1);
+                    if (!/^\d+$/.test(soloNumeros)) {
+                        return alert("El número de WhatsApp solo debe contener dígitos numéricos luego del signo '+'.");
+                    }
+                }
+
                 let rolFinal = "basico";
                 let estadoFinal = "pendiente"; 
 
@@ -191,18 +213,15 @@
                 }
 
                 const grupoSel = GRUPOS.find(g => g.id === sede);
-                
-                // Formatear el identificador eliminando espacios del nombre
                 const nombreLimpio = nombre.replace(/\s+/g, "");
                 const uid = nombreLimpio + "_" + grupoSel.id;
 
                 try {
-                    // VALIDACIÓN ESENCIAL: Comprobar duplicado exacto en la misma sede
+                    // VALIDACIÓN DE DUPLICADOS EN LA SEDE
                     const { data: usuarioExistente } = await supabase.from('usuarios').select('*').eq('username', uid).maybeSingle();
                     
                     if (usuarioExistente) {
-                        // Si ya existe alguien con este ID en la base de datos, frenamos el duplicado
-                        return alert(`El nombre "${nombre}" ya está ocupado en esta sede. Por favor, ingresa tu nombre acompañado de tu apellido o una inicial distintiva (Ejemplo: ${nombre} Pérez o ${nombre} M) para no confundirte con otro miembro.`);
+                        return alert(`El nombre "${nombre}" ya está ocupado en esta sede. Por favor, ingresa tu nombre acompañado de tu apellido o una inicial distintiva (Ejemplo: ${nombre} Pérez o ${nombre} M) para evitar confusiones.`);
                     }
                     
                     const adiccionesConfig = {};
@@ -210,7 +229,8 @@
                         if (checks[ad]) adiccionesConfig[ad] = fechas[ad] || new Date().toISOString().split('T')[0];
                     });
 
-                    const telefonosJSON = whatsapp.trim() ? [whatsapp.trim()] : [];
+                    // Guardamos el teléfono completamente limpio sin espacios en la BD
+                    const telefonosJSON = tlfLimpio.trim() ? [tlfLimpio.trim()] : [];
 
                     const nuevoUsuario = { 
                         username: uid, 
@@ -229,10 +249,7 @@
                         alert("ERROR: " + error.message);
                     } else {
                         const datosSesion = { username: uid, nombreReal: nombre, grupoId: sede, grupoNombre: grupoSel.nombre, rol: rolFinal, estado: estadoFinal };
-                        
-                        // Guardamos la sesión local para que el teléfono lo recuerde siempre
                         localStorage.setItem("sesion_nueva_vida", JSON.stringify(datosSesion));
-                        
                         setUser(datosSesion);
                         setMisAdicciones(adiccionesConfig);
                     }
@@ -246,12 +263,10 @@
                 if (!loginUsername) return;
                 const { data, error } = await supabase.from('usuarios').select('*').eq('username', loginUsername).maybeSingle();
                 if (data) {
-                    const datosSesion = { username: data.username, nombreReal: data.nombre_real, grupoId: data.grupo_id, grupoNombre: data.grupo_nombre, rol: data.rol, estado: data.estado };
-                    
-                    // Al ingresar de forma manual, también guardamos en el teléfono
+                    const datosSesion = { username: data.username, nombre_real: data.nombre_real, grupoId: data.grupo_id, grupoNombre: data.grupo_nombre, rol: data.rol, estado: data.estado };
                     localStorage.setItem("sesion_nueva_vida", JSON.stringify(datosSesion));
                     
-                    setUser(datosSesion);
+                    setUser({ username: data.username, nombreReal: data.nombre_real, grupoId: data.grupo_id, grupoNombre: data.grupo_nombre, rol: data.rol, estado: data.estado });
                     setMisAdicciones(data.adicciones || {});
                     setPasoActual(data.paso_actual || 1);
                 } else {
@@ -260,7 +275,6 @@
             };
 
             const cerrarSesionApp = () => {
-                // Borra los datos locales del móvil para permitir cambiar de cuenta libremente
                 localStorage.removeItem("sesion_nueva_vida");
                 setUser(null);
             };
@@ -364,7 +378,8 @@
                                     </div>
                                 )}
 
-                                <input type="text" className="input-field" placeholder="WhatsApp ej: +56912345678 (Opcional)" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} />
+                                <label style={{fontSize: '15px', color: 'var(--text-muted)', fontWeight: 'bold'}}>WhatsApp (Con código de país):</label>
+                                <input type="text" className="input-field" style={{marginTop: '4px'}} placeholder="Ej: +56934449767" value={whatsapp} onChange={e => setWhatsapp(e.target.value)} />
 
                                 <h4 style={{color: 'var(--warning)', fontSize: '18px', marginBottom: '12px', marginTop: '10px'}}>Padecimientos y Último consumo:</h4>
                                 {ADICCIONES_DISPONIBLES.map(ad => (
@@ -401,7 +416,7 @@
                             <h2>Cuenta en Revisión</h2>
                             <p style={{color: 'var(--text-muted)'}}>Tu identificador para entrar es:</p>
                             <p style={{background: '#020617', padding: '15px', borderRadius: '10px', color: 'var(--primary)', fontFamily: 'monospace', fontWeight: 'bold', fontSize: '20px'}}>{user.username}</p>
-                            <p style={{color: 'var(--warning)'}}>Tu solicitud de afilliación ha sido guardada con éxito.</p>
+                            <p style={{color: 'var(--warning)'}}>Tu solicitud de afiliación ha sido guardada con éxito.</p>
                             <p style={{color: 'var(--text-muted)', fontSize: '16px'}}>Pídele al administrador de tu sede que acepte tu solicitud en la base de datos para poder ingresar.</p>
                             <button className="btn btn-secondary" style={{marginTop: '15px'}} onClick={cerrarSesionApp}>Volver al Inicio</button>
                         </div>
@@ -607,7 +622,7 @@
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        root.render((<App />));
     </script>
 </body>
 </html>
