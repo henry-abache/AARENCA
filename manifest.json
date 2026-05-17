@@ -1,17 +1,1 @@
-{
-  "short_name": "Nueva Vida AA",
-  "name": "Nueva Vida - Alcohólicos Anónimos",
-  "icons": [
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/1160/1160358.png",
-      "type": "image/png",
-      "sizes": "512x512",
-      "purpose": "any maskable"
-    }
-  ],
-  "start_url": "./index.html",
-  "background_color": "#121824",
-  "theme_color": "#121824",
-  "display": "standalone",
-  "orientation": "portrait"
-}
+
