@@ -51,7 +51,6 @@
         .admin-habito-card img { width: 45px; height: 45px; object-fit: cover; border-radius: 8px; margin-bottom: 5px; }
         .admin-habito-card div { font-size: 15px; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         
-        /* Enlace Administrador */
         .admin-toggle-link { display: block; text-align: right; color: #4b5563; font-size: 15px; text-decoration: underline; cursor: pointer; margin-top: -10px; margin-bottom: 20px; transition: color 0.2s; }
         .admin-toggle-link:hover { color: #9ca3af; }
         .status-msg { font-size: 15px; font-weight: bold; margin-top: 4px; display: block; }
@@ -66,7 +65,7 @@
         const SUPABASE_KEY = "sb_publishable_8NSIOBCEbc4_mM9KWMKJvA_MPWW5Cv3";
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        const CLAVE_SECRETA_ADMIN = "1234";
+        const CLAVE_SECRETA_ADMIN = "felices24"; 
 
         const GRUPOS = [
           { id: "san-jose-renca", nombre: "SAN JOSE DE RENCA" },
@@ -107,7 +106,6 @@
             const [sede, setSede] = React.useState("");
             const [whatsapp, setWhatsapp] = React.useState("");
             
-            // Nuevos estados para panel Admin oculto
             const [mostrarCampoAdmin, setMostrarCampoAdmin] = React.useState(false);
             const [claveAdminIngresada, setClaveAdminIngresada] = React.useState("");
 
@@ -130,6 +128,20 @@
             const [nuevoHabitoNombre, setNuevoHabitoNombre] = React.useState("");
             const [nuevoHabitoImagen, setNuevoHabitoImagen] = React.useState("");
 
+            // EFECTO 1: Auto-Login al arrancar en el teléfono móvil
+            React.useEffect(() => {
+                const sesionGuardada = localStorage.getItem("sesion_nueva_vida");
+                if (sesionGuardada) {
+                    try {
+                        const datosUsuario = JSON.parse(sesionGuardada);
+                        setUser(datosUsuario);
+                    } catch(e) {
+                        localStorage.removeItem("sesion_nueva_vida");
+                    }
+                }
+            }, []);
+
+            // EFECTO 2: Sincronización en la Nube periódica
             React.useEffect(() => {
                 if (!user) return;
                 cargarDatosNube();
@@ -143,7 +155,13 @@
                     if (uData) {
                         setMisAdicciones(uData.adicciones || {});
                         setPasoActual(uData.paso_actual || 1);
-                        setUser(prev => ({ ...prev, estado: uData.estado }));
+                        
+                        // Actualizar el estado dinámicamente si el Admin aprueba la cuenta
+                        setUser(prev => {
+                            const act = { ...prev, estado: uData.estado };
+                            localStorage.setItem("sesion_nueva_vida", JSON.stringify(act));
+                            return act;
+                        });
                     }
                     const { data: bData } = await supabase.from('biblioteca').select('*').eq('grupo_id', user.grupoId).order('id', { ascending: false });
                     if (bData) setBiblioteca(bData);
@@ -160,40 +178,47 @@
                 e.preventDefault();
                 if (!nombre || !sede) return alert("Por favor complete los campos obligatorios");
                 
-                // Determinar el rol basado en si la clave ingresada es correcta
-                const esAdminValido = mostrarCampoAdmin && claveAdminIngresada === CLAVE_SECRETA_ADMIN;
-                const rolFinal = esAdminValido ? "admin" : "basico";
+                let rolFinal = "basico";
+                let estadoFinal = "pendiente"; 
 
-                if (mostrarCampoAdmin && claveAdminIngresada !== "" && claveAdminIngresada !== CLAVE_SECRETA_ADMIN) {
-                    return alert("La contraseña de administrador es incorrecta.");
+                if (mostrarCampoAdmin) {
+                    if (claveAdminIngresada !== CLAVE_SECRETA_ADMIN) {
+                        return alert("La contraseña de administrador es incorrecta.");
+                    } else {
+                        rolFinal = "admin";
+                        estadoFinal = "autorizado"; 
+                    }
                 }
 
                 const grupoSel = GRUPOS.find(g => g.id === sede);
-                const uid = nombre.replace(/\s+/g, "") + "_" + grupoSel.id;
                 
-                const adiccionesConfig = {};
-                ADICCIONES_DISPONIBLES.forEach(ad => {
-                    if (checks[ad]) adiccionesConfig[ad] = fechas[ad] || new Date().toISOString().split('T')[0];
-                });
-
-                const telefonosJSON = whatsapp.trim() ? [whatsapp.trim()] : [];
+                // Formatear el identificador eliminando espacios del nombre
+                const nombreLimpio = nombre.replace(/\s+/g, "");
+                const uid = nombreLimpio + "_" + grupoSel.id;
 
                 try {
+                    // VALIDACIÓN ESENCIAL: Comprobar duplicado exacto en la misma sede
                     const { data: usuarioExistente } = await supabase.from('usuarios').select('*').eq('username', uid).maybeSingle();
+                    
                     if (usuarioExistente) {
-                        setUser({ username: usuarioExistente.username, nombreReal: usuarioExistente.nombre_real, grupoId: usuarioExistente.grupo_id, grupo_nombre: usuarioExistente.grupo_nombre, rol: usuarioExistente.rol, estado: usuarioExistente.estado });
-                        setMisAdicciones(usuarioExistente.adicciones || {});
-                        setPasoActual(usuarioExistente.paso_actual || 1);
-                        return;
+                        // Si ya existe alguien con este ID en la base de datos, frenamos el duplicado
+                        return alert(`El nombre "${nombre}" ya está ocupado en esta sede. Por favor, ingresa tu nombre acompañado de tu apellido o una inicial distintiva (Ejemplo: ${nombre} Pérez o ${nombre} M) para no confundirte con otro miembro.`);
                     }
                     
+                    const adiccionesConfig = {};
+                    ADICCIONES_DISPONIBLES.forEach(ad => {
+                        if (checks[ad]) adiccionesConfig[ad] = fechas[ad] || new Date().toISOString().split('T')[0];
+                    });
+
+                    const telefonosJSON = whatsapp.trim() ? [whatsapp.trim()] : [];
+
                     const nuevoUsuario = { 
                         username: uid, 
                         nombre_real: nombre, 
                         grupo_id: sede, 
                         grupo_nombre: grupoSel.nombre, 
                         rol: rolFinal, 
-                        estado: rolFinal === 'admin' ? 'autorizado' : 'pendiente', 
+                        estado: estadoFinal, 
                         adicciones: adiccionesConfig, 
                         telefonos: telefonosJSON,
                         paso_actual: 1 
@@ -201,9 +226,14 @@
                     
                     const { error } = await supabase.from('usuarios').insert([nuevoUsuario]);
                     if (error) {
-                        alert("ERROR DE SUPABASE: " + error.message);
+                        alert("ERROR: " + error.message);
                     } else {
-                        setUser({ username: uid, nombreReal: nombre, grupoId: sede, grupoNombre: grupoSel.nombre, rol: rolFinal, estado: nuevoUsuario.estado });
+                        const datosSesion = { username: uid, nombreReal: nombre, grupoId: sede, grupoNombre: grupoSel.nombre, rol: rolFinal, estado: estadoFinal };
+                        
+                        // Guardamos la sesión local para que el teléfono lo recuerde siempre
+                        localStorage.setItem("sesion_nueva_vida", JSON.stringify(datosSesion));
+                        
+                        setUser(datosSesion);
                         setMisAdicciones(adiccionesConfig);
                     }
                 } catch(err) {
@@ -216,12 +246,23 @@
                 if (!loginUsername) return;
                 const { data, error } = await supabase.from('usuarios').select('*').eq('username', loginUsername).maybeSingle();
                 if (data) {
-                    setUser({ username: data.username, nombreReal: data.nombre_real, grupoId: data.grupo_id, grupoNombre: data.grupo_nombre, rol: data.rol, estado: data.estado });
+                    const datosSesion = { username: data.username, nombreReal: data.nombre_real, grupoId: data.grupo_id, grupoNombre: data.grupo_nombre, rol: data.rol, estado: data.estado };
+                    
+                    // Al ingresar de forma manual, también guardamos en el teléfono
+                    localStorage.setItem("sesion_nueva_vida", JSON.stringify(datosSesion));
+                    
+                    setUser(datosSesion);
                     setMisAdicciones(data.adicciones || {});
                     setPasoActual(data.paso_actual || 1);
                 } else {
                     alert("Identificador no encontrado.");
                 }
+            };
+
+            const cerrarSesionApp = () => {
+                // Borra los datos locales del móvil para permitir cambiar de cuenta libremente
+                localStorage.removeItem("sesion_nueva_vida");
+                setUser(null);
             };
 
             const registrarRecaida = async (adiccion) => {
@@ -289,7 +330,6 @@
             };
 
             if (!user) {
-                // Validación de color dinámico para la contraseña del admin
                 const esClaveCorrecta = claveAdminIngresada === CLAVE_SECRETA_ADMIN;
                 const tieneTexto = claveAdminIngresada.length > 0;
 
@@ -307,12 +347,10 @@
                                     {GRUPOS.map(g => <option key={g.id} value={g.id}>{g.nombre}</option>)}
                                 </select>
 
-                                {/* Enlace interactivo al estilo de la imagen */}
                                 <span className="admin-toggle-link" onClick={() => setMostrarCampoAdmin(!mostrarCampoAdmin)}>
                                     ¿Soy administrador autorizado?
                                 </span>
 
-                                {/* Sección Desplegable del Administrador */}
                                 {mostrarCampoAdmin && (
                                     <div style={{background: '#0f172a', padding: '15px', borderRadius: '14px', marginBottom: '20px', border: '1px dashed #4b5563'}}>
                                         <label style={{color: 'var(--text-muted)', fontSize: '15px', fontWeight: 'bold'}}>Contraseña de Administrador:</label>
@@ -320,7 +358,7 @@
                                         
                                         {tieneTexto && (
                                             <span className={`status-msg ${esClaveCorrecta ? 'status-success' : 'status-error'}`}>
-                                                {esClaveCorrecta ? '✓ Palabra clave correcta. Acceso Admin concedido.' : '✗ Palabra clave incorrecta'}
+                                                {esClaveCorrecta ? '✓ Palabra clave correcta. Acceso Admin listo.' : '✗ La palabra clave no es felices24'}
                                             </span>
                                         )}
                                     </div>
@@ -363,8 +401,9 @@
                             <h2>Cuenta en Revisión</h2>
                             <p style={{color: 'var(--text-muted)'}}>Tu identificador para entrar es:</p>
                             <p style={{background: '#020617', padding: '15px', borderRadius: '10px', color: 'var(--primary)', fontFamily: 'monospace', fontWeight: 'bold', fontSize: '20px'}}>{user.username}</p>
-                            <p style={{color: 'var(--warning)'}}>Pídele al administrador de tu sede que te autorice en Supabase.</p>
-                            <button className="btn btn-secondary" onClick={() => setUser(null)}>Volver</button>
+                            <p style={{color: 'var(--warning)'}}>Tu solicitud de afilliación ha sido guardada con éxito.</p>
+                            <p style={{color: 'var(--text-muted)', fontSize: '16px'}}>Pídele al administrador de tu sede que acepte tu solicitud en la base de datos para poder ingresar.</p>
+                            <button className="btn btn-secondary" style={{marginTop: '15px'}} onClick={cerrarSesionApp}>Volver al Inicio</button>
                         </div>
                     </div>
                 );
@@ -462,8 +501,8 @@
                                     ? <p style={{color: 'var(--text-muted)'}}>No hay eventos programados.</p>
                                     : eventos.map(ev => {
                                         const mapUrl = ev.latitud 
-                                            ? `https://www.google.com/maps/search/?api=1&query=${ev.latitud},${ev.longitud}` 
-                                            : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.lugar)}`;
+                                            ? `http://maps.google.com/?q=${ev.latitud},${ev.longitud}` 
+                                            : `http://maps.google.com/?q=${encodeURIComponent(ev.lugar)}`;
                                         return (
                                             <div key={ev.id} className="evento-item" style={{flexDirection: 'column', alignItems: 'flex-start'}}>
                                                 <div style={{width: '100%', marginBottom: '10px'}}>
@@ -516,8 +555,8 @@
                                 <div className="card" style={{textAlign: 'center'}}>
                                     <h3>Mi Información</h3>
                                     <p><strong>Identificador de Entrada:</strong><br/><span style={{color: 'var(--primary)'}}>{user.username}</span></p>
-                                    <p style={{fontSize: '15px', color: 'var(--text-muted)'}}>Guarde este identificador para volver a entrar desde cualquier celular.</p>
-                                    <button className="btn btn-danger" style={{marginTop: '25px'}} onClick={() => setUser(null)}>Cerrar Sesión</button>
+                                    <p style={{fontSize: '15px', color: 'var(--text-muted)'}}>Su teléfono recordará la cuenta de forma automática al abrir la aplicación.</p>
+                                    <button className="btn btn-danger" style={{marginTop: '25px'}} onClick={cerrarSesionApp}>Cerrar Sesión</button>
                                 </div>
                                 {user.rol === 'admin' && (
                                     <div className="card" style={{borderColor: 'var(--warning)', marginTop: '20px', textAlign: 'left'}}>
