@@ -18,7 +18,7 @@ self.addEventListener('activate', (e) => {
   console.log('Service Worker activo');
 });
 
-// Interceptar peticiones para que funcione offline básico
+// Interceptar peticiones para funcionamiento básico
 self.addEventListener('fetch', (e) => {
   e.respondWith(
     fetch(e.request).catch(() => caches.match(e.request))
