@@ -91,12 +91,6 @@
             margin-bottom: 24px;
         }
 
-        header img {
-            width: 55px;
-            height: auto;
-            margin-bottom: 8px;
-        }
-
         h1 {
             color: #2563eb;
             font-size: 28px;
@@ -111,9 +105,25 @@
             color: #64748b;
             font-size: 14px;
             font-weight: 500;
+            margin-bottom: 12px;
         }
         [data-theme="dark"] .subtitle {
             color: #94a3b8;
+        }
+
+        /* Contenedor de Frase Diaria */
+        .daily-phrase-box {
+            background: rgba(37, 99, 235, 0.08);
+            border-left: 4px solid var(--accent-color);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            font-style: italic;
+            font-weight: 500;
+            color: var(--text-color);
+            margin-bottom: 16px;
+            line-height: 1.4;
+            text-align: center;
         }
 
         /* Tabs de acceso */
@@ -169,7 +179,7 @@
             margin-bottom: 16px;
         }
 
-        input[type="text"], input[type="date"], input[type="time"], select, textarea {
+        input[type="text"], input[type="password"], input[type="date"], input[type="time"], select, textarea {
             width: 100%;
             padding: 14px;
             background-color: var(--input-bg);
@@ -187,7 +197,7 @@
             border-color: var(--accent-color);
         }
 
-        /* Lista de padecimientos con diseño exacto de las capturas */
+        /* Lista de padecimientos */
         .checkbox-label-title {
             display: block;
             margin: 18px 0 10px 0;
@@ -331,6 +341,24 @@
         [data-theme="dark"] .user-info-bar {
             background: #111827;
         }
+
+        /* Contador de Días */
+        .counter-box {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 16px;
+            border-radius: 16px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+        .counter-days {
+            font-size: 36px;
+            display: block;
+            line-height: 1;
+            margin-top: 4px;
+        }
     </style>
 </head>
 <body data-theme="dark">
@@ -339,16 +367,19 @@
         <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()">☀️</button>
 
         <header>
-            <div id="app-logo-area">
-                <img src="https://cdn-icons-png.flaticon.com/512/1160/1160358.png" alt="Logo">
-            </div>
             <h1>Nueva Vida AA</h1>
             <div class="subtitle">Unidad y Servicio</div>
+            <div id="welcome-phrase" class="daily-phrase-box">Solo por hoy, un día a la vez.</div>
         </header>
 
         <div id="user-bar" style="display: none;" class="user-info-bar">
             <span>👤 <strong id="bar-username"></strong> (<span id="bar-role"></span>)</span>
             <button onclick="logout()" style="background:none; border:none; color:#ef4444; cursor:pointer; font-weight:bold;">Salir</button>
+        </div>
+
+        <div id="app-counter" style="display: none;" class="counter-box">
+            <span>DÍAS EN VICTORIA</span>
+            <span id="sobriety-days" class="counter-days">0</span>
         </div>
 
         <nav id="main-menu" style="display: none;" class="app-nav">
@@ -392,7 +423,10 @@
                 <input type="text" id="reg-telefono" placeholder="WhatsApp ej: +56912345678 (Opcional)">
             </div>
 
-            <span class="admin-link" onclick="switchAuthTab('login')">¿Administrador?</span>
+            <div class="input-group">
+                <label style="display:block; margin-bottom:6px; font-size:13px; font-weight:600; color:#64748b;">Código de Administrador (Opcional)</label>
+                <input type="password" id="reg-admin-token" placeholder="Dejar en blanco si eres usuario básico">
+            </div>
 
             <span class="checkbox-label-title">Padecimientos iniciales:</span>
             <div class="checkbox-grid">
@@ -423,6 +457,9 @@
 
         <div id="app-inicio" class="view-section">
             <div class="section-title">Mi Progreso de Recuperación</div>
+            
+            <div id="user-profile-phrase" class="daily-phrase-box"></div>
+
             <div class="data-card" style="text-align: center;">
                 <div style="font-size: 14px; color:#64748b;">Te encuentras actualmente en el:</div>
                 <div style="font-size: 32px; font-weight: bold; color: #d97706; margin: 10px 0;">PASO <span id="current-paso-display">1</span></div>
@@ -487,6 +524,20 @@
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         let currentUser = null;
 
+        // Banco de frases positivas diarias cambiantes automáticas
+        const frasesMotivacionales = [
+            "Solo por hoy mantendré mi mente clara y mi espíritu firme.",
+            "Tu pasado no define el milagro de tu presente. Sigue adelante.",
+            "Ninguna tormenta dura para siempre; la sobriedad es tu refugio más seguro.",
+            "El valor no es la ausencia de miedo, sino el deseo de sanar por encima de él.",
+            "Un día a la vez construyes la vida libre que realmente mereces.",
+            "Cada mañana sin consumir es una victoria contundente sobre la adicción.",
+            "Admite tu debilidad ayer para descubrir tu fortaleza inquebrantable hoy.",
+            "La recuperación no es una carrera de velocidad, es un viaje de transformación pacífica.",
+            "Ríndete ante lo que no puedes controlar y toma las riendas de tus decisiones hoy.",
+            "No estás solo en este camino; la comunidad sostiene tus pasos."
+        ];
+
         const textosPasos = {
             1: "Admitimos que éramos impotentes ante nuestra adicción, que nuestras vidas se habían vuelto ingobernables.",
             2: "Llegamos a creer que un Poder superior a nosotros mismos podría devolvernos el sano juicio.",
@@ -502,7 +553,33 @@
             12: "Habiendo experimentado un despertar espiritual como resultado de estos pasos, tratamos de llevar el mensaje."
         };
 
-        // Cambiar entre Temas Claro y Oscuro dinámicamente
+        // Cambiar la frase diaria según el día del año de forma automática
+        function establecerFraseDiaria() {
+            const hoy = new Date();
+            const diaDelAño = Math.floor((hoy - new Date(hoy.getFullYear(), 0, 0)) / 86400000);
+            const indiceFrase = diaDelAño % frasesMotivacionales.length;
+            const fraseSeleccionada = frasesMotivacionales[indiceFrase];
+
+            document.getElementById('welcome-phrase').innerText = fraseSeleccionada;
+            document.getElementById('user-profile-phrase').innerText = fraseSeleccionada;
+        }
+
+        // Calcular días transcurridos desde que se creó el registro
+        function calcularDiasSobriedad(fechaCreacion) {
+            const fRegistro = new Date(fechaCreacion);
+            const fActual = new Date();
+            
+            // Eliminar horas para un conteo de días exacto
+            fRegistro.setHours(0,0,0,0);
+            fActual.setHours(0,0,0,0);
+
+            const diferenciaMili = fActual - fRegistro;
+            const diasTotales = Math.floor(diferenciaMili / (1000 * 60 * 60 * 24));
+            
+            // Si se registró hoy mismo muestra 1 para reflejar el primer día en proceso
+            document.getElementById('sobriety-days').innerText = diasTotales <= 0 ? 1 : diasTotales;
+        }
+
         function toggleTheme() {
             const body = document.body;
             const btn = document.getElementById('theme-btn');
@@ -568,9 +645,20 @@
             const username = rawInput.toLowerCase().replace(/\s+/g, '_');
             const grupoRaw = document.getElementById('reg-grupo').value.split('|');
             const telefono = document.getElementById('reg-telefono').value.trim();
+            const tokenAdmin = document.getElementById('reg-admin-token').value.trim();
 
             if(!rawInput || !document.getElementById('reg-grupo').value) {
                 return alert('Por favor, ingresa tu nombre y selecciona una sede.');
+            }
+
+            // Validación estricta de palabra secreta para asignar ROL
+            let rolAsignado = 'basico';
+            if (tokenAdmin !== "") {
+                if (tokenAdmin === "felices24") {
+                    rolAsignado = 'admin';
+                } else {
+                    return alert('La clave secreta de Administrador es incorrecta.');
+                }
             }
 
             let adiccionesArr = [];
@@ -585,7 +673,7 @@
                     grupo_nombre: grupoRaw[1],
                     telefono: telefono,
                     adicciones: { lista: adiccionesArr },
-                    rol: 'basico',
+                    rol: rolAsignado,
                     estado: 'pendiente',
                     paso_actual: 1
                 }]);
@@ -593,9 +681,10 @@
             if(error) {
                 alert('Error al registrar: Puede que este nombre ya esté tomado.');
             } else {
-                alert(`¡Registro exitoso! Tu nombre de usuario para ingresar es: ${username}`);
+                alert(`¡Registro completado como ${rolAsignado}! Tu nombre de usuario para ingresar es: ${username}`);
                 switchAuthTab('login');
                 document.getElementById('login-username').value = username;
+                document.getElementById('reg-admin-token').value = "";
             }
         }
 
@@ -605,6 +694,7 @@
             document.getElementById('view-register').style.display = 'none';
 
             document.getElementById('user-bar').style.display = 'flex';
+            document.getElementById('app-counter').style.display = 'block';
             document.getElementById('main-menu').style.display = 'grid';
 
             document.getElementById('bar-username').innerText = currentUser.username;
@@ -614,6 +704,9 @@
                 document.getElementById('admin-evento-form').style.display = 'block';
                 document.getElementById('admin-lib-form').style.display = 'block';
             }
+
+            // Calcular días transcurridos basados en la fecha de registro en Supabase (created_at)
+            calcularDiasSobriedad(currentUser.created_at);
 
             document.getElementById('current-paso-display').innerText = currentUser.paso_actual;
             document.getElementById('paso-descripcion').innerText = textosPasos[currentUser.paso_actual] || "¡Camino completado!";
@@ -780,6 +873,11 @@
                 cargarHabitos();
             }
         }
+
+        // Ejecutar funciones iniciales automáticas al abrir la web
+        window.addEventListener('DOMContentLoaded', () => {
+            establecerFraseDiaria();
+        });
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
