@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nueva Vida - Alcohólicos Anónimos</title>
+    <link rel="manifest" href="manifest.json">
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -153,7 +154,6 @@
                     if (checks[ad]) adiccionesConfig[ad] = fechas[ad] || new Date().toISOString().split('T')[0];
                 });
 
-                // Convertir el número en la estructura JSONB para el campo 'telefonos'
                 const telefonosJSON = whatsapp.trim() ? [whatsapp.trim()] : [];
 
                 try {
@@ -171,7 +171,7 @@
                         grupo_id: sede, 
                         grupo_nombre: grupoSel.nombre, 
                         rol: rol, 
-                        estado: rol === 'admin' ? 'pendiente' : 'pendiente', // Los administradores también quedan pendientes de aprobación por seguridad
+                        estado: 'pendiente', 
                         adicciones: adiccionesConfig, 
                         telefonos: telefonosJSON,
                         paso_actual: 1 
@@ -427,7 +427,7 @@
                                                     <span style={{color: 'var(--warning)', fontSize: '14px', fontWeight: 'bold'}}>{ev.fecha} - {ev.hora}</span>
                                                     <h4 style={{margin: '4px 0', fontSize: '20px'}}>{ev.titulo}</h4>
                                                     <p style={{margin: '2px 0', fontSize: '16px', color: 'var(--text-muted)'}}>📍 {ev.lugar}</p>
-                                                    {ev.nota && <p style={{margin: '6px 0 0 0', fontSize: '15px', color: '#94a3b8', italic: 'true'}}><i>Nota: {ev.nota}</i></p>}
+                                                    {ev.nota && <p style={{margin: '6px 0 0 0', fontSize: '15px', color: '#94a3b8'}}><i>Nota: {ev.nota}</i></p>}
                                                 </div>
                                                 <a href={mapUrl} target="_blank" rel="noreferrer" className="btn btn-secondary" style={{padding: '10px', fontSize: '16px', width: '100%'}}>Ver en Google Maps</a>
                                             </div>
@@ -529,5 +529,3 @@
     </script>
 </body>
 </html>
-
-"se unifican pestañas y se integra WhatsApp"
