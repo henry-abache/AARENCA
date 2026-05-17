@@ -51,14 +51,11 @@
         .header-container {
             text-align: center;
             margin-bottom: 24px;
+            padding-top: 10px;
         }
 
-        .app-logo {
-            width: 85px;
-            height: 85px;
-            object-fit: cover;
-            border-radius: 50%;
-            border: 2px solid var(--accent);
+        .app-icon-placeholder {
+            font-size: 50px;
             margin-bottom: 10px;
         }
 
@@ -67,7 +64,7 @@
             color: var(--text-light);
         }
 
-        h1 { font-size: 24px; color: var(--accent); }
+        h1 { font-size: 26px; color: var(--accent); }
 
         .form-group {
             margin-bottom: 16px;
@@ -180,7 +177,7 @@
         
         <div id="view-auth" class="card">
             <div class="header-container">
-                <img src="./icono-192.png" class="app-logo" alt="Logo">
+                <div class="app-icon-placeholder">✨</div>
                 <h1>Nueva Vida AA</h1>
                 <p style="color: var(--text-muted); font-size: 14px;">Unidad y Servicio</p>
             </div>
@@ -269,198 +266,5 @@
     </div>
 
     <script>
-        // CREDENCIALES DE SUPABASE Conectadas a tu proyecto xzkuywsitdwikzksiesf
         const SUPABASE_URL = "https://xzkuywsitdwikzksiesf.supabase.co"; 
-        const SUPABASE_KEY = "Pega_Aquí_Tu_Clave_Anon_Larga_De_Supabase"; 
-        const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        let usuarioActual = null;
-
-        // RECONOCIMIENTO AUTOMÁTICO DE USUARIO (MEMORIA DEL TELÉFONO)
-        window.addEventListener('DOMContentLoaded', () => {
-            const sesionGuardada = localStorage.getItem('usuario_nueva_vida');
-            if (sesionGuardada) {
-                usuarioActual = JSON.parse(sesionGuardada);
-                loguearExitosamente();
-                verificarEstadoUsuario(usuarioActual.username);
-            }
-        });
-
-        function switchAuthTab(tab) {
-            if(tab === 'login') {
-                document.getElementById('form-login').classList.remove('hidden');
-                document.getElementById('form-registro').classList.add('hidden');
-                document.getElementById('btn-tab-login').style.backgroundColor = 'var(--accent)';
-                document.getElementById('btn-tab-reg').style.backgroundColor = '#333';
-            } else {
-                document.getElementById('form-login').classList.add('hidden');
-                document.getElementById('form-registro').classList.remove('hidden');
-                document.getElementById('btn-tab-login').style.backgroundColor = '#333';
-                document.getElementById('btn-tab-reg').style.backgroundColor = 'var(--accent)';
-            }
-        }
-
-        async function ejecutarLogin() {
-            const username = document.getElementById('login-username').value.trim().toLowerCase();
-            if(!username) return alert('Ingresa tu usuario');
-
-            const { data, error } = await supabase.from('usuarios').select('*').eq('username', username).single();
-            
-            if (error || !data) {
-                return alert('El usuario no existe. Regístrate primero.');
-            }
-
-            if (data.estado === 'pendiente') {
-                return alert('Tu cuenta aún está en revisión por el administrador.');
-            }
-
-            // Guardar en LocalStorage para no loguearse de nuevo
-            localStorage.setItem('usuario_nueva_vida', JSON.stringify(data));
-            usuarioActual = data;
-            loguearExitosamente();
-        }
-
-        async function verificarEstadoUsuario(username) {
-            const { data } = await supabase.from('usuarios').select('*').eq('username', username).single();
-            if(data && data.estado === 'aprobado') {
-                usuarioActual = data;
-                localStorage.setItem('usuario_nueva_vida', JSON.stringify(data));
-            } else if(data && data.estado === 'pendiente') {
-                alert('Tu usuario volvió a estado pendiente de revisión.');
-                cerrarSesion();
-            }
-        }
-
-        function loguearExitosamente() {
-            document.getElementById('view-auth').classList.add('hidden');
-            document.getElementById('main-nav').classList.remove('hidden');
-            
-            document.getElementById('welcome-user').innerText = `Hola, ${usuarioActual.nombre_real}`;
-            document.getElementById('user-meta').innerText = `Sede: ${usuarioActual.grupo_nombre} | Rol: ${usuarioActual.rol}`;
-
-            if(usuarioActual.rol === 'admin') {
-                document.getElementById('nav-admin-link').classList.remove('hidden');
-                cargarPendientes();
-            }
-
-            calcularDias();
-            document.getElementById('view-inicio').classList.remove('hidden');
-            cargarBiblioteca();
-        }
-
-        async function ejecutarRegistro() {
-            const username = document.getElementById('reg-username').value.trim().toLowerCase();
-            const nombre = document.getElementById('reg-nombre').value.trim();
-            const id_sede = document.getElementById('reg-sede').value;
-            const nombre_sede = document.getElementById('reg-sede').options[document.getElementById('reg-sede').selectedIndex].text;
-
-            if(!username || !nombre) return alert('Completa todos los campos');
-
-            let padecimientos = {};
-            document.querySelectorAll('.pad-check:checked').forEach(el => {
-                padecimientos[el.value] = new Date().toISOString();
-            });
-
-            const { error } = await supabase.from('usuarios').insert([{
-                username: username,
-                nombre_real: nombre,
-                grupo_id: id_sede,
-                grupo_nombre: nombre_sede,
-                adicciones: padecimientos,
-                estado: 'pendiente'
-            }]);
-
-            if(error) {
-                alert('El nombre de usuario ya está ocupado. Prueba con otro.');
-            } else {
-                alert('¡Registro enviado! Notifícale al administrador para que te apruebe.');
-                switchAuthTab('login');
-            }
-        }
-
-        function calcularDias() {
-            let fechaInicio = new Date(usuarioActual.created_at);
-            let hoy = new Date();
-            let diferencia = hoy - fechaInicio;
-            let dias = Math.floor(diferencia / (1000 * 60 * 60 * 24));
-            document.getElementById('sobriety-days').innerText = dias >= 0 ? dias : 0;
-        }
-
-        async function reiniciarContador() {
-            if(!confirm('¿Confirmas que deseas reiniciar tu contador a 0 días? Tu grupo te apoya.')) return;
-            const nuevaFecha = new Date().toISOString();
-            const { error } = await supabase.from('usuarios').update({ created_at: nuevaFecha }).eq('username', usuarioActual.username);
-            if(!error) {
-                usuarioActual.created_at = nuevaFecha;
-                localStorage.setItem('usuario_nueva_vida', JSON.stringify(usuarioActual));
-                calcularDias();
-            }
-        }
-
-        function showView(view) {
-            document.getElementById('view-inicio').classList.add('hidden');
-            document.getElementById('view-biblioteca').classList.add('hidden');
-            document.getElementById('view-admin').classList.add('hidden');
-            
-            document.getElementById('view-' + view).classList.remove('hidden');
-            
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            if(view === 'inicio') document.getElementById('nav-inicio').classList.add('active');
-            if(view === 'biblioteca') document.getElementById('nav-biblioteca').classList.add('active');
-            if(view === 'admin') document.getElementById('nav-admin-link').classList.add('active');
-        }
-
-        async function cargarBiblioteca() {
-            const { data } = await supabase.from('biblioteca').select('*');
-            const lista = document.getElementById('lista-biblioteca');
-            if(data && data.length > 0) {
-                lista.innerHTML = data.map(doc => `
-                    <div style="padding:12px; background:#252525; border-radius:8px; margin-bottom:10px;">
-                        <strong>${doc.titulo}</strong> (${doc.tipo})<br>
-                        <a href="${doc.link}" target="_blank" style="color:var(--accent); text-decoration:none; font-size:14px;">📂 Abrir Recurso</a>
-                    </div>
-                `).join('');
-            } else {
-                lista.innerHTML = 'No hay documentos cargados en la biblioteca.';
-            }
-        }
-
-        async function cargarPendientes() {
-            const { data } = await supabase.from('usuarios').select('*').eq('estado', 'pendiente');
-            const lista = document.getElementById('lista-pendientes');
-            if(data && data.length > 0) {
-                lista.innerHTML = data.map(user => `
-                    <div style="padding:12px; background:#252525; border-radius:8px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
-                        <div><strong>${user.nombre_real}</strong><br><small>${user.grupo_nombre}</small></div>
-                        <button class="btn btn-success" style="width:auto; padding:6px 12px; font-size:14px;" onclick="aprobarUsuario('${user.username}')">Aprobar</button>
-                    </div>
-                `).join('');
-            } else {
-                lista.innerHTML = 'No hay solicitudes pendientes.';
-            }
-        }
-
-        async function aprobarUsuario(username) {
-            const { error } = await supabase.from('usuarios').update({ estado: 'aprobado' }).eq('username', username);
-            if(!error) {
-                alert('Usuario aprobado con éxito.');
-                cargarPendientes();
-            }
-        }
-
-        function cerrarSesion() {
-            localStorage.removeItem('usuario_nueva_vida');
-            usuarioActual = null;
-            location.reload();
-        }
-    </script>
-
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js');
-            });
-        }
-    </script>
-</body>
-</html>
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6a3V5d3NpdGR3aWt6a3NpZXNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMTI0NjksImV4cCI6MjA5NDU4ODQ2OX0.FnVW
