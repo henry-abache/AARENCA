@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nueva Vida AA</title>
     <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="1-192.png">
+    <link rel="apple-touch-icon" href="1-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Nueva Vida AA">
+    <meta name="apple-mobile-web-app-title" content="24 Horas AA">
     <meta name="theme-color" content="#0f172a">
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
@@ -29,42 +31,44 @@
         *{box-sizing:border-box;}
         body{margin:0;padding:0;background:var(--bg-body);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:19px;transition:background .3s,color .3s;}
         .app{max-width:500px;margin:0 auto;min-height:100vh;background:var(--bg-app);display:flex;flex-direction:column;position:relative;box-shadow:0 0 25px rgba(0,0,0,.3);padding-bottom:95px;}
-        .hdr{padding:14px 20px;background:var(--card-bg);border-bottom:2px solid var(--border);text-align:center;position:relative;}
-        .hdr h1{margin:2px 0 0;font-size:19px;color:var(--text);}
-        .hdr-logo{font-size:26px;font-weight:900;color:var(--primary);}
-        .hdr-sub{color:var(--accent);font-weight:bold;font-size:15px;}
-        .tema-btn{position:absolute;top:12px;right:12px;background:var(--input-bg);border:2px solid var(--border);color:var(--text);padding:6px 10px;border-radius:10px;cursor:pointer;font-size:14px;}
-        .content{flex:1;padding:18px;overflow-y:auto;}
-        .card{background:var(--card-bg);border-radius:18px;padding:20px;margin-bottom:18px;border:2px solid var(--border);}
-        .field{width:100%;padding:14px;background:var(--input-bg);border:2px solid var(--input-border);border-radius:12px;color:var(--text);font-size:17px;margin-top:6px;margin-bottom:16px;}
+        .hdr{padding:12px 20px;background:var(--card-bg);border-bottom:2px solid var(--border);text-align:center;position:relative;display:flex;align-items:center;justify-content:center;gap:10px;}
+        .hdr-info{text-align:left;}
+        .hdr h1{margin:0;font-size:18px;color:var(--text);font-weight:900;}
+        .hdr-sub{color:var(--accent);font-weight:bold;font-size:13px;}
+        .hdr-nombre{color:var(--muted);font-size:12px;}
+        .tema-btn{position:absolute;top:10px;right:10px;background:var(--input-bg);border:2px solid var(--border);color:var(--text);padding:5px 9px;border-radius:9px;cursor:pointer;font-size:13px;}
+        .content{flex:1;padding:16px;overflow-y:auto;}
+        .card{background:var(--card-bg);border-radius:16px;padding:18px;margin-bottom:16px;border:2px solid var(--border);}
+        .field{width:100%;padding:13px;background:var(--input-bg);border:2px solid var(--input-border);border-radius:11px;color:var(--text);font-size:17px;margin-top:5px;margin-bottom:14px;}
         .field.err{border-color:var(--danger)!important;}
-        .errmsg{color:#ef4444;font-size:13px;margin-top:-12px;margin-bottom:12px;display:block;background:rgba(220,38,38,.1);padding:7px 11px;border-radius:8px;border-left:3px solid #dc2626;line-height:1.5;}
-        .btn{background:var(--primary);color:#fff;border:none;padding:16px;border-radius:14px;font-size:19px;font-weight:bold;cursor:pointer;width:100%;display:block;text-align:center;text-decoration:none;}
+        .errmsg{color:#ef4444;font-size:13px;margin-top:-10px;margin-bottom:10px;display:block;background:rgba(220,38,38,.1);padding:6px 10px;border-radius:7px;border-left:3px solid #dc2626;line-height:1.5;}
+        .btn{background:var(--primary);color:#fff;border:none;padding:15px;border-radius:13px;font-size:18px;font-weight:bold;cursor:pointer;width:100%;display:block;text-align:center;text-decoration:none;}
         .btn-d{background:var(--danger);}
         .btn-s{background:var(--accent);}
         .btn-w{background:var(--warn);}
         .btn-g{background:var(--input-border);color:var(--text);}
-        .btn-sm{padding:9px 14px;font-size:15px;width:auto;border-radius:10px;display:inline-block;}
-        .chk-g{background:var(--input-bg);padding:12px;border-radius:12px;margin-bottom:12px;border:2px solid var(--border);}
-        .chk-l{display:flex;align-items:center;font-size:20px;cursor:pointer;color:var(--text);}
-        .chk-c{width:26px;height:26px;margin-right:12px;}
-        .progress-bg{background:var(--bg-body);border-radius:14px;height:30px;width:100%;overflow:hidden;border:1px solid var(--input-border);}
+        .btn-sm{padding:8px 13px;font-size:14px;width:auto;border-radius:9px;display:inline-block;}
+        .chk-g{background:var(--input-bg);padding:11px;border-radius:11px;margin-bottom:11px;border:2px solid var(--border);}
+        .chk-l{display:flex;align-items:center;font-size:19px;cursor:pointer;color:var(--text);}
+        .chk-c{width:25px;height:25px;margin-right:11px;}
+        .progress-bg{background:var(--bg-body);border-radius:13px;height:28px;width:100%;overflow:hidden;border:1px solid var(--input-border);}
         .progress-fill{background:linear-gradient(90deg,#16a34a,#4ade80);height:100%;transition:width .5s ease;}
         /* Pasos */
-        .paso-row{display:flex;align-items:center;padding:12px 10px;background:var(--input-bg);border-radius:12px;margin-bottom:9px;border:2px solid var(--border);gap:8px;}
-        .paso-row.p-actual{border-color:var(--warn);}
-        .paso-row.p-done{border-color:var(--accent);}
-        .paso-n{font-size:22px;font-weight:bold;min-width:30px;text-align:center;color:var(--muted);}
+        .paso-row{display:flex;align-items:center;padding:11px 9px;background:var(--input-bg);border-radius:11px;margin-bottom:8px;border:2px solid var(--border);gap:7px;}
+        .paso-row.p-actual{border-color:var(--warn);background:var(--card-bg);}
+        .paso-row.p-done{border-color:var(--accent);background:var(--card-bg);}
+        .paso-n{font-size:20px;font-weight:bold;min-width:28px;text-align:center;color:var(--muted);}
         .paso-row.p-actual .paso-n{color:var(--warn);}
         .paso-row.p-done .paso-n{color:var(--accent);}
-        .paso-txt{flex:1;font-size:15px;line-height:1.4;color:var(--text);}
-        .paso-btns{display:flex;flex-direction:column;gap:5px;align-items:center;}
-        .paso-ico{background:none;border:none;cursor:pointer;font-size:20px;padding:3px;line-height:1;opacity:.3;transition:opacity .2s;}
+        .paso-txt{flex:1;font-size:14px;line-height:1.4;color:var(--text);}
+        .paso-btns{display:flex;flex-direction:column;gap:4px;align-items:center;}
+        .paso-ico{background:none;border:none;cursor:pointer;font-size:19px;padding:2px;line-height:1;opacity:.25;transition:opacity .2s;}
         .paso-ico.on{opacity:1;}
-        /* Contraste forzado en tema claro */
+        .paso-prog{font-size:13px;font-weight:bold;color:var(--accent);text-align:right;margin-bottom:8px;}
+        /* Tema claro — contraste forzado */
         .app.light .paso-row{background:#ffffff;border-color:#cbd5e1;}
-        .app.light .paso-txt{color:#1e293b !important;}
-        .app.light .paso-n{color:#64748b !important;}
+        .app.light .paso-txt{color:#1e293b!important;}
+        .app.light .paso-n{color:#64748b!important;}
         .app.light .paso-row.p-actual{background:#fffbeb;border-color:#b45309;}
         .app.light .paso-row.p-done{background:#f0fdf4;border-color:#15803d;}
         .app.light .bib-item{background:#ffffff;}
@@ -76,48 +80,48 @@
         .app.light .add-ad{background:#ffffff;}
         .app.light .modo-btn{background:#ffffff;color:#475569;}
         .app.light .modo-btn.on{background:#eff6ff;color:#1d4ed8;}
-        .paso-prog{font-size:13px;font-weight:bold;color:var(--accent);text-align:right;margin-bottom:10px;}
+        .app.light .chk-g{background:#ffffff;}
         /* Popup */
-        .overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;padding:20px;z-index:999;overflow-y:auto;}
-        .popup{background:var(--card-bg);border-radius:22px;padding:26px;text-align:center;max-width:400px;width:100%;border:3px solid var(--warn);}
+        .overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;padding:18px;z-index:999;overflow-y:auto;}
+        .popup{background:var(--card-bg);border-radius:20px;padding:24px;text-align:center;max-width:400px;width:100%;border:3px solid var(--warn);}
         /* Biblioteca */
-        .bib-item{background:var(--input-bg);padding:16px;border-radius:12px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;border:2px solid var(--border);}
+        .bib-item{background:var(--input-bg);padding:14px;border-radius:11px;margin-bottom:9px;display:flex;align-items:center;justify-content:space-between;border:2px solid var(--border);}
         /* Eventos */
-        .ev-card{background:var(--input-bg);border:2px solid var(--primary);border-radius:14px;padding:16px;margin-bottom:12px;}
-        .ev-card .ev-title{font-weight:bold;font-size:19px;margin-bottom:5px;color:var(--text);}
+        .ev-card{background:var(--input-bg);border:2px solid var(--primary);border-radius:13px;padding:14px;margin-bottom:11px;}
+        .ev-card .ev-title{font-weight:bold;font-size:18px;margin-bottom:4px;color:var(--text);}
         /* Directorio */
-        .dir-sede{margin-top:18px;}
-        .dir-sede-titulo{background:var(--border);color:var(--text);padding:7px 14px;border-radius:9px;font-size:15px;font-weight:bold;text-transform:uppercase;margin-bottom:9px;}
-        .dir-contacto{background:var(--input-bg);border:1px solid var(--border);border-radius:11px;padding:12px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;}
+        .dir-sede{margin-top:16px;}
+        .dir-sede-titulo{background:var(--border);color:var(--text);padding:6px 13px;border-radius:8px;font-size:14px;font-weight:bold;text-transform:uppercase;margin-bottom:8px;}
+        .dir-contacto{background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center;}
         .dir-contacto.admin-c{border:2px solid #7c3aed;background:var(--card-bg);}
-        .badge-admin{background:#7c3aed;color:#e9d5ff;font-size:11px;padding:2px 8px;border-radius:16px;margin-left:6px;font-weight:bold;}
-        /* Miembros admin */
-        .miembro-row{background:var(--input-bg);border:1px solid var(--border);border-radius:11px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
-        /* Toggle modo biblioteca */
-        .modo-toggle{display:flex;gap:8px;margin-bottom:14px;}
-        .modo-btn{flex:1;padding:10px;border-radius:10px;border:2px solid var(--input-border);background:var(--input-bg);color:var(--muted);font-size:15px;font-weight:bold;cursor:pointer;text-align:center;}
+        .badge-admin{background:#7c3aed;color:#e9d5ff;font-size:11px;padding:2px 7px;border-radius:14px;margin-left:5px;font-weight:bold;}
+        /* Miembros */
+        .miembro-row{background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:11px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;}
+        /* Biblioteca toggle */
+        .modo-toggle{display:flex;gap:7px;margin-bottom:13px;}
+        .modo-btn{flex:1;padding:9px;border-radius:9px;border:2px solid var(--input-border);background:var(--input-bg);color:var(--muted);font-size:14px;font-weight:bold;cursor:pointer;text-align:center;}
         .modo-btn.on{border-color:var(--primary);color:var(--primary);background:var(--card-bg);}
         /* Solicitudes */
-        .sol-box{background:var(--input-bg);border:2px solid var(--warn);padding:12px;border-radius:12px;margin-bottom:9px;}
-        .sol-acc{display:flex;gap:8px;margin-top:9px;}
-        .btn-xs{padding:9px 12px;font-size:14px;border-radius:9px;font-weight:bold;border:none;cursor:pointer;flex:1;text-align:center;color:white;}
-        /* Daily message */
-        .daily-card{background:linear-gradient(135deg,var(--primary),#7c3aed);border-radius:18px;padding:18px;margin-bottom:18px;border:none;}
-        .daily-card p{margin:8px 0 0;font-size:16px;line-height:1.5;color:#fff;}
-        .daily-day{font-size:12px;color:rgba(255,255,255,.7);margin-bottom:4px;}
+        .sol-box{background:var(--input-bg);border:2px solid var(--warn);padding:11px;border-radius:11px;margin-bottom:8px;}
+        .sol-acc{display:flex;gap:7px;margin-top:8px;}
+        .btn-xs{padding:8px 11px;font-size:13px;border-radius:8px;font-weight:bold;border:none;cursor:pointer;flex:1;text-align:center;color:white;}
+        /* Mensaje diario */
+        .daily-card{background:linear-gradient(135deg,var(--primary),#7c3aed);border-radius:16px;padding:16px;margin-bottom:16px;}
+        .daily-card p{margin:6px 0 0;font-size:15px;line-height:1.5;color:#fff;font-style:italic;}
+        .daily-day{font-size:11px;color:rgba(255,255,255,.7);margin-bottom:3px;font-weight:bold;text-transform:uppercase;}
         /* Navbar */
-        .navbar{position:absolute;bottom:0;left:0;right:0;height:90px;background:var(--card-bg);border-top:2px solid var(--border);display:flex;justify-content:space-around;align-items:center;}
-        .nav-i{color:var(--muted);cursor:pointer;text-align:center;font-size:11px;font-weight:bold;flex:1;padding:4px 0;}
+        .navbar{position:absolute;bottom:0;left:0;right:0;height:88px;background:var(--card-bg);border-top:2px solid var(--border);display:flex;justify-content:space-around;align-items:center;}
+        .nav-i{color:var(--muted);cursor:pointer;text-align:center;font-size:10px;font-weight:bold;flex:1;padding:4px 0;line-height:1.2;}
         .nav-i.on{color:var(--primary);}
-        .nav-ico{font-size:20px;margin-bottom:2px;}
-        /* Upload */
-        .up-bar-bg{height:7px;background:var(--input-border);border-radius:4px;margin-bottom:14px;overflow:hidden;}
+        .nav-ico{font-size:19px;margin-bottom:2px;}
+        /* Upload bar */
+        .up-bar-bg{height:6px;background:var(--input-border);border-radius:3px;margin-bottom:12px;overflow:hidden;}
         .up-bar-fill{height:100%;background:var(--primary);transition:width .3s;}
-        /* Add adiccion */
-        .add-ad{border:2px dashed var(--input-border);border-radius:14px;padding:16px;margin-bottom:18px;background:var(--input-bg);}
-        .admin-tgl{display:block;text-align:right;color:var(--muted);font-size:14px;text-decoration:underline;cursor:pointer;margin-top:-10px;margin-bottom:18px;}
-        /* Dot notif */
-        .dot{display:inline-block;width:8px;height:8px;background:#dc2626;border-radius:50%;margin-left:3px;vertical-align:middle;}
+        /* Agregar adiccion */
+        .add-ad{border:2px dashed var(--input-border);border-radius:13px;padding:14px;margin-bottom:16px;background:var(--input-bg);}
+        .admin-tgl{display:block;text-align:right;color:var(--muted);font-size:13px;text-decoration:underline;cursor:pointer;margin-top:-9px;margin-bottom:16px;}
+        /* Notificacion dot */
+        .dot{display:inline-block;width:7px;height:7px;background:#dc2626;border-radius:50%;margin-left:2px;vertical-align:middle;}
     </style>
 </head>
 <body>
@@ -181,7 +185,7 @@ const MENSAJES_DIARIOS = [
     "Rodeate de quienes te impulsan hacia adelante.",
     "El arrepentimiento mira hacia atras. La recuperacion mira hacia adelante.",
     "Cada reunion a la que asistes es una inversion en ti mismo.",
-    "La vida sobria no es una pérdida. Es un descubrimiento de quien eres.",
+    "La vida sobria no es una perdida. Es un descubrimiento de quien eres.",
     "Tienes mas fuerza de la que crees. Tu historia lo demuestra.",
     "Hoy se amable contigo mismo. La recuperacion requiere compasion.",
     "Mantenerse sobrio un dia mas es el logro mas importante del dia."
@@ -196,17 +200,19 @@ function App() {
     const [pasosComp, setPasosComp] = React.useState([]);
     const [biblioteca, setBiblioteca] = React.useState([]);
     const [eventos, setEventos] = React.useState([]);
+    const [eventosProx, setEventosProx] = React.useState([]);
     const [solicitudes, setSolicitudes] = React.useState([]);
     const [directorio, setDirectorio] = React.useState([]);
     const [miembrosSede, setMiembrosSede] = React.useState([]);
     const [aliento, setAliento] = React.useState(false);
     const [lectura, setLectura] = React.useState("");
+    const [elimAdMode, setElimAdMode] = React.useState(false);
 
-    // Phone
+    // Telefono
     const [miTel, setMiTel] = React.useState("");
     const [errTel, setErrTel] = React.useState("");
 
-    // Registro
+    // Registro / Login
     const [nombre, setNombre] = React.useState("");
     const [sede, setSede] = React.useState("");
     const [telReg, setTelReg] = React.useState("+569");
@@ -239,8 +245,8 @@ function App() {
 
     // Mensaje del dia
     const msgDia = MENSAJES_DIARIOS[(new Date().getDate() - 1) % MENSAJES_DIARIOS.length];
-    const diasSemana = ["Domingo","Lunes","Martes","Miercoles","Jueves","Viernes","Sabado"];
-    const hoyStr = diasSemana[new Date().getDay()] + " " + new Date().getDate();
+    const diasSem = ["Domingo","Lunes","Martes","Miercoles","Jueves","Viernes","Sabado"];
+    const hoyStr = diasSem[new Date().getDay()] + " " + new Date().getDate();
 
     React.useEffect(() => {
         const t = localStorage.getItem("tema_nv");
@@ -263,20 +269,23 @@ function App() {
                 setMisAds(u.adicciones || {});
                 setPasoActual(u.paso_actual || 0);
                 setPasosComp(u.pasos_completados || []);
-                const tel = (u.telefonos && u.telefonos.length > 0) ? u.telefonos[0] : "";
-                setMiTel(tel);
-                setUser(prev => { const a = {...prev, estado: u.estado}; localStorage.setItem("sesion_nv", JSON.stringify(a)); return a; });
+                setMiTel((u.telefonos && u.telefonos.length > 0) ? u.telefonos[0] : "");
+                setUser(prev => { const a={...prev, estado:u.estado}; localStorage.setItem("sesion_nv", JSON.stringify(a)); return a; });
             }
-            const { data: b } = await supabase.from('biblioteca').select('*').eq('grupo_id', user.grupoId).order('id', {ascending:false});
+            const { data: b } = await supabase.from('biblioteca').select('*').eq('grupo_id', user.grupoId).order('id',{ascending:false});
             if (b) setBiblioteca(b);
-            const { data: e } = await supabase.from('eventos').select('*').eq('grupo_id', user.grupoId).order('fecha', {ascending:true});
-            if (e) setEventos(e);
-            const { data: d } = await supabase.from('usuarios').select('nombre_real,grupo_id,grupo_nombre,telefonos,rol').eq('estado','autorizado').order('grupo_nombre', {ascending:true});
+            const { data: e } = await supabase.from('eventos').select('*').eq('grupo_id', user.grupoId).order('fecha',{ascending:true});
+            if (e) {
+                setEventos(e);
+                const hoy = new Date().toISOString().split('T')[0];
+                setEventosProx(e.filter(ev => ev.fecha >= hoy));
+            }
+            const { data: d } = await supabase.from('usuarios').select('nombre_real,grupo_id,grupo_nombre,telefonos,rol').eq('estado','autorizado').order('grupo_nombre',{ascending:true});
             if (d) setDirectorio(d);
             if (user.rol === 'admin') {
-                const { data: p } = await supabase.from('usuarios').select('*').eq('grupo_id', user.grupoId).eq('estado','pendiente');
+                const { data: p } = await supabase.from('usuarios').select('*').eq('grupo_id',user.grupoId).eq('estado','pendiente');
                 if (p) setSolicitudes(p);
-                const { data: m } = await supabase.from('usuarios').select('*').eq('grupo_id', user.grupoId).neq('estado','pendiente').order('nombre_real', {ascending:true});
+                const { data: m } = await supabase.from('usuarios').select('*').eq('grupo_id',user.grupoId).neq('estado','pendiente').order('nombre_real',{ascending:true});
                 if (m) setMiembrosSede(m);
             }
         } catch(e) {}
@@ -286,9 +295,9 @@ function App() {
 
     const validTel = (v, setter, errSetter) => {
         setter(v);
-        if (!v || v === "+569" || v.trim() === "") { errSetter(""); return; }
+        if (!v || v==="+569" || v.trim()==="") { errSetter(""); return; }
         const l = v.replace(/\s/g,"");
-        if (!l.startsWith("+")) errSetter("Debe comenzar con codigo de pais.\n📌 Chile: +56912345678 · EEUU: +1234567890 · Argentina: +5491123456");
+        if (!l.startsWith("+")) errSetter("Debe comenzar con el codigo del pais.\n📌 Chile: +56912345678 · EEUU: +1234567890");
         else if (!/^\+[0-9]{8,14}$/.test(l)) errSetter("Solo numeros despues del '+'. Entre 8 y 14 digitos.\n📌 Ejemplo: +56912345678");
         else errSetter("");
     };
@@ -301,14 +310,14 @@ function App() {
     };
 
     const toggleComp = async (num) => {
-        const nuevos = pasosComp.includes(num) ? pasosComp.filter(p => p !== num) : [...pasosComp, num];
-        const { error } = await supabase.from('usuarios').update({pasos_completados: nuevos}).eq('username', user.username);
+        const nuevos = pasosComp.includes(num) ? pasosComp.filter(p=>p!==num) : [...pasosComp, num];
+        const { error } = await supabase.from('usuarios').update({pasos_completados:nuevos}).eq('username',user.username);
         if (!error) setPasosComp(nuevos);
     };
 
     const setActual = async (num) => {
-        const nuevo = pasoActual === num ? 0 : num;
-        const { error } = await supabase.from('usuarios').update({paso_actual: nuevo}).eq('username', user.username);
+        const nuevo = pasoActual===num ? 0 : num;
+        const { error } = await supabase.from('usuarios').update({paso_actual:nuevo}).eq('username',user.username);
         if (!error) setPasoActual(nuevo);
     };
 
@@ -316,30 +325,38 @@ function App() {
         e.preventDefault();
         if (errTel) return alert("Corrige el telefono antes de guardar.");
         const tels = miTel.trim() ? [miTel.trim()] : [];
-        const { error } = await supabase.from('usuarios').update({telefonos: tels}).eq('username', user.username);
-        if (!error) alert("Telefono actualizado correctamente.");
+        const { error } = await supabase.from('usuarios').update({telefonos:tels}).eq('username',user.username);
+        if (!error) alert("Telefono actualizado.");
         else alert("Error: " + error.message);
     };
 
-    const reinciar = async (ad) => {
+    const reiniciar = async (ad) => {
         const hoy = new Date().toISOString().split('T')[0];
-        const nuevas = {...misAds, [ad]: hoy};
-        const { error } = await supabase.from('usuarios').update({adicciones: nuevas}).eq('username', user.username);
+        const nuevas = {...misAds, [ad]:hoy};
+        const { error } = await supabase.from('usuarios').update({adicciones:nuevas}).eq('username',user.username);
         if (!error) { setMisAds(nuevas); setLectura(LECTURAS[Math.floor(Math.random()*LECTURAS.length)]); setAliento(true); }
+    };
+
+    const eliminarAd = async (ad) => {
+        if (!confirm("Eliminar contador de \"" + ad + "\"? Se perdera el registro de dias.")) return;
+        const nuevas = {...misAds}; delete nuevas[ad];
+        const { error } = await supabase.from('usuarios').update({adicciones:nuevas}).eq('username',user.username);
+        if (!error) { setMisAds(nuevas); alert("Contador eliminado."); }
     };
 
     const agregarAd = async () => {
         if (!nuevaAd) return;
         const hoy = new Date().toISOString().split('T')[0];
-        const nuevas = {...misAds, [nuevaAd]: hoy};
-        const { error } = await supabase.from('usuarios').update({adicciones: nuevas}).eq('username', user.username);
+        const nuevas = {...misAds, [nuevaAd]:hoy};
+        const { error } = await supabase.from('usuarios').update({adicciones:nuevas}).eq('username',user.username);
         if (!error) { setMisAds(nuevas); setNuevaAd(""); alert("Padecimiento agregado. Contador parte desde hoy."); }
     };
 
+    // ── REGISTRO ──────────────────────────────────────────────────────
     const registrar = async (e) => {
         e.preventDefault();
         if (!nombre || !sede) return alert("Completa nombre y sede.");
-        if (errTelReg) return alert("Corrige el telefono.");
+        if (errTelReg) return alert("Corrige el numero de telefono.");
         let rol = "basico", estado = "pendiente";
         if (showAdmin) {
             if (claveAdm !== CLAVE_ADMIN) return alert("Clave de administrador incorrecta.");
@@ -348,13 +365,16 @@ function App() {
         const g = GRUPOS.find(x => x.id === sede);
         const uid = nombre.replace(/\s+/g,"") + "_" + g.id;
         try {
-            const { data: ex } = await supabase.from('usuarios').select('username').eq('username', uid).maybeSingle();
+            const { data: ex } = await supabase.from('usuarios').select('username').eq('username',uid).maybeSingle();
             if (ex) return alert("El nombre \"" + nombre + "\" ya existe en esta sede.");
             const ads = {};
             ADICCIONES.forEach(a => { if (checks[a]) ads[a] = fechas[a] || new Date().toISOString().split('T')[0]; });
             const tel = telReg.trim();
             const tels = (tel && tel !== "+569") ? [tel] : [];
-            const { error } = await supabase.from('usuarios').insert([{username:uid, nombre_real:nombre, grupo_id:sede, grupo_nombre:g.nombre, rol, estado, adicciones:ads, telefonos:tels, paso_actual:0, pasos_completados:[]}]);
+            const { error } = await supabase.from('usuarios').insert([{
+                username:uid, nombre_real:nombre, grupo_id:sede, grupo_nombre:g.nombre,
+                rol, estado, adicciones:ads, telefonos:tels, paso_actual:0, pasos_completados:[]
+            }]);
             if (error) { alert("Error: " + error.message); return; }
             const s = {username:uid, nombreReal:nombre, grupoId:sede, grupoNombre:g.nombre, rol, estado};
             localStorage.setItem("sesion_nv", JSON.stringify(s));
@@ -365,18 +385,19 @@ function App() {
     const entrar = async (e) => {
         e.preventDefault();
         if (!loginId) return;
-        const { data } = await supabase.from('usuarios').select('*').eq('username', loginId).maybeSingle();
+        const { data } = await supabase.from('usuarios').select('*').eq('username',loginId).maybeSingle();
         if (data) {
             const s = {username:data.username, nombreReal:data.nombre_real, grupoId:data.grupo_id, grupoNombre:data.grupo_nombre, rol:data.rol, estado:data.estado};
             localStorage.setItem("sesion_nv", JSON.stringify(s));
-            setUser(s); setMisAds(data.adicciones||{}); setPasoActual(data.paso_actual||0); setPasosComp(data.pasos_completados||[]);
-            const tel = (data.telefonos && data.telefonos.length > 0) ? data.telefonos[0] : "";
-            setMiTel(tel);
+            setUser(s); setMisAds(data.adicciones||{}); setPasoActual(data.paso_actual||0);
+            setPasosComp(data.pasos_completados||[]);
+            setMiTel((data.telefonos && data.telefonos.length>0) ? data.telefonos[0] : "");
         } else alert("Identificador no encontrado.");
     };
 
-    const salir = () => { localStorage.removeItem("sesion_nv"); setUser(null); };
+    const salir = () => { if (!confirm("Cerrar sesion?")) return; localStorage.removeItem("sesion_nv"); setUser(null); };
 
+    // ── BIBLIOTECA ────────────────────────────────────────────────────
     const subirBib = async (e) => {
         e.preventDefault();
         if (!libTit) return alert("Escribe un titulo para el recurso.");
@@ -385,48 +406,30 @@ function App() {
             if (!libUrl) return alert("Pega el enlace URL del recurso.");
             url = libUrl.trim();
         } else {
-            if (!libFile) return alert("Selecciona un archivo primero.");
-            const maxMB = 10;
-            if (libFile.size > maxMB * 1024 * 1024) return alert("El archivo supera los 10MB. Usa un enlace URL para archivos grandes.");
+            if (!libFile) return alert("Selecciona un archivo.");
+            if (libFile.size > 10*1024*1024) return alert("El archivo supera los 10MB. Sube el archivo a Google Drive y pega el enlace.");
             setSubiendo(true); setUpPct(15);
             try {
-                const ext = libFile.name.split('.').pop();
-                const fn = Date.now() + "_" + libFile.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+                const fn = Date.now() + "_" + libFile.name.replace(/[^a-zA-Z0-9._-]/g,"_");
                 setUpPct(40);
-                const { data: upData, error: upErr } = await supabase.storage
-                    .from('archivos')
-                    .upload(fn, libFile, { upsert: true, contentType: libFile.type });
-                if (upErr) {
-                    setSubiendo(false);
-                    if (upErr.message.includes('Bucket not found')) {
-                        return alert("Error: El bucket de archivos no existe.\nVe a Supabase → Storage → New Bucket → 'archivos' → Public ON");
-                    }
-                    return alert("Error al subir archivo: " + upErr.message);
-                }
+                const { error: upErr } = await supabase.storage.from('archivos').upload(fn, libFile, {upsert:true, contentType:libFile.type});
+                if (upErr) { setSubiendo(false); return alert("Error al subir: " + upErr.message); }
                 setUpPct(85);
                 const { data: pub } = supabase.storage.from('archivos').getPublicUrl(fn);
-                if (!pub || !pub.publicUrl) { setSubiendo(false); return alert("Error: No se pudo obtener la URL publica del archivo."); }
-                url = pub.publicUrl;
-                setUpPct(100);
-            } catch(err) {
-                setSubiendo(false);
-                return alert("Error inesperado: " + err.message);
-            }
+                if (!pub?.publicUrl) { setSubiendo(false); return alert("Error: No se pudo obtener la URL del archivo."); }
+                url = pub.publicUrl; setUpPct(100);
+            } catch(err) { setSubiendo(false); return alert("Error: " + err.message); }
             setSubiendo(false); setUpPct(0);
         }
         const { error } = await supabase.from('biblioteca').insert([{grupo_id:user.grupoId, titulo:libTit, tipo:libTipo, link:url}]);
-        if (!error) {
-            setLibTit(""); setLibUrl(""); setLibFile(null);
-            cargar();
-            alert("Publicado con exito.");
-        } else {
-            alert("Error al guardar en biblioteca: " + error.message);
-        }
+        if (!error) { setLibTit(""); setLibUrl(""); setLibFile(null); cargar(); alert("Publicado con exito."); }
+        else alert("Error: " + error.message);
     };
 
+    // ── EVENTOS ───────────────────────────────────────────────────────
     const crearEv = async (e) => {
         e.preventDefault();
-        if (!evTit || !evFecha || !evHora || !evLugar) return alert("Completa titulo, fecha, hora y direccion.");
+        if (!evTit||!evFecha||!evHora||!evLugar) return alert("Completa titulo, fecha, hora y direccion.");
         if (errHora) return alert("Corrige la hora.");
         const { error } = await supabase.from('eventos').insert([{grupo_id:user.grupoId, titulo:evTit, fecha:evFecha, hora:evHora, lugar:evLugar, nota:evNota}]);
         if (!error) { alert("Evento publicado."); setEvTit(""); setEvFecha(""); setEvHora(""); setEvLugar(""); setEvNota(""); cargar(); }
@@ -435,6 +438,7 @@ function App() {
 
     const elimEv = async (id) => { if (!confirm("Eliminar evento?")) return; await supabase.from('eventos').delete().eq('id',id); cargar(); };
 
+    // ── ADMIN ─────────────────────────────────────────────────────────
     const gestionarSol = async (username, aprobar) => {
         if (aprobar) {
             const { error } = await supabase.from('usuarios').update({estado:'autorizado'}).eq('username',username);
@@ -447,94 +451,417 @@ function App() {
     };
 
     const elimMiembro = async (username, nombreReal) => {
-        if (!confirm("ATENCION: Esto eliminara permanentemente el registro de \"" + nombreReal + "\".\n\n¿Confirmas que esta persona ya no pertenece a la sede?")) return;
+        if (!confirm("ATENCION: Esto eliminara permanentemente el registro de \"" + nombreReal + "\".\n¿Confirmas?")) return;
         const { error } = await supabase.from('usuarios').delete().eq('username',username);
         if (!error) { alert("Registro eliminado."); cargar(); }
         else alert("Error: " + error.message);
     };
 
-    const dias = f => { if (!f) return 0; const d = Math.floor((new Date()-new Date(f))/86400000); return d<0?0:d; };
+    const dias = f => { if (!f) return 0; const d=Math.floor((new Date()-new Date(f))/86400000); return d<0?0:d; };
     const mapsUrl = dir => "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(dir);
 
     const dirAgrupado = GRUPOS.map(g => {
         const todos = directorio.filter(u => u.grupo_id === g.id);
-        return {...g, admins: todos.filter(u => u.rol==='admin'), miembros: todos.filter(u => u.rol!=='admin')};
+        return {...g, admins:todos.filter(u=>u.rol==='admin'), miembros:todos.filter(u=>u.rol!=='admin')};
     });
-
     const adsPendientes = ADICCIONES.filter(a => !misAds[a]);
-    const cls = "app" + (!dark?" light":"");
+    const cls = "app" + (!dark ? " light" : "");
+    const logoFilter = dark ? "none" : "none"; // Eliminada la inversión forzada si usas logos de color real
 
-    // LOGIN
+    // ── PANTALLA LOGIN ────────────────────────────────────────────────
     if (!user) return (
-        <div className={cls} style={{padding:'18px', justifyContent:'center'}}>
+        <div className={cls} style={{padding:'16px',justifyContent:'center'}}>
+            <div style={{textAlign:'center', marginBottom:'20px'}}>
+                {/* LOGO DEL LOGIN: Se usa 2-192.png (Logo interno de la app) */}
+                <img src="2-192.png" alt="AA" style={{width:'72px',height:'72px',objectFit:'contain'}} />
+                <h2 style={{color:'var(--primary)',fontSize:'22px',margin:'8px 0 0'}}>Nueva Vida AA</h2>
+                <p style={{color:'var(--muted)',fontSize:'13px',margin:'4px 0 0'}}>Solo por Hoy</p>
+            </div>
             <div className="card">
                 <button className="tema-btn" onClick={toggleTema}>{dark?"☀️":"🌙"}</button>
-                <div className="hdr-logo" style={{textAlign:'center', marginTop:'8px'}}>AA</div>
-                <h2 style={{color:'var(--primary)', fontSize:'24px', textAlign:'center', margin:'0 0 18px'}}>Nueva Vida</h2>
                 <form onSubmit={registrar}>
-                    <h4 style={{color:'var(--accent)', marginBottom:'5px'}}>1. Registrarse</h4>
+                    <h4 style={{color:'var(--accent)',marginBottom:'5px'}}>1. Registrarse</h4>
                     <input type="text" className="field" placeholder="Nombre o Alias (Obligatorio)" value={nombre} onChange={e=>setNombre(e.target.value)} />
                     <select className="field" value={sede} onChange={e=>setSede(e.target.value)}>
                         <option value="">-- Seleccionar Sede --</option>
                         {GRUPOS.map(g=><option key={g.id} value={g.id}>{g.nombre}</option>)}
                     </select>
-                    <label style={{fontSize:'14px', fontWeight:'bold', color:'var(--muted)'}}>WhatsApp (Opcional):</label>
-                    <input type="tel" className={"field"+(errTelReg?" err":"")} placeholder="+56912345678" value={telReg} onChange={e=>validTel(e.target.value, setTelReg, setErrTelReg)} />
+                    <label style={{fontSize:'13px',fontWeight:'bold',color:'var(--muted)'}}>WhatsApp (Opcional):</label>
+                    <input type="tel" className={"field"+(errTelReg?" err":"")} placeholder="+56912345678" value={telReg} onChange={e=>validTel(e.target.value,setTelReg,setErrTelReg)} />
                     {errTelReg && <span className="errmsg">⚠️ {errTelReg}</span>}
-                    <span className="admin-tgl" onClick={()=>{setShowAdmin(!showAdmin); setClaveAdm("");}}>¿Soy administrador autorizado?</span>
+                    <span className="admin-tgl" onClick={()=>{setShowAdmin(!showAdmin);setClaveAdm("");}}>¿Soy administrador autorizado?</span>
                     {showAdmin && (
-                        <div style={{background:'var(--input-bg)', padding:'14px', borderRadius:'12px', marginBottom:'16px', border:'2px solid #7c3aed'}}>
-                            <label style={{fontSize:'14px', color:'#a78bfa', fontWeight:'bold'}}>Clave de Administrador:</label>
-                            <input type="password" className="field" style={{marginBottom:'4px'}} placeholder="Codigo secreto" value={claveAdm} onChange={e=>setClaveAdm(e.target.value)} />
+                        <div style={{background:'var(--input-bg)',padding:'13px',borderRadius:'11px',marginBottom:'14px',border:'2px solid #7c3aed'}}>
+                            <label style={{fontSize:'13px',color:'#a78bfa',fontWeight:'bold'}}>Clave de Administrador:</label>
+                            <input type="password" className="field" style={{marginBottom:'3px'}} placeholder="Codigo secreto" value={claveAdm} onChange={e=>setClaveAdm(e.target.value)} />
                         </div>
                     )}
-                    <h4 style={{color:'var(--warn)', fontSize:'17px', marginBottom:'10px'}}>Padecimientos iniciales:</h4>
+                    <h4 style={{color:'var(--warn)',fontSize:'16px',marginBottom:'9px'}}>Padecimientos iniciales:</h4>
                     {ADICCIONES.map(a=>(
                         <div key={a} className="chk-g">
                             <label className="chk-l">
-                                <input type="checkbox" className="chk-c" checked={!!checks[a]} onChange={e=>setChecks({...checks,[a]:e.target.checked})} />{a}
+                                <input type="checkbox" className="chk-c" checked={!!checks[a]} onChange={e=>{const c={...checks,[a]:e.target.checked};setChecks(c);if(!e.target.checked){const f={...fechas};delete f[a];setFechas(f);}}} />
+                                <span>{a}</span>
                             </label>
-                            {checks[a] && <input type="date" className="field" style={{marginBottom:0, marginTop:'7px'}} value={fechas[a]||""} onChange={e=>setFechas({...fechas,[a]:e.target.value})} />}
+                            {checks[a] && (
+                                <div style={{marginTop:'8px'}}>
+                                    <label style={{fontSize:'12px',color:'var(--muted)',display:'block'}}>Fecha del último consumo (Dejar hoy para empezar de 0):</label>
+                                    <input type="date" className="field" style={{padding:'7px',marginTop:'3px',marginBottom:'0'}} value={fechas[a]||new Date().toISOString().split('T')[0]} onChange={e=>setFechas({...fechas,[a]:e.target.value})} />
+                                </div>
+                            )}
                         </div>
                     ))}
-                    <button type="submit" className="btn btn-s" style={{marginTop:'14px'}}>Registrar e Ingresar</button>
-                </form>
-                <hr style={{borderColor:'var(--border)', margin:'26px 0'}} />
-                <form onSubmit={entrar}>
-                    <h4 style={{marginBottom:'5px', color:'var(--text)'}}>2. Ya tengo cuenta</h4>
-                    <input type="text" className="field" placeholder="Ej: Pedro_san-jose-renca" value={loginId} onChange={e=>setLoginId(e.target.value)} />
-                    <button type="submit" className="btn btn-g">Entrar</button>
+                    <button type="submit" className="btn btn-s" style={{marginTop:'10px'}}>Solicitar Registro</button>
                 </form>
             </div>
-        </div>
-    );
-
-    if (user.estado === 'pendiente') return (
-        <div className={cls} style={{padding:'18px', justifyContent:'center', textAlign:'center'}}>
             <div className="card">
-                <div style={{fontSize:'52px'}}>⏳</div>
-                <h2 style={{color:'var(--text)'}}>Cuenta en Revision</h2>
-                <p style={{color:'var(--muted)'}}>Tu identificador:</p>
-                <p style={{background:'var(--bg-body)', padding:'12px', borderRadius:'9px', color:'var(--primary)', fontFamily:'monospace', fontWeight:'bold', fontSize:'16px'}}>{user.username}</p>
-                <p style={{color:'var(--warn)', fontSize:'15px'}}>El administrador de tu sede debe aprobar tu solicitud.</p>
-                <button className="btn btn-g" style={{marginTop:'14px'}} onClick={salir}>Volver</button>
+                <form onSubmit={entrar}>
+                    <h4 style={{color:'var(--primary)',marginBottom:'5px'}}>2. Ya tengo cuenta</h4>
+                    <p style={{fontSize:'12px',color:'var(--muted)',margin:'0 0 8px'}}>Pega tu Identificador Único exacto generado al registrarte:</p>
+                    <input type="text" className="field" placeholder="Ejemplo: MiNombre_san-jose-renca" value={loginId} onChange={e=>setLoginId(e.target.value.trim())} />
+                    <button type="submit" className="btn">Entrar</button>
+                </form>
             </div>
         </div>
     );
 
+    // ── PANTALLA DE ESPERA (PENDIENTE DE APROBACIÓN) ────────────────────
+    if (user.estado === 'pendiente') return (
+        <div className={cls} style={{padding:'16px',justifyContent:'center',textAlign:'center'}}>
+            <div className="card" style={{border:'3px solid var(--warn)'}}>
+                <button className="tema-btn" onClick={toggleTema}>{dark?"☀️":"🌙"}</button>
+                <h3 style={{color:'var(--warn)',marginTop:'0'}}>⏰ Solicitud en Espera</h3>
+                <p style={{fontSize:'15px',lineHeight:'1.5'}}>Hola <b>{user.nombreReal}</b>. Tu solicitud para unirte a la sede <b>{user.grupoNombre}</b> ha sido registrada.</p>
+                <p style={{fontSize:'14px',color:'var(--muted)'}}>El administrador de la sede recibirá la notificación dentro de la plataforma para autorizar tu cuenta.</p>
+                <div style={{background:'var(--input-bg)',padding:'12px',borderRadius:'10px',margin:'16px 0',border:'1px solid var(--border)'}}>
+                    <span style={{fontSize:'11px',color:'var(--muted)',display:'block',textTransform:'uppercase'}}>Tu identificador de acceso es:</span>
+                    <code style={{fontSize:'15px',fontWeight:'bold',color:'var(--primary)',wordBreak:'break-all'}}>{user.username}</code>
+                </div>
+                <p style={{fontSize:'12px',color:'var(--danger)'}}>💡 Guarda tu identificador. Lo necesitarás si cambias de teléfono o borras los datos.</p>
+                <button onClick={salir} className="btn btn-g btn-sm" style={{marginTop:'10px'}}>Volver al Inicio</button>
+            </div>
+        </div>
+    );
+
+    // ── APLICACIÓN PRINCIPAL ──────────────────────────────────────────
     return (
         <div className={cls}>
+            <header className="hdr">
+                {/* CABECERA INTERNA: Se usa 2-192.png (Logo interno de la app) */}
+                <img src="2-192.png" alt="Logo" style={{width:'36px',height:'36px',objectFit:'contain'}} />
+                <div className="hdr-info">
+                    <h1>Nueva Vida AA</h1>
+                    <div className="hdr-sub">{user.grupoNombre}</div>
+                    <div className="hdr-nombre">Usuario: {user.nombreReal}</div>
+                </div>
+                <button className="tema-btn" onClick={toggleTema}>{dark?"☀️":"🌙"}</button>
+            </header>
+
+            <div className="content">
+                {tab === "inicio" && (
+                    <div>
+                        <div className="daily-card">
+                            <div className="daily-day">{hoyStr}</div>
+                            <p>"{msgDia}"</p>
+                        </div>
+                        <h3 style={{margin:'0 0 12px',fontSize:'20px',color:'var(--primary)'}}>Mis Contadores (Días Sobrio)</h3>
+                        {Object.keys(misAds).length === 0 ? (
+                            <p style={{fontSize:'14px',color:'var(--muted)'}}>No tienes contadores activos.</p>
+                        ) : (
+                            Object.entries(misAds).map(([ad,fecha])=>(
+                                <div key={ad} className="card" style={{position:'relative',paddingBottom:'14px'}}>
+                                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline'}}>
+                                        <span style={{fontWeight:'bold',fontSize:'18px'}}>{ad}</span>
+                                        <span style={{fontSize:'12px',color:'var(--muted)'}}>Desde: {fecha}</span>
+                                    </div>
+                                    <div style={{fontSize:'38px',fontWeight:'900',color:'var(--accent)',margin:'10px 0 6px'}}>
+                                        {dias(fecha)} <span style={{fontSize:'16px',fontWeight:'normal',color:'var(--text)'}}>días libres</span>
+                                    </div>
+                                    <div style={{display:'flex',gap:'7px',marginTop:'10px'}}>
+                                        <button className="btn btn-w btn-sm" onClick={()=>reiniciar(ad)}>🔄 Recaída / Reiniciar</button>
+                                        {elimAdMode && <button className="btn btn-d btn-sm" onClick={()=>eliminarAd(ad)}>🗑️ Quitar</button>}
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                        <span className="admin-tgl" style={{textAlign:'left',marginBottom:'16px'}} onClick={()=>setElimAdMode(!elimAdMode)}>
+                            {elimAdMode ? "✅ Finalizar Edición" : "⚙️ Gestionar contadores"}
+                        </span>
+
+                        <div className="add-ad">
+                            <h4 style={{margin:'0 0 8px',fontSize:'15px',color:'var(--muted)'}}>➕ Agregar otro padecimiento:</h4>
+                            <div style={{display:'flex',gap:'7px'}}>
+                                <select className="field" style={{margin:0,flex:1}} value={nuevaAd} onChange={e=>setNuevaAd(e.target.value)}>
+                                    <option value="">-- Seleccionar --</option>
+                                    {adsPendientes.map(a=><option key={a} value={a}>{a}</option>)}
+                                </select>
+                                <button className="btn btn-s btn-sm" onClick={agregarAd}>Agregar</button>
+                            </div>
+                        </div>
+
+                        {eventosProx.length > 0 && (
+                            <div style={{marginTop:'20px'}}>
+                                <h3 style={{margin:'0 0 10px',fontSize:'17px',color:'var(--warn)'}}>📢 Próximo Evento de la Sede</h3>
+                                <div className="ev-card">
+                                    <div className="ev-title">{eventosProx[0].titulo}</div>
+                                    <div style={{fontSize:'14px',margin:'2px 0'}}>📅 {eventosProx[0].fecha} a las 🕒 {eventosProx[0].hora} hrs.</div>
+                                    <div style={{fontSize:'14px',fontWeight:'bold'}}>📍 {eventosProx[0].lugar}</div>
+                                    {eventosProx[0].nota && <div style={{fontSize:'13px',color:'var(--muted)',marginTop:'5px',fontStyle:'italic'}}>Nota: {eventosProx[0].nota}</div>}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {tab === "pasos" && (
+                    <div>
+                        <h3 style={{marginTop:'0',marginBottom:'4px'}}>Los 12 Pasos de AA</h3>
+                        <div className="paso-prog">Mi progreso: {pasosComp.length} de 12</div>
+                        <div className="progress-bg" style={{marginBottom:'16px'}}>
+                            <div className="progress-fill" style={{width:((pasosComp.length/12)*100)+'%'}}></div>
+                        </div>
+                        {PASOS_AA.map((p, i) => {
+                            const num = i + 1;
+                            const comp = pasosComp.includes(num);
+                            const act = pasoActual === num;
+                            let rowCls = "paso-row";
+                            if (comp) rowCls += " p-done";
+                            else if (act) rowCls += " p-actual";
+                            return (
+                                <div key={num} className={rowCls}>
+                                    <div className="paso-n">{num}</div>
+                                    <div className="paso-txt">{p}</div>
+                                    <div className="paso-btns">
+                                        <button className={"paso-ico"+(comp?" on":"")} title="Marcar completado" onClick={()=>toggleComp(num)}>✅</button>
+                                        <button className={"paso-ico"+(act?" on":"")} title="Marcar paso actual" onClick={()=>setActual(num)}>📌</button>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+
+                {tab === "biblioteca" && (
+                    <div>
+                        {user.rol === 'admin' && (
+                            <div className="card" style={{borderColor:'var(--primary)'}}>
+                                <h4 style={{marginTop:'0',color:'var(--primary)',marginBottom:'10px'}}>📚 Publicar Recurso (Sólo Admin)</h4>
+                                <form onSubmit={subirBib}>
+                                    <input type="text" className="field" placeholder="Título del archivo o lectura" value={libTit} onChange={e=>setLibTit(e.target.value)} />
+                                    <div style={{display:'flex',gap:'7px',marginBottom:'12px'}}>
+                                        <select className="field" style={{margin:0,flex:1}} value={libTipo} onChange={e=>setLibTipo(e.target.value)}>
+                                            <option value="Documento">📄 Documento / PDF</option>
+                                            <option value="Audio">🎵 Audio / Reunión Grabada</option>
+                                            <option value="Libro">📘 Libro Completo</option>
+                                        </select>
+                                    </div>
+                                    <div className="modo-toggle">
+                                        <div className={"modo-btn"+(modoLib==='url'?' on':'')} onClick={()=>setModoLib('url')}>🔗 Enlace URL</div>
+                                        <div className={"modo-btn"+(modoLib==='file'?' on':'')} onClick={()=>setModoLib('file')}>📁 Subir Archivo (-10MB)</div>
+                                    </div>
+                                    {modoLib === 'url' ? (
+                                        <input type="url" className="field" placeholder="https://ejemplo.com/archivo.pdf" value={libUrl} onChange={e=>setLibUrl(e.target.value)} />
+                                    ) : (
+                                        <div style={{marginBottom:'14px'}}>
+                                            <input type="file" accept=".pdf,.doc,.docx,.mp3,.jpg,.png" onChange={e=>setLibFile(e.target.files[0])} />
+                                            {subiendo && (
+                                                <div style={{marginTop:'8px'}}>
+                                                    <div className="up-bar-bg"><div className="up-bar-fill" style={{width:upPct+'%'}}></div></div>
+                                                    <span style={{fontSize:'12px',color:'var(--warn)'}}>Subiendo al servidor... {upPct}%</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                    <button type="submit" className="btn btn-sm btn-s" disabled={subiendo}>Publicar en la Sede</button>
+                                </form>
+                            </div>
+                        )}
+                        <h3 style={{marginTop:'0'}}>Biblioteca de la Sede</h3>
+                        {biblioteca.length === 0 ? (
+                            <p style={{fontSize:'14px',color:'var(--muted)'}}>No hay archivos compartidos aún en esta sede.</p>
+                        ) : (
+                            biblioteca.map(b => (
+                                <div key={b.id} className="bib-item">
+                                    <div>
+                                        <div style={{fontWeight:'bold',fontSize:'16px'}}>{b.titulo}</div>
+                                        <span style={{fontSize:'11px',color:'var(--primary)',background:'var(--border)',padding:'2px 6px',borderRadius:'4px',display:'inline-block',marginTop:'4px'}}>{b.tipo}</span>
+                                    </div>
+                                    <a href={b.link} target="_blank" rel="noreferrer" className="btn btn-sm" style={{padding:'7px 12px',fontSize:'13px'}}>Abrir / Ver</a>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                )}
+
+                {tab === "eventos" && (
+                    <div>
+                        {user.rol === 'admin' && (
+                            <div className="card" style={{borderColor:'var(--primary)'}}>
+                                <h4 style={{marginTop:'0',color:'var(--primary)',marginBottom:'10px'}}>📅 Crear Evento (Sólo Admin)</h4>
+                                <form onSubmit={crearEv}>
+                                    <input type="text" className="field" placeholder="Título (Ej: Aniversario, Reunión Extraordinaria)" value={evTit} onChange={e=>setEvTit(e.target.value)} />
+                                    <div style={{display:'flex',gap:'7px'}}>
+                                        <input type="date" className="field" value={evFecha} onChange={e=>setEvFecha(e.target.value)} />
+                                        <div style={{flex:1}}>
+                                            <input type="text" className={"field"+(errHora?" err":"")} placeholder="Hora (Ej: 19:30)" value={evHora} onChange={e=>validHora(e.target.value)} />
+                                        </div>
+                                    </div>
+                                    {errHora && <span className="errmsg" style={{marginTop:'-10px'}}>⚠️ {errHora}</span>}
+                                    <input type="text" className="field" placeholder="Dirección / Lugar exacto" value={evLugar} onChange={e=>setEvLugar(e.target.value)} />
+                                    <input type="text" className="field" placeholder="Nota u observación opcional" value={evNota} onChange={e=>setEvNota(e.target.value)} />
+                                    <button type="submit" className="btn btn-sm btn-s">Publicar Evento</button>
+                                </form>
+                            </div>
+                        )}
+                        <h3 style={{marginTop:'0'}}>Cronograma de Eventos</h3>
+                        {eventos.length === 0 ? (
+                            <p style={{fontSize:'14px',color:'var(--muted)'}}>No hay eventos programados.</p>
+                        ) : (
+                            eventos.map(ev => (
+                                <div key={ev.id} className="ev-card">
+                                    <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+                                        <div className="ev-title">{ev.titulo}</div>
+                                        {user.rol === 'admin' && <button className="btn btn-d btn-sm" style={{padding:'3px 7px',fontSize:'11px'}} onClick={()=>elimEv(ev.id)}>Eliminar</button>}
+                                    </div>
+                                    <div style={{fontSize:'15px',margin:'3px 0'}}>📅 <b>{ev.fecha}</b> a las 🕒 <b>{ev.hora} hrs.</b></div>
+                                    <div style={{fontSize:'14px'}}>📍 {ev.lugar}</div>
+                                    <div style={{marginTop:'6px'}}><a href={mapsUrl(ev.lugar)} target="_blank" rel="noreferrer" style={{fontSize:'13px',color:'var(--primary)',fontWeight:'bold'}}>🗺️ Ver ubicación en Google Maps</a></div>
+                                    {ev.nota && <div style={{fontSize:'13px',color:'var(--muted)',marginTop:'6px',borderTop:'1px solid var(--border)',paddingTop:'4px',fontStyle:'italic'}}>Nota: {ev.nota}</div>}
+                                </div>
+                            ))
+                        )}
+                    </div>
+                )}
+
+                {tab === "directorio" && (
+                    <div>
+                        <h3 style={{marginTop:'0',marginBottom:'4px'}}>Directorio Inter-Sedes</h3>
+                        <p style={{fontSize:'12px',color:'var(--muted)',margin:'0 0 12px'}}>Contactos autorizados de la comunidad Nueva Vida AA.</p>
+                        {dirAgrupado.map(g => (
+                            <div key={g.id} className="dir-sede">
+                                <div className="dir-sede-titulo">🏢 {g.nombre}</div>
+                                {g.admins.map((u,idx) => (
+                                    <div key={idx} className="dir-contacto admin-c">
+                                        <div><b>{u.nombre_real}</b> <span className="badge-admin">Admin</span></div>
+                                        {u.telefonos && u.telefonos.length > 0 ? (
+                                            <a href={"https://wa.me/"+u.telefonos[0].replace(/\+/g,"")} target="_blank" rel="noreferrer" style={{textDecoration:'none',fontSize:'16px'}}>💬 WhatsApp</a>
+                                        ) : <span style={{fontSize:'13px',color:'var(--muted)'}}>Sin fono</span>}
+                                    </div>
+                                ))}
+                                {g.miembros.map((u,idx) => (
+                                    <div key={idx} className="dir-contacto">
+                                        <div>{u.nombre_real}</div>
+                                        {u.telefonos && u.telefonos.length > 0 ? (
+                                            <a href={"https://wa.me/"+u.telefonos[0].replace(/\+/g,"")} target="_blank" rel="noreferrer" style={{textDecoration:'none',fontSize:'16px'}}>💬 WhatsApp</a>
+                                        ) : <span style={{fontSize:'13px',color:'var(--muted)'}}>Sin fono</span>}
+                                    </div>
+                                ))}
+                                {g.admins.length === 0 && g.miembros.length === 0 && <p style={{fontSize:'13px',color:'var(--muted)',paddingLeft:'10px'}}>No hay miembros autorizados visibles.</p>}
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {tab === "admin" && user.rol === 'admin' && (
+                    <div>
+                        <h3 style={{marginTop:'0',color:'#7c3aed'}}>Panel de Sede Administrativa</h3>
+                        
+                        <h4 style={{color:'var(--warn)',borderBottom:'1px solid var(--border)',paddingBottom:'4px'}}>📥 Solicitudes Pendientes ({solicitudes.length})</h4>
+                        {solicitudes.length === 0 ? (
+                            <p style={{fontSize:'14px',color:'var(--muted)'}}>No tienes solicitudes pendientes de aprobación.</p>
+                        ) : (
+                            solicitudes.map(s => (
+                                <div key={s.username} className="sol-box">
+                                    <div style={{fontSize:'15px'}}><b>Nombre:</b> {s.nombre_real}</div>
+                                    <div style={{fontSize:'13px',color:'var(--muted)',wordBreak:'break-all'}}><b>ID:</b> {s.username}</div>
+                                    {s.telefonos && s.telefonos.length > 0 && <div style={{fontSize:'14px'}}><b>Fono:</b> {s.telefonos[0]}</div>}
+                                    <div className="sol-acc">
+                                        <button className="btn-xs" style={{background:'var(--accent)'}} onClick={()=>gestionarSol(s.username, true)}>Aceptar Miembro</button>
+                                        <button className="btn-xs" style={{background:'var(--danger)'}} onClick={()=>gestionarSol(s.username, false)}>Rechazar</button>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+
+                        <h4 style={{color:'var(--primary)',borderBottom:'1px solid var(--border)',paddingBottom:'4px',marginTop:'24px'}}>👥 Miembros Registrados en mi Sede ({miembrosSede.length})</h4>
+                        {miembrosSede.map(m => (
+                            <div key={m.username} className="miembro-row">
+                                <div>
+                                    <div style={{fontWeight:'bold',fontSize:'16px'}}>{m.nombre_real} {m.rol==='admin'&&<span className="badge-admin">Admin</span>}</div>
+                                    <div style={{fontSize:'11px',color:'var(--muted)'}}>ID: {m.username}</div>
+                                </div>
+                                {m.username !== user.username && (
+                                    <button className="btn btn-d btn-sm" style={{padding:'4px 8px',fontSize:'12px'}} onClick={()=>elimMiembro(m.username, m.nombre_real)}>Eliminar</button>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {tab === "perfil" && (
+                    <div className="card">
+                        <h3 style={{marginTop:'0'}}>Configuración de Perfil</h3>
+                        <div style={{background:'var(--input-bg)',padding:'12px',borderRadius:'10px',marginBottom:'16px',border:'1px solid var(--border)'}}>
+                            <span style={{fontSize:'11px',color:'var(--muted)',display:'block',textTransform:'uppercase'}}>Identificador Único para re-ingreso:</span>
+                            <code style={{fontSize:'16px',fontWeight:'bold',color:'var(--primary)',wordBreak:'break-all'}}>{user.username}</code>
+                        </div>
+                        <form onSubmit={guardarTel}>
+                            <label style={{fontSize:'14px',fontWeight:'bold'}}>Mi Número de WhatsApp:</label>
+                            <input type="tel" className={"field"+(errTel?" err":"")} value={miTel} onChange={e=>validTel(e.target.value,setMiTel,setErrTel)} placeholder="Ej: +56912345678" />
+                            {errTel && <span className="errmsg">⚠️ {errTel}</span>}
+                            <button type="submit" className="btn btn-sm">Actualizar Teléfono</button>
+                        </form>
+                        <hr style={{border:'none',borderTop:'1px solid var(--border)',margin:'20px 0'}} />
+                        <button onClick={salir} className="btn btn-d">Cerrar Sesión en este Teléfono</button>
+                    </div>
+                )}
+            </div>
+
+            <nav className="navbar">
+                <div className={"nav-i"+(tab==='inicio'?' on':'')} onClick={()=>setTab('inicio')}>
+                    <div className="nav-ico">🏠</div>Inicio
+                </div>
+                <div className={"nav-i"+(tab==='pasos'?' on':'')} onClick={()=>setTab('pasos')}>
+                    <div className="nav-ico">📋</div>Pasos
+                </div>
+                <div className={"nav-i"+(tab==='biblioteca'?' on':'')} onClick={()=>setTab('biblioteca')}>
+                    <div className="nav-ico">📚</div>Recursos
+                </div>
+                <div className={"nav-i"+(tab==='eventos'?' on':'')} onClick={()=>setTab('eventos')}>
+                    <div className="nav-ico">📅</div>Eventos
+                </div>
+                <div className={"nav-i"+(tab==='directorio'?' on':'')} onClick={()=>setTab('directorio')}>
+                    <div className="nav-ico">📇</div>Contactos
+                </div>
+                {user.rol === 'admin' && (
+                    <div className={"nav-i"+(tab==='admin'?' on':'')} onClick={()=>setTab('admin')}>
+                        <div className="nav-ico">⚙️</div>Admin{solicitudes.length > 0 && <span className="dot"></span>}
+                    </div>
+                )}
+                <div className={"nav-i"+(tab==='perfil'?' on':'')} onClick={()=>setTab('perfil')}>
+                    <div className="nav-ico">👤</div>Perfil
+                </div>
+            </nav>
+
             {aliento && (
                 <div className="overlay">
                     <div className="popup">
-                        <div style={{fontSize:'52px'}}>❤️</div>
-                        <h2 style={{color:'var(--text)'}}>Un paso a la vez</h2>
+                        <h2 style={{color:'var(--danger)',marginTop:'0'}}>❤️ Abraza tu proceso</h2>
+                        <p style={{fontSize:'16px',lineHeight:'1.5'}}>Una recaída es solo un desvío en el camino, no el fin del viaje. Hoy vuelves a empezar con más experiencia.</p>
+                        <div style={{background:'var(--bg-body)',padding:'12px',borderRadius:'10px',margin:'14px 0',border:'1px solid var(--border)'}}>
+                            <span style={{fontSize:'12px',color:'var(--warn)',fontWeight:'bold',display:'block',marginBottom:'4px'}}>📖 Lectura sugerida para hoy:</span>
+                            <span style={{fontSize:'15px',fontWeight:'bold',color:'var(--text)'}}>{lectura}</span>
+                        </div>
+                        <button className="btn btn-s" onClick={()=>setAliento(false)}>Aceptar (Solo por hoy)</button>
                     </div>
                 </div>
             )}
         </div>
     );
 }
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
 </script>
 </body>
 </html>
