@@ -181,7 +181,7 @@ const MENSAJES_DIARIOS = [
     "Rodeate de quienes te impulsan hacia adelante.",
     "El arrepentimiento mira hacia atras. La recuperacion mira hacia adelante.",
     "Cada reunion a la que asistes es una inversion en ti mismo.",
-    "La vida sobria no es una perdida. Es un descubrimiento de quien eres.",
+    "La vida sobria no es una pérdida. Es un descubrimiento de quien eres.",
     "Tienes mas fuerza de la que crees. Tu historia lo demuestra.",
     "Hoy se amable contigo mismo. La recuperacion requiere compasion.",
     "Mantenerse sobrio un dia mas es el logro mas importante del dia."
@@ -379,27 +379,49 @@ function App() {
 
     const subirBib = async (e) => {
         e.preventDefault();
-        if (!libTit) return alert("Escribe un titulo.");
+        if (!libTit) return alert("Escribe un titulo para el recurso.");
         let url = "";
         if (modoLib === "url") {
-            if (!libUrl) return alert("Pega el enlace URL.");
-            url = libUrl;
+            if (!libUrl) return alert("Pega el enlace URL del recurso.");
+            url = libUrl.trim();
         } else {
-            if (!libFile) return alert("Selecciona un archivo.");
-            setSubiendo(true); setUpPct(20);
+            if (!libFile) return alert("Selecciona un archivo primero.");
+            const maxMB = 10;
+            if (libFile.size > maxMB * 1024 * 1024) return alert("El archivo supera los 10MB. Usa un enlace URL para archivos grandes.");
+            setSubiendo(true); setUpPct(15);
             try {
-                const fn = Date.now() + "_" + libFile.name.replace(/\s/g,"_");
-                setUpPct(50);
-                const { error: upErr } = await supabase.storage.from('archivos').upload(fn, libFile);
-                if (upErr) { alert("Error al subir: " + upErr.message); setSubiendo(false); return; }
+                const ext = libFile.name.split('.').pop();
+                const fn = Date.now() + "_" + libFile.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+                setUpPct(40);
+                const { data: upData, error: upErr } = await supabase.storage
+                    .from('archivos')
+                    .upload(fn, libFile, { upsert: true, contentType: libFile.type });
+                if (upErr) {
+                    setSubiendo(false);
+                    if (upErr.message.includes('Bucket not found')) {
+                        return alert("Error: El bucket de archivos no existe.\nVe a Supabase → Storage → New Bucket → 'archivos' → Public ON");
+                    }
+                    return alert("Error al subir archivo: " + upErr.message);
+                }
                 setUpPct(85);
                 const { data: pub } = supabase.storage.from('archivos').getPublicUrl(fn);
-                url = pub.publicUrl; setUpPct(100);
-            } catch(err) { alert("Error: " + err.message); setSubiendo(false); return; }
+                if (!pub || !pub.publicUrl) { setSubiendo(false); return alert("Error: No se pudo obtener la URL publica del archivo."); }
+                url = pub.publicUrl;
+                setUpPct(100);
+            } catch(err) {
+                setSubiendo(false);
+                return alert("Error inesperado: " + err.message);
+            }
             setSubiendo(false); setUpPct(0);
         }
         const { error } = await supabase.from('biblioteca').insert([{grupo_id:user.grupoId, titulo:libTit, tipo:libTipo, link:url}]);
-        if (!error) { setLibTit(""); setLibUrl(""); setLibFile(null); cargar(); alert("Publicado con exito."); }
+        if (!error) {
+            setLibTit(""); setLibUrl(""); setLibFile(null);
+            cargar();
+            alert("Publicado con exito.");
+        } else {
+            alert("Error al guardar en biblioteca: " + error.message);
+        }
     };
 
     const crearEv = async (e) => {
