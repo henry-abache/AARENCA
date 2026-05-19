@@ -460,10 +460,11 @@ function App() {
 
   const [biblioteca, setBiblioteca] = React.useState([]);
   const [nuevoTitulo, setNuevoTitulo] = React.useState("");
-  const [nuevoTipo, setNuevoTipo] = React.useState("Documento");
+  const [nuevoTipo, setNuevoTipo] = React.useState("Libros AA");
   const [nuevoLink, setNuevoLink] = React.useState("");
   const [modoSubida, setModoSubida] = React.useState('enlace');
   const [archivoLocal, setArchivoLocal] = React.useState(null);
+  const [categoriaActivaBib, setCategoriaActivaBib] = React.useState("Libros AA");
   const [subiendoArchivo, setSubiendoArchivo] = React.useState(false);
 
   const [solicitudesPendientes, setSolicitudesPendientes] = React.useState([]);
@@ -1873,17 +1874,18 @@ function App() {
         {activeTab === "biblioteca" && (
           <div>
             <h3 className="section-title">📚 Biblioteca</h3>
+
+            {/* FORMULARIO AGREGAR (solo admins) */}
             {esCualquierAdmin && (
               <div className="card" style={{borderColor: 'var(--accent)'}}>
                 <h4 style={{color: 'var(--accent)', marginTop: 0}}>➕ Agregar Material</h4>
                 <label>Título</label>
                 <input type="text" className="input-field" placeholder="Nombre del material" value={nuevoTitulo} onChange={e => setNuevoTitulo(e.target.value)} />
-                <label>Tipo de material</label>
+                <label>Categoría</label>
                 <select className="select-field" value={nuevoTipo} onChange={e => setNuevoTipo(e.target.value)}>
-                  <option>Documento</option>
-                  <option>Video</option>
-                  <option>Audio</option>
-                  <option>Enlace</option>
+                  <option value="Libros AA">📖 Libros de Alcohólicos Anónimos</option>
+                  <option value="Libros Autoayuda">🌱 Libros de Autoayuda</option>
+                  <option value="Audiolibros">🎧 Audiolibros</option>
                 </select>
                 <div style={{display: 'flex', gap: '10px', marginBottom: '14px'}}>
                   <button type="button" className={`btn btn-sm${modoSubida === 'enlace' ? '' : ' btn-secondary'}`} onClick={() => { setModoSubida('enlace'); setArchivoLocal(null); }}>🔗 URL / Enlace</button>
@@ -1919,19 +1921,117 @@ function App() {
                 </button>
               </div>
             )}
-            {biblioteca.length === 0 && <p style={{color: 'var(--text-muted)'}}>La biblioteca está vacía.</p>}
-            {biblioteca.map(b => (
-              <div key={b.id} className="biblioteca-item">
-                <div style={{flex: 1, marginRight: '10px'}}>
-                  <strong style={{fontSize: '16px'}}>{b.titulo}</strong>
-                  <div style={{fontSize: '13px', color: 'var(--text-muted)', marginTop: '2px'}}>{b.tipo || b.type}</div>
+
+            {/* ÍNDICE DE CATEGORÍAS */}
+            {(() => {
+              const CATEGORIAS = [
+                { key: "Libros AA",        icono: "📖", label: "Libros AA" },
+                { key: "Libros Autoayuda", icono: "🌱", label: "Autoayuda" },
+                { key: "Audiolibros",      icono: "🎧", label: "Audiolibros" },
+              ];
+              const bibPorCategoria = (cat) => biblioteca.filter(b => {
+                const t = b.tipo || b.type || "";
+                // compatibilidad con tipos antiguos
+                if (cat === "Libros AA") return t === "Libros AA" || t === "Documento";
+                if (cat === "Libros Autoayuda") return t === "Libros Autoayuda";
+                if (cat === "Audiolibros") return t === "Audiolibros" || t === "Audio";
+                return false;
+              });
+
+              return (
+                <div>
+                  {/* TABS DE CATEGORÍA */}
+                  <div style={{display: 'flex', gap: '8px', marginBottom: '18px', overflowX: 'auto', paddingBottom: '4px'}}>
+                    {CATEGORIAS.map(cat => {
+                      const count = bibPorCategoria(cat.key).length;
+                      const isActive = categoriaActivaBib === cat.key;
+                      return (
+                        <button key={cat.key} onClick={() => setCategoriaActivaBib(cat.key)}
+                          style={{
+                            flexShrink: 0,
+                            background: isActive ? 'var(--primary)' : 'var(--card)',
+                            color: isActive ? 'white' : 'var(--text-muted)',
+                            border: `2px solid ${isActive ? 'var(--primary)' : 'var(--border)'}`,
+                            borderRadius: '14px',
+                            padding: '10px 16px',
+                            fontSize: '15px',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '2px',
+                            minWidth: '90px',
+                          }}>
+                          <span style={{fontSize: '22px'}}>{cat.icono}</span>
+                          <span>{cat.label}</span>
+                          <span style={{
+                            fontSize: '12px',
+                            background: isActive ? 'rgba(255,255,255,0.25)' : 'var(--border)',
+                            color: isActive ? 'white' : 'var(--text-muted)',
+                            borderRadius: '10px',
+                            padding: '1px 8px',
+                            fontWeight: 'normal',
+                          }}>{count} {count === 1 ? 'título' : 'títulos'}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* LISTA DE LA CATEGORÍA ACTIVA */}
+                  {(() => {
+                    const items = bibPorCategoria(categoriaActivaBib);
+                    const cat = CATEGORIAS.find(c => c.key === categoriaActivaBib);
+                    if (items.length === 0) {
+                      return (
+                        <div className="card" style={{textAlign: 'center', padding: '30px 20px'}}>
+                          <div style={{fontSize: '44px', marginBottom: '10px'}}>{cat.icono}</div>
+                          <p style={{color: 'var(--text-muted)', fontSize: '17px', margin: 0}}>
+                            No hay material en esta categoría aún.
+                          </p>
+                          {esCualquierAdmin && (
+                            <p style={{color: 'var(--text-muted)', fontSize: '14px', marginTop: '8px'}}>
+                              Usa el formulario de arriba para agregar el primer título.
+                            </p>
+                          )}
+                        </div>
+                      );
+                    }
+                    return items.map((b, idx) => (
+                      <div key={b.id} style={{
+                        background: 'var(--card)',
+                        borderRadius: '16px',
+                        padding: '16px 18px',
+                        marginBottom: '12px',
+                        border: '2px solid var(--border)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '14px',
+                      }}>
+                        <div style={{
+                          fontSize: '28px',
+                          width: '42px', height: '42px',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          background: 'var(--input-bg)', borderRadius: '12px', flexShrink: 0,
+                        }}>
+                          {cat.icono}
+                        </div>
+                        <div style={{flex: 1, minWidth: 0}}>
+                          <div style={{fontWeight: 'bold', fontSize: '16px', color: 'var(--text-main)', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
+                            {idx + 1}. {b.titulo}
+                          </div>
+                          <div style={{fontSize: '13px', color: 'var(--text-muted)'}}>{b.tipo || b.type}</div>
+                        </div>
+                        <div style={{display: 'flex', gap: '6px', flexShrink: 0}}>
+                          <a href={b.link} target="_blank" rel="noreferrer" className="btn btn-sm">Abrir</a>
+                          {esCualquierAdmin && <button className="btn btn-sm btn-danger" onClick={() => eliminarMaterial(b.id)}>🗑️</button>}
+                        </div>
+                      </div>
+                    ));
+                  })()}
                 </div>
-                <div style={{display: 'flex', gap: '6px', flexShrink: 0}}>
-                  <a href={b.link} target="_blank" rel="noreferrer" className="btn btn-sm">Abrir</a>
-                  {esCualquierAdmin && <button className="btn btn-sm btn-danger" onClick={() => eliminarMaterial(b.id)}>🗑️</button>}
-                </div>
-              </div>
-            ))}
+              );
+            })()}
           </div>
         )}
 
