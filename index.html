@@ -110,7 +110,7 @@
       width: 100%; display: block; text-align: center;
       text-decoration: none; transition: opacity 0.2s;
     }
-    .btn:disable { opacity: 0.5; cursor: not-allowed; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn:active { opacity: 0.8; }
     .btn-danger { background-color: var(--danger); }
     .btn-success { background-color: var(--accent); }
@@ -128,7 +128,7 @@
     .progress-bar-bg { background-color: var(--bg-main); border-radius: 15px; height: 30px; width: 100%; overflow: hidden; border: 1px solid var(--border); }
     .progress-bar-fill { background: linear-gradient(90deg, #16a34a, #4ade80); height: 100%; transition: width 0.5s ease; }
     
-    /* Mejoras visuales para los Pasos de AA */
+    /* Estilos dinámicos para los 12 pasos evolucionados */
     .paso-row {
       display: flex; flex-direction: column; padding: 16px;
       background: var(--input-bg); border-radius: 14px;
@@ -137,12 +137,12 @@
       transition: all 0.3s ease;
     }
     .paso-row.completado { border-color: var(--accent); background: var(--card); opacity: 0.9; }
-    .paso-row.trabajando { border-color: var(--warning); background: var(--card); box-shadow: 0 0 10px rgba(217,119,6,0.3); }
-    .paso-header { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 4px;}
+    .paso-row.trabajando { border-color: var(--warning); background: var(--card); box-shadow: 0 0 12px rgba(217,119,6,0.4); }
+    .paso-header { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 4px; }
     .paso-numero { font-size: 24px; font-weight: bold; margin-right: 14px; color: var(--text-muted); }
     .paso-row.completado .paso-numero { color: var(--accent); }
     .paso-row.trabajando .paso-numero { color: var(--warning); }
-    .badge-trabajando { font-size: 11px; background: var(--warning); color: white; padding: 2px 8px; border-radius: 10px; font-weight: bold; }
+    .badge-trabajando { font-size: 11px; background: var(--warning); color: white; padding: 4px 10px; border-radius: 10px; font-weight: bold; }
     
     .popup-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
@@ -152,7 +152,7 @@
     }
     .popup-card {
       background: var(--card); border-radius: 24px; padding: 28px;
-      max-width: 420px; width: 100%;
+      max-width: 440px; width: 100%;
       border: 3px solid var(--popup-border);
     }
     .biblioteca-item {
@@ -185,7 +185,6 @@
     .badge { font-size: 13px; padding: 3px 10px; border-radius: 20px; display: inline-block; margin-bottom: 8px; font-weight: bold; }
     .badge-pendiente { background: var(--badge-pending-bg); color: var(--badge-pending-text); }
     .badge-rechazado { background: var(--border); color: var(--text-muted); }
-    .badge-aprobado { background: #14532d; color: #86efac; }
     .directorio-sede { margin-bottom: 22px; }
     .directorio-sede-titulo {
       font-size: 20px; font-weight: bold; padding: 12px 16px;
@@ -383,7 +382,6 @@ function App() {
         .then(() => console.log("SW activo"))
         .catch(e => console.error("SW error", e));
     }
-    // Seleccionar una frase diaria basada en el día actual
     const index = new Date().getDate() % FRASES_MOTIVACIONALES.length;
     setFraseDiaria(FRASES_MOTIVACIONALES[index]);
   }, []);
@@ -545,7 +543,6 @@ function App() {
   }
 
   function abrirEditarPerfil() {
-    // Inicializar el estado de edición con los datos actuales
     setNuevoTelefonoEdit(user.telefono || "");
     const initChecks = {};
     const initFechas = {};
@@ -614,7 +611,7 @@ function App() {
     if (!confirm(`¿Desea reiniciar el contador de "${adiccion}"?`)) return;
     const hoy = new Date().toISOString().split('T')[0];
     const nuevas = { ...misAdicciones, [adiccion]: hoy };
-    const { error } = await supabase.from('usuarios').update({ adicciones: nuevas }).eq('username', user.username);
+    const { error = null } = await supabase.from('usuarios').update({ adicciones: nuevas }).eq('username', user.username);
     if (!error) {
       setMisAdicciones(nuevas);
       setLecturaRecomendada(LECTURAS[Math.floor(Math.random() * LECTURAS.length)]);
@@ -623,8 +620,6 @@ function App() {
   }
 
   async function cambiarPaso(n) {
-    // Si se hace click en el paso n, significa que se está "Trabajando" en el paso n
-    // Por ende, los pasos del 1 al n-1 están Completados.
     let nuevosPasos = [];
     for (let i = 1; i < n; i++) {
       nuevosPasos.push(i);
@@ -845,11 +840,8 @@ function App() {
   // APP PRINCIPAL
   // ============================
   const gruposDir = directorioAgrupado();
-  const hoy = new Date().toISOString().split('T')[0];
   const eventosProximos = eventos.filter(ev => ev.fecha >= hoy);
   const eventosPasados = eventos.filter(ev => ev.fecha < hoy);
-
-  // Progreso gráfico matemático para los 12 pasos
   const porcentajePasos = pasoActual > 0 ? Math.min(Math.round((pasoActual / 12) * 100), 100) : 0;
 
   return (
@@ -866,7 +858,7 @@ function App() {
         </div>
       )}
 
-      {/* POPUP: EDITAR PERFIL (MODIFICAR TLF Y SELECCIONAR NUEVAS ADICCIONES) */}
+      {/* POPUP: EDITAR PERFIL (TLF Y ADICCIONES) */}
       {mostrarEditarPerfil && (
         <div className="popup-overlay" onClick={() => setMostrarEditarPerfil(false)}>
           <div className="popup-card" style={{textAlign: 'left', maxHeight: '85vh', overflowY: 'auto'}} onClick={e => e.stopPropagation()}>
@@ -907,7 +899,7 @@ function App() {
             <div style={{color: 'var(--text-muted)', fontSize: '14px'}}>{user.grupoNombre}{user.rol === 'admin' && <span className="tag-admin">ADMIN</span>}</div>
           </div>
           <div style={{flex: 1, display: 'flex', justifyContent: 'center'}}>
-            <div style={{position: 'relative', cursor: 'pointer'}} onClick={() => setMostrarNotifs(true)}>
+            <div style={{position: 'relative', cursor: 'pointerpointer'}} onClick={() => setMostrarNotifs(true)}>
               <span style={{fontSize: '32px'}}>🔔</span>
               {notifNuevas > 0 && (
                 <span style={{position: 'absolute', top: '-4px', right: '-4px', background: 'var(--danger)', color: 'white', borderRadius: '50%', width: '20px', height: '20px', fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
@@ -925,9 +917,8 @@ function App() {
       {/* PANEL NOTIFICACIONES */}
       {mostrarNotifs && (
         <div className="popup-overlay" onClick={() => setMostrarNotifs(false)}>
-          <div className="popup-card" style={{maxWidth: '460px', textAlign: 'left', maxHeight: '80vh', overflow: 'hidden', display: 'flex', flexDirection: 'column'} }
-            onClick={e => e.stopPropagation()}>
-            <div style={{display: 'flex', justifycontent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
+          <div className="popup-card" style={{maxWidth: '460px', textAlign: 'left', maxHeight: '80vh', overflow: 'hidden', display: 'flex', flexDirection: 'column'}} onClick={e => e.stopPropagation()}>
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
               <h3 style={{margin: 0}}>🔔 Notificaciones</h3>
               <button className="btn btn-sm btn-secondary" onClick={marcarTodasLeidas} style={{fontSize: '13px', padding: '8px 12px'}}>Marcar todas leídas</button>
             </div>
@@ -972,15 +963,15 @@ function App() {
               <div className="card" style={{borderColor: 'var(--primary)'}}>
                 <p style={{color: 'var(--primary)', fontWeight: 'bold', margin: '0 0 8px', fontSize: '16px'}}>📅 PRÓXIMO EVENTO</p>
                 <div className="evento-titulo">{eventosProximos[0].titulo}</div>
-                <div className="evento-meta">自动 {formatFecha(eventosProximos[0].fecha)} · ⏰ {formatHora(eventosProximos[0].hora)}</div>
+                <div className="evento-meta">📅 {formatFecha(eventosProximos[0].fecha)} · ⏰ {formatHora(eventosProximos[0].hora)}</div>
                 <div className="evento-meta">📍 {eventosProximos[0].lugar}</div>
-                <button className="btn btn-sm" style={{marginTop: '8px'}} onClick={() => setActiveTab("eventos")}>Ver todos los eventos</button>
+                <button className="btn btn-sm" style={{marginTop: '8pxfixed'}} onClick={() => setActiveTab("eventos")}>Ver todos los eventos</button>
               </div>
             )}
             
             <h3 className="section-title">Mis Indicadores de Sobriedad</h3>
             {Object.keys(misAdicciones).length === 0 && (
-              <p style={{color: 'var(--text-muted)'}}>No tienes padecimientos registrados. Presiona el botón de arriba "Editar Perfil" para agregar.</p>
+              <p style={{color: 'var(--text-muted)'}}>No tienes padecimientos registrados. Presiona el botón de arriba \"Editar Perfil\" para agregar.</p>
             )}
             {Object.keys(misAdicciones).map(ad => {
               const dias = calcularDias(misAdicciones[ad]);
@@ -1114,7 +1105,7 @@ function App() {
                     <div className="evento-meta" style={{fontSize: '13px'}}>Organizado por: {ev.creado_por_nombre}</div>
                     {ev.imagen_url && <img src={ev.imagen_url} alt="Evento" className="evento-imagen" onError={e => e.target.style.display='none'} />}
                     {user.rol === 'admin' && (
-                      <button className="btn btn-danger btn-sm" style={{marginTop: '12px'}} onClick={() => eliminarEvento(ev.id)}>Eliminar evento</button>
+                      <button className="btn btn-danger btn-sm" style={{marginTop: '12pxfixed'}} onClick={() => eliminarEvento(ev.id)}>Eliminar evento</button>
                     )}
                   </div>
                 ))}
@@ -1161,16 +1152,18 @@ function App() {
                           {m.nombre_real}
                           {m.rol === 'admin' && <span className="tag-admin">ADMIN</span>}
                         </div>
-                        <div style={{fontSize: '14px', color: 'var(--text-muted)'}}>{limpiarTelefono(m.telefono)}</div>
+                        <div style={{fontSize: '14px', color: 'var(--text-muted)'}}>{m.telefono ? limpiarTelefono(m.telefono) : "Sin teléfono"}</div>
                       </div>
-                      <a 
-                        href={`https://wa.me/${limpiarTelefono(m.telefono).replace('+', '')}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="whatsapp-btn"
-                      >
-                        <span style={{fontSize: '20px'}}>💬</span> WhatsApp
-                      </a>
+                      {m.telefono && (
+                        <a 
+                          href={`https://wa.me/${limpiarTelefono(m.telefono).replace('+', '')}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="whatsapp-btn"
+                        >
+                          <span style={{fontSize: '20px'}}>💬</span> WhatsApp
+                        </a>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -1197,7 +1190,6 @@ function App() {
                   <option>Enlace</option>
                 </select>
                 
-                {/* Selector de subida o enlace */}
                 <div style={{display: 'flex', gap: '10px', marginBottom: '14px'}}>
                   <button type="button"
                     className={"btn btn-sm" + (modoSubida === 'enlace' ? '' : ' btn-secondary')}
@@ -1270,7 +1262,7 @@ function App() {
 
             <hr className="divider" />
             
-            {/* NUEVA SECCIÓN: MIEMBROS DE LA SEDE Y ASCENSO A ADMIN */}
+            {/* MIEMBROS DE LA SEDE Y ASCENSO A ADMIN */}
             <h4 style={{color: 'var(--primary)'}}>📋 Miembros de esta Sede ({listaMiembrosSede.length})</h4>
             {listaMiembrosSede.length === 0 && <p style={{color: 'var(--text-muted)'}}>No hay miembros registrados.</p>}
             <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
@@ -1334,7 +1326,7 @@ function App() {
         <div className={"nav-item" + (activeTab === "biblioteca" ? " active" : "")} onClick={() => setActiveTab("biblioteca")}>
           <div className="nav-icon">📚</div>Biblio
         </div>
-        {user.rol === 'admin' && (
+        {user && user.rol === 'admin' && (
           <div className={"nav-item" + (activeTab === "admin" ? " active" : "")} onClick={() => setActiveTab("admin")}>
             <div className="nav-icon">⚙️</div>Admin
           </div>
