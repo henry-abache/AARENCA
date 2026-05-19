@@ -1,23 +1,492 @@
-<link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#1d4ed8">
-  <meta name="mobile-web-app-capable" content="yes">
-  
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Nueva Vida">
-  <link rel="apple-touch-icon" href="1-192.png">
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nueva Vida AA - San José de Renca</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1d4ed8">
+    <style>
+        /* --- PALETA DE COLORES ADAPTABLE (CORRECCIÓN DE CONTRASTE) --- */
+        :root {
+            --bg-principal: #f4f6f9;
+            --bg-tarjetas: #ffffff;
+            --borde: #d1d5db;
+            
+            /* Corrección: Texto gris oscuro fijo para que NUNCA se pierda en modo claro */
+            --texto-principal: #1f2937; 
+            --texto-secundario: #4b5563; 
+            --texto-placeholder: #6b7280;
+            
+            --azul-botones: #1d4ed8;
+            --verde-exito: #16a34a;
+            --rojo-peligro: #dc2626;
+            --purpura-admin: #7c3aed;
+        }
 
-  <script>
-    // Registro automático del Service Worker
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
-          .then(reg => {
-            console.log('¡Aplicación lista para ser instalada en el teléfono!', reg);
-          })
-          .catch(err => {
-            console.error('Error al configurar modo app:', err);
-          });
-      });
+        [data-theme="dark"] {
+            --bg-principal: #0f172a;
+            --bg-tarjetas: #1e293b;
+            --borde: #334155;
+            
+            /* En tema oscuro el texto se adapta a grises limpios y visibles */
+            --texto-principal: #f1f5f9;
+            --texto-secundario: #cbd5e1;
+            --texto-placeholder: #94a3b8;
+        }
+
+        /* --- ESTILOS GENERALES --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-principal);
+            color: var(--texto-principal);
+            margin: 0;
+            padding: 15px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .contenedor-app {
+            max-width: 500px;
+            margin: 0 auto;
+            padding-bottom: 80px;
+        }
+
+        /* --- HEADER --- */
+        .header-sede {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--bg-tarjetas);
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 1px solid var(--borde);
+        }
+
+        .header-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-aa {
+            width: 45px;
+            height: 45px;
+        }
+
+        .titulo-sede h1 {
+            font-size: 16px;
+            margin: 0;
+            color: var(--texto-principal);
+        }
+
+        .titulo-sede h2 {
+            font-size: 13px;
+            margin: 0;
+            color: #16a34a;
+        }
+
+        .titulo-sede span {
+            font-size: 11px;
+            color: var(--texto-secundario);
+        }
+
+        .btn-tema {
+            background: none;
+            border: 1px solid var(--borde);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px 8px;
+            border-radius: 8px;
+            background-color: var(--bg-principal);
+        }
+
+        /* --- TARJETAS --- */
+        .tarjeta-modulo {
+            background-color: var(--bg-tarjetas);
+            border-radius: 12px;
+            border: 1px solid var(--borde);
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .titulo-modulo {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: var(--texto-principal);
+        }
+
+        .grupo-input {
+            margin-bottom: 12px;
+        }
+
+        .grupo-input label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--texto-secundario);
+        }
+
+        input[type="text"], select, textarea {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid var(--borde);
+            border-radius: 8px;
+            background-color: var(--bg-principal);
+            color: var(--texto-principal);
+            font-size: 14px;
+        }
+
+        input::placeholder {
+            color: var(--texto-placeholder);
+        }
+
+        .fila-acciones-recurso {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .btn-accion-recurso {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--azul-botones);
+            background-color: transparent;
+            color: var(--azul-botones);
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-accion-recurso.activo {
+            background-color: var(--azul-botones);
+            color: white;
+        }
+
+        .btn-subir-archivo-oculto {
+            display: none;
+        }
+
+        .btn-principal {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            color: white;
+        }
+
+        .btn-verde { background-color: var(--verde-exito); }
+
+        /* --- BIBLIOTECA Y BUSCADOR --- */
+        .buscador-biblioteca {
+            margin-bottom: 15px;
+        }
+
+        .categoria-bloque {
+            margin-top: 15px;
+        }
+
+        .categoria-titulo {
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: var(--purpura-admin);
+            border-bottom: 1px solid var(--borde);
+            padding-bottom: 4px;
+            margin-bottom: 8px;
+        }
+
+        .lista-archivos {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .archivo-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: var(--bg-principal);
+            border-radius: 8px;
+            margin-bottom: 6px;
+            border: 1px solid var(--borde);
+        }
+
+        .archivo-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .archivo-nombre {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--texto-principal);
+        }
+
+        .archivo-meta {
+            font-size: 11px;
+            color: var(--texto-secundario);
+        }
+
+        .btn-descargar {
+            background: none;
+            border: 1px solid var(--azul-botones);
+            color: var(--azul-botones);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .vacio-mensaje {
+            text-align: center;
+            color: var(--texto-secundario);
+            font-size: 13px;
+            padding: 15px;
+            font-style: italic;
+        }
+
+        /* --- NAVBAR INFERIOR --- */
+        .nav-inferior {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background-color: var(--bg-tarjetas);
+            border-top: 1px solid var(--borde);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 10px;
+            color: var(--texto-secundario);
+            cursor: pointer;
+        }
+
+        .nav-item.activo {
+            color: var(--azul-botones);
+            font-weight: bold;
+        }
+
+        .nav-icon {
+            font-size: 18px;
+            margin-bottom: 2px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="contenedor-app">
+
+    <header class="header-sede">
+        <div class="header-info">
+            <svg class="logo-aa" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="6"/>
+                <polygon points="50,15 15,75 85,75" fill="none" stroke="currentColor" stroke-width="6"/>
+            </svg>
+            <div class="titulo-sede">
+                <h1>Nueva Vida AA</h1>
+                <h2>SAN JOSE DE RENCA</h2>
+                <span>Usuario: Henry</span>
+            </div>
+        </div>
+        <button class="btn-tema" onclick="alternarTema()">🌙</button>
+    </header>
+
+    <section class="tarjeta-modulo">
+        <div class="titulo-modulo">📚 Publicar Recurso (Sólo Admin)</div>
+        
+        <div class="grupo-input">
+            <label for="tituloRecurso">Título del archivo o lectura</label>
+            <input type="text" id="tituloRecurso" placeholder="Ej: Los 12 Pasos, Balance Mensual...">
+        </div>
+
+        <div class="grupo-input">
+            <label for="categoriaRecurso">Categoría / Tipo de Documento</label>
+            <select id="categoriaRecurso">
+                <option value="Pasos y Literatura">Pasos y Literatura</option>
+                <option value="Informes Financieros">Informes Financieros</option>
+                <option value="Formatos y Plantillas">Formatos y Plantillas</option>
+                <option value="Reglamentos Internos">Reglamentos Internos</option>
+            </select>
+        </div>
+
+        <div class="fila-acciones-recurso">
+            <button type="button" id="btnModoUrl" class="btn-accion-recurso activo" onclick="cambiarModoRecurso('url')">🔗 Enlace URL</button>
+            <button type="button" id="btnModoArchivo" class="btn-accion-recurso" onclick="cambiarModoRecurso('archivo')">📁 Subir Archivo (-10MB)</button>
+        </div>
+
+        <input type="file" id="archivoFisico" class="btn-subir-archivo-oculto" onchange="actualizarNombreArchivoSeleccionado()">
+
+        <div class="grupo-input" id="contenedorUrlInput">
+            <input type="text" id="urlRecurso" placeholder="https://ejemplo.com/archivo.pdf">
+        </div>
+        
+        <div class="grupo-input" id="contenedorArchivoNombre" style="display: none;">
+            <p id="txtNombreArchivoElegido" style="margin: 5px 0; font-size: 13px; font-weight: bold; color: var(--verde-exito);">Ningún archivo seleccionado</p>
+        </div>
+
+        <button type="button" class="btn-principal btn-verde" onclick="procesarPublicacionRecurso()">Publicar en la Sede</button>
+    </section>
+
+    <section class="tarjeta-modulo">
+        <div class="titulo-modulo">🔍 Biblioteca de Recursos</div>
+        
+        <div class="buscador-biblioteca">
+            <input type="text" id="inputBuscarBiblioteca" placeholder="Escribe parte del nombre para buscar..." oninput="actualizarVistaBiblioteca()">
+        </div>
+
+        <div id="listaCategoriasBiblioteca"></div>
+    </section>
+
+    <nav class="nav-inferior">
+        <div class="nav-item"><span class="nav-icon">🏠</span>Inicio</div>
+        <div class="nav-item"><span class="nav-icon">📋</span>Pasos</div>
+        <div class="nav-item activo"><span class="nav-icon">📚</span>Recursos</div>
+        <div class="nav-item"><span class="nav-icon">📅</span>Eventos</div>
+        <div class="nav-item"><span class="nav-icon">👥</span>Contactos</div>
+        <div class="nav-item"><span class="nav-icon">⚙️</span>Admin</div>
+        <div class="nav-item"><span class="nav-icon">👤</span>Perfil</div>
+    </nav>
+
+</div>
+
+<script>
+    function alternarTema() {
+        const html = document.documentElement;
+        const boton = document.querySelector('.btn-tema');
+        if (html.getAttribute('data-theme') === 'dark') {
+            html.removeAttribute('data-theme');
+            boton.innerText = '🌙';
+        } else {
+            html.setAttribute('data-theme', 'dark');
+            boton.innerText = '☀️';
+        }
     }
-  </script>
+
+    let bibliotecaDatos = [
+        { nombre: "Guía de los 12 Pasos Tradicionales", tipo: "Pasos y Literatura", origen: "Enlace Web" },
+        { nombre: "Balance de Caja Abril - Renca", tipo: "Informes Financieros", origen: "Archivo Local" },
+        { nombre: "Reglamento de Sede Nueva Vida v2", tipo: "Reglamentos Internos", origen: "Archivo Local" },
+        { nombre: "Formato de Ficha para Nuevos Miembros", tipo: "Formatos y Plantillas", origen: "Enlace Web" }
+    ];
+
+    let modoActual = 'url';
+
+    function cambiarModoRecurso(modo) {
+        modoActual = modo;
+        const btnUrl = document.getElementById('btnModoUrl');
+        const btnArchivo = document.getElementById('btnModoArchivo');
+        const contenedorUrl = document.getElementById('contenedorUrlInput');
+        const contenedorArchivo = document.getElementById('contenedorArchivoNombre');
+
+        if (modo === 'url') {
+            btnUrl.classList.add('activo');
+            btnArchivo.classList.remove('activo');
+            contenedorUrl.style.display = 'block';
+            contenedorArchivo.style.display = 'none';
+        } else {
+            btnUrl.classList.remove('activo');
+            btnArchivo.classList.add('activo');
+            contenedorUrl.style.display = 'none';
+            contenedorArchivo.style.display = 'block';
+            document.getElementById('archivoFisico').click();
+        }
+    }
+
+    function actualizarNombreArchivoSeleccionado() {
+        const inputFile = document.getElementById('archivoFisico');
+        const txtNombre = document.getElementById('txtNombreArchivoElegido');
+        if (inputFile.files.length > 0) {
+            txtNombre.innerText = "📄 Listo: " + inputFile.files[0].name;
+        } else {
+            txtNombre.innerText = "Ningún archivo seleccionado";
+        }
+    }
+
+    function procesarPublicacionRecurso() {
+        const titulo = document.getElementById('tituloRecurso').value.trim();
+        const category = document.getElementById('categoriaRecurso').value;
+        if (!titulo) { alert("Introduce un título."); return; }
+
+        let nuevoRecurso = { nombre: titulo, tipo: category, origen: modoActual === 'url' ? "Enlace Web" : "Archivo Local" };
+        bibliotecaDatos.push(nuevoRecurso);
+
+        document.getElementById('tituloRecurso').value = '';
+        actualizarVistaBiblioteca();
+        alert("¡Recurso cargado!");
+    }
+
+    function actualizarVistaBiblioteca() {
+        const contenedor = document.getElementById('listaCategoriasBiblioteca');
+        const busqueda = document.getElementById('inputBuscarBiblioteca').value.toLowerCase().trim();
+        contenedor.innerHTML = '';
+
+        const datosFiltrados = bibliotecaDatos.filter(item => item.nombre.toLowerCase().includes(busqueda));
+        if (datosFiltrados.length === 0) {
+            contenedor.innerHTML = '<div class="vacio-mensaje">No hay coincidencias.</div>';
+            return;
+        }
+
+        datosFiltrados.sort((a, b) => a.nombre.localeCompare(b.nombre));
+        const categoriasAgrupadas = {};
+        datosFiltrados.forEach(item => {
+            if (!categoriasAgrupadas[item.tipo]) categoriasAgrupadas[item.tipo] = [];
+            categoriasAgrupadas[item.tipo].push(item);
+        });
+
+        for (const tipoCat in categoriasAgrupadas) {
+            const bloque = document.createElement('div');
+            bloque.className = 'categoria-bloque';
+            bloque.innerHTML = `<div class="categoria-titulo">${tipoCat}</div>`;
+            const ul = document.createElement('ul');
+            ul.className = 'lista-archivos';
+
+            categoriasAgrupadas[tipoCat].forEach(archivo => {
+                ul.innerHTML += `
+                    <li class="archivo-item">
+                        <div class="archivo-info">
+                            <span class="archivo-nombre">${archivo.nombre}</span>
+                            <span class="archivo-meta">Procedencia: ${archivo.origen}</span>
+                        </div>
+                        <button class="btn-descargar">Ver</button>
+                    </li>`;
+            });
+            bloque.appendChild(ul);
+            contenedor.appendChild(bloque);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        actualizarVistaBiblioteca();
+    });
+
+    // REGISTRO DEL SERVICE WORKER EVITANDO ERRORES CRÍTICOS
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('Service Worker registrado con éxito', reg))
+                .catch(err => console.error('Error al registrar Service Worker', err));
+        });
+    }
+</script>
+</body>
+</html>
