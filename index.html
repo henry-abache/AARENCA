@@ -7,13 +7,13 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1d4ed8">
     <style>
-        /* --- VARIABLES DE COLOR (CORRECCIÓN DE CONTRASTE) --- */
+        /* --- VARIABLES DE COLOR (FUNDO AZUL CORREGIDO) --- */
         :root {
-            --bg-principal: #f4f6f9;
-            --bg-tarjetas: #ffffff;
+            --bg-principal: #f4f6f9; /* Gris claro limpio para el fondo general */
+            --bg-tarjetas: #ffffff;  /* Blanco para que las tarjetas resalten */
             --borde: #d1d5db;
             
-            /* Textos con grises oscuros fijos para que nunca se vuelvan invisibles */
+            /* Textos oscuros legibles en fondo claro */
             --texto-principal: #1f2937; 
             --texto-secundario: #4b5563; 
             --texto-placeholder: #6b7280;
@@ -25,8 +25,8 @@
         }
 
         [data-theme="dark"] {
-            --bg-principal: #0f172a;
-            --bg-tarjetas: #1e293b;
+            --bg-principal: #0f172a; /* Fondo oscuro */
+            --bg-tarjetas: #1e293b;  /* Tarjetas oscuras */
             --borde: #334155;
             
             --texto-principal: #f1f5f9;
@@ -47,10 +47,10 @@
         .contenedor-app {
             max-width: 500px;
             margin: 0 auto;
-            padding-bottom: 80px; /* Espacio para que el menú no tape el contenido */
+            padding-bottom: 80px;
         }
 
-        /* --- CABECERA CON TU LOGO OFICIAL --- */
+        /* --- CABECERA --- */
         .header-sede {
             display: flex;
             justify-content: space-between;
@@ -101,6 +101,7 @@
             padding: 5px 8px;
             border-radius: 8px;
             background-color: var(--bg-principal);
+            color: var(--texto-principal);
         }
 
         /* --- SISTEMA DE PESTAÑAS (NAVEGACIÓN) --- */
@@ -357,7 +358,7 @@
 </div>
 
 <script>
-    // CONTROLADOR DE NAVEGACIÓN ENTRE PESTAÑAS
+    // CAMBIO DE SECCIÓN EFECTIVO
     function navegarA(idPestaña, botonPresionado) {
         const contenidos = document.querySelectorAll('.pestaña-contenido');
         contenidos.forEach(c => c.classList.remove('activa'));
@@ -369,7 +370,7 @@
         botonPresionado.classList.add('activo');
     }
 
-    // CONTROLADOR DE TEMA INTERNO
+    // CAMBIO DE INTERRUPTOR DE TEMA (CLARO/OSCURO)
     function alternarTema() {
         const html = document.documentElement;
         const boton = document.querySelector('.btn-tema');
@@ -382,7 +383,7 @@
         }
     }
 
-    // BASE DE DATOS LOCAL INICIAL
+    // BASE DE DATOS FIJA INICIAL
     let bibliotecaDatos = [
         { nombre: "Guía de los 12 Pasos Tradicionales", tipo: "PASOS Y LITERATURA", origen: "Enlace Web" },
         { nombre: "Balance de Caja Abril - Renca", tipo: "INFORMES FINANCIEROS", origen: "Archivo Local" },
@@ -390,7 +391,7 @@
         { nombre: "Formato de Ficha para Nuevos Miembros", tipo: "FORMATOS Y PLANTILLAS", origen: "Enlace Web" }
     ];
 
-    // ACCIÓN DE SUBIDA
+    // FUNCIÓN PARA PUBLICAR
     function procesarPublicacionRecurso() {
         const titulo = document.getElementById('tituloRecurso').value.trim();
         const category = document.getElementById('categoriaRecurso').value;
@@ -407,22 +408,19 @@
             origen: urlInput ? "Enlace Web" : "Carga Local" 
         });
 
-        // Limpiar inputs
         document.getElementById('tituloRecurso').value = '';
         document.getElementById('urlRecurso').value = '';
         
-        // Refrescar lista y avisar
         actualizarVistaBiblioteca();
         alert("¡Recurso clasificado y publicado!");
     }
 
-    // ORDENACIÓN DOBLE (CATEGORÍA -> ALFABÉTICO) Y FILTRADO PARCIAL
+    // BUSCADOR Y ORGANIZADOR JERÁRQUICO
     function actualizarVistaBiblioteca() {
         const contenedor = document.getElementById('listaCategoriasBiblioteca');
         const busqueda = document.getElementById('inputBuscarBiblioteca').value.toLowerCase().trim();
         contenedor.innerHTML = '';
 
-        // 1. Filtrar por coincidencia parcial de texto
         const datosFiltrados = bibliotecaDatos.filter(item => item.nombre.toLowerCase().includes(busqueda));
         
         if (datosFiltrados.length === 0) {
@@ -430,10 +428,10 @@
             return;
         }
 
-        // 2. Ordenar Alfabéticamente por Nombre
+        // Ordenar alfabéticamente de la A a la Z
         datosFiltrados.sort((a, b) => a.nombre.localeCompare(b.nombre));
 
-        // 3. Agrupar rígidamente por Categoría
+        // Separar por categorías
         const categorias = {};
         datosFiltrados.forEach(item => {
             if (!categorias[item.tipo]) {
@@ -442,7 +440,7 @@
             categorias[item.tipo].push(item);
         });
 
-        // 4. Renderizar bloques ordenados en pantalla
+        // Crear la estructura HTML limpia
         for (const cat in categorias) {
             const bloque = document.createElement('div');
             bloque.className = 'categoria-bloque';
@@ -466,7 +464,6 @@
         }
     }
 
-    // Carga inicial
     document.addEventListener('DOMContentLoaded', () => {
         actualizarVistaBiblioteca();
     });
