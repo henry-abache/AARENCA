@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nuevavida-v2';
+const CACHE_NAME = 'aa-renca-v1';
 const ASSETS = [
   'index.html',
   'manifest.json',
@@ -6,35 +6,35 @@ const ASSETS = [
   '1-512.png'
 ];
 
-// Instalar el Service Worker y almacenar archivos clave
-self.addEventListener('install', (e) => {
-  e.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
+// Instalar y almacenar archivos esenciales
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => {
       return cache.addAll(ASSETS);
-    }).then(() => self.skipWaiting())
+    })
   );
 });
 
-// Activar el Service Worker y limpiar cachés antiguas
-self.addEventListener('activate', (e) => {
-  e.waitUntil(
-    caches.keys().then((keys) => {
+// Activar y limpiar cachés viejos
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(keys => {
       return Promise.all(
-        keys.map((key) => {
+        keys.map(key => {
           if (key !== CACHE_NAME) {
             return caches.delete(key);
           }
         })
       );
-    }).then(() => self.clients.claim())
+    })
   );
 });
 
-// Estrategia de red con caída en caché (Network-first) para asegurar datos frescos
-self.addEventListener('fetch', (e) => {
-  e.respondWith(
-    fetch(e.request).catch(() => {
-      return caches.match(e.request);
+// Responder desde caché o buscar en red
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request).then(cachedResponse => {
+      return cachedResponse || fetch(event.request);
     })
   );
 });
