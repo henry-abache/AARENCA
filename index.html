@@ -224,6 +224,17 @@
       font-size: 15px; font-weight: bold;
       text-decoration: none;
     }
+    .alert-banner-admin {
+      background: #78350f; border: 2px solid var(--warning);
+      border-radius: 16px; padding: 16px; margin-bottom: 16px;
+      color: white; text-align: left;
+    }
+    .chip {
+      display: inline-flex; align-items: center; background: var(--input-bg);
+      border: 1px solid var(--border); padding: 6px 12px; border-radius: 20px;
+      font-size: 15px; margin: 4px; gap: 8px;
+    }
+    .chip-remove { cursor: pointer; color: var(--danger); font-weight: bold; font-size: 18px; }
   </style>
 </head>
 <body>
@@ -239,7 +250,7 @@ const GRUPOS = [
   { id: "grupo-esperanza", nombre: "GRUPO ESPERANZA" }
 ];
 
-const ADICCIONES_DISPONIBLES = ["Alcohol", "Marihuana", "Cocaína", "Tabaco", "Juego Compulsivo"];
+const ADICCIONES_DISPONIBLES_DEFAULT = ["Alcohol", "Marihuana", "Cocaína", "Tabaco", "Juego Compulsivo"];
 
 const PASOS_AA = [
   "Admitimos que éramos impotentes ante el alcohol y nuestras vidas se habían vuelto ingobernables.",
@@ -292,7 +303,6 @@ function tiempoDesde(ts) {
   return `Hace ${Math.floor(h/24)} días`;
 }
 function limpiarTelefono(tel) {
-  // Deja solo dígitos y el + inicial para WhatsApp
   if (!tel) return "";
   return tel.replace(/[\s\-\(\)]/g, "");
 }
@@ -332,6 +342,7 @@ function App() {
   const [mostrarRechazados, setMostrarRechazados] = React.useState(false);
 
   const [directorio, setDirectorio] = React.useState([]);
+  const [usuariosDeMiSede, setUsuariosDeMiSede] = React.useState([]);
 
   const [eventos, setEventos] = React.useState([]);
   const [evTitulo, setEvTitulo] = React.useState("");
@@ -346,6 +357,13 @@ function App() {
   const [notificaciones, setNotificaciones] = React.useState([]);
   const [mostrarNotifs, setMostrarNotifs] = React.useState(false);
   const [notifNuevas, setNotifNuevas] = React.useState(0);
+
+  // Nuevos estados para Adicciones Dinámicas y Gestión de Perfil
+  const [adiccionesLista, setAdiccionesLista] = React.useState(ADICCIONES_DISPONIBLES_DEFAULT);
+  const [nuevoTelefonoPerfil, setNuevoTelefonoPerfil] = React.useState("");
+  const [nuevaAdiccionSugerida, setNuevaAdiccionSugerida] = React.useState("");
+  const [adiccionesSugeridasPendientes, setAdiccionesSugeridasPendientes] = React.useState([]);
+  const [seleccionAñadirAdiccion, setSeleccionAñadirAdiccion] = React.useState("");
 
   React.useEffect(() => {
     if ('serviceWorker' in navigator) {
@@ -373,6 +391,7 @@ function App() {
       setMisAdicciones(data.adicciones || {});
       setPasoActual(data.paso_actual || 0);
       setPasosCompletados(data.pasos_completados || []);
+      setNuevoTelefonoPerfil(data.telefono || "");
     } else {
       localStorage.removeItem("nuevavida_session");
     }
@@ -386,7 +405,8 @@ function App() {
       grupoNombre: data.grupo_nombre,
       rol: data.rol,
       estado: data.estado,
-      telefono: data.telefono || ""
+      telefono: data.telefono || "",
+      estado_admin: data.estado_admin || "ninguno"
     };
   }
 
@@ -405,7 +425,17 @@ function App() {
         setMisAdicciones(uData.adicciones || {});
         setPasoActual(uData.paso_actual || 0);
         setPasosCompletados(uData.pasos_completados || []);
-        setUser(prev => ({ ...prev, estado: uData.estado }));
+        setUser(prev => ({ ...prev, estado: uData.estado, rol: uData.rol, estado_admin: uData.estado_admin || "ninguno" }));
+      }
+
+      // Cargar Catálogo de Adicciones Aprobadas
+      const { data: aData } = await supabase.from('adicciones').select('nombre').eq('aprobado', true);
+      if (aData && aData.length > 0) {
+        const nombresCargados = aData.map(a => a.nombre);
+        const unificadas = Array.from(new Set([...ADICCIONES_DISPONIBLES_DEFAULT, ...nombresCargados]));
+        setAdiccionesLista(unificadas);
+      } else {
+        setAdiccionesLista(ADICCIONES_DISPONIBLES_DEFAULT);
       }
 
       const { data: bData } = await supabase.from('biblioteca').select('*').eq('grupo_id', user.grupoId).order('id', { ascending: false });
@@ -425,7 +455,7 @@ function App() {
       }
 
       const { data: dData } = await supabase.from('usuarios')
-        .select('nombre_real, rol, telefono, grupo_id, grupo_nombre')
+        .select('username, nombre_real, rol, telefono, grupo_id, grupo_nombre, estado_admin')
         .eq('estado', 'aprobado')
         .neq('telefono', '')
         .order('nombre_real', { ascending: true });
@@ -439,8 +469,32 @@ function App() {
         const { data: rech } = await supabase.from('usuarios').select('*')
           .eq('grupo_id', user.grupoId).eq('estado', 'rechazado').order('nombre_real');
         if (rech) setSolicitudesRechazadas(rech);
+
+        // Listar todos los usuarios aprobados de la misma sede para poder promoverlos
+        const { data: sMiembros } = await supabase.from('usuarios').select('*')
+          .eq('grupo_id', user.grupoId).eq('estado', 'aprobado').order('nombre_real');
+        if (sMiembros) setUsuariosDeMiSede(sMiembros);
+
+        // Listar adicciones sugeridas pendientes de aprobación para esta sede
+        const { data: adPend } = await supabase.from('adicciones').select('*')
+          .eq('aprobado', false).eq('sede_id', user.grupoId).order('nombre');
+        if (adPend) setAdiccionesSugeridasPendientes(adPend);
       }
     } catch(e) { console.error("Error cargando datos", e); }
+  }
+
+  // Función Nativa y alternativa para Compartir Aplicación
+  function compartirAplicacion() {
+    if (navigator.share) {
+      navigator.share({
+        title: 'Nueva Vida AA',
+        text: 'Te comparto la aplicación de apoyo y seguimiento de Alcohólicos Anónimos.',
+        url: window.location.origin + window.location.pathname
+      }).catch(err => console.log("Error al compartir", err));
+    } else {
+      navigator.clipboard.writeText(window.location.origin + window.location.pathname);
+      alert("🔗 ¡Enlace de la aplicación copiado al portapapeles! Ya puedes enviárselo a quien quieras por WhatsApp u otra vía.");
+    }
   }
 
   async function registrarCuenta(e) {
@@ -452,7 +506,7 @@ function App() {
     const grupoSel = GRUPOS.find(g => g.id === sede);
     const uid = nombre.trim().replace(/\s+/g, "_") + "_" + grupoSel.id;
     const adiccionesConfig = {};
-    ADICCIONES_DISPONIBLES.forEach(ad => {
+    adiccionesLista.forEach(ad => {
       if (checks[ad]) adiccionesConfig[ad] = fechas[ad] || new Date().toISOString().split('T')[0];
     });
     try {
@@ -463,6 +517,7 @@ function App() {
         setMisAdicciones(existente.adicciones || {});
         setPasoActual(existente.paso_actual || 0);
         setPasosCompletados(existente.pasos_completados || []);
+        setNuevoTelefonoPerfil(existente.telefono || "");
         localStorage.setItem("nuevavida_session", JSON.stringify(u));
         return;
       }
@@ -476,15 +531,17 @@ function App() {
         telefono: telefono.trim(),
         adicciones: adiccionesConfig,
         paso_actual: 0,
-        pasos_completados: []
+        pasos_completados: [],
+        estado_admin: 'ninguno'
       };
       const { error } = await supabase.from('usuarios').insert([nuevoUsr]);
       if (error) {
         alert("Error al registrar: " + error.message);
       } else {
-        const u = { username: uid, nombreReal: nombre.trim(), grupoId: sede, grupoNombre: grupoSel.nombre, rol, estado: nuevoUsr.estado, telefono: telefono.trim() };
+        const u = { username: uid, nombreReal: nombre.trim(), grupoId: sede, grupoNombre: grupoSel.nombre, rol, estado: nuevoUsr.estado, telefono: telefono.trim(), estado_admin: 'ninguno' };
         setUser(u);
         setMisAdicciones(adiccionesConfig);
+        setNuevoTelefonoPerfil(telefono.trim());
         localStorage.setItem("nuevavida_session", JSON.stringify(u));
       }
     } catch(err) { alert("Error de conexión: " + err.message); }
@@ -500,6 +557,7 @@ function App() {
       setMisAdicciones(data.adicciones || {});
       setPasoActual(data.paso_actual || 0);
       setPasosCompletados(data.pasos_completados || []);
+      setNuevoTelefonoPerfil(data.telefono || "");
       localStorage.setItem("nuevavida_session", JSON.stringify(u));
     } else {
       alert("Identificador no encontrado. Verifique que esté escrito exactamente igual.");
@@ -512,13 +570,113 @@ function App() {
     setActiveTab("inicio");
   }
 
+  // Funciones de actualización de perfil de usuario común
+  async function actualizarTelefonoPerfil() {
+    if (!nuevoTelefonoPerfil.trim()) return alert("Por favor ingresa un número válido.");
+    const { error } = await supabase.from('usuarios').update({ telefono: nuevoTelefonoPerfil.trim() }).eq('username', user.username);
+    if (!error) {
+      setUser(prev => ({ ...prev, telefono: nuevoTelefonoPerfil.trim() }));
+      alert("✅ Teléfono actualizado correctamente.");
+      cargarDatos();
+    } else {
+      alert("Error al guardar teléfono: " + error.message);
+    }
+  }
+
+  async function añadirAdiccionPerfil() {
+    if (!seleccionAñadirAdiccion) return;
+    if (misAdicciones[seleccionAñadirAdiccion]) return alert("Ya estás haciendo seguimiento a esta adicción.");
+    const hoyFecha = new Date().toISOString().split('T')[0];
+    const nuevasAdicciones = { ...misAdicciones, [seleccionAñadirAdiccion]: hoyFecha };
+    const { error } = await supabase.from('usuarios').update({ adicciones: nuevasAdicciones }).eq('username', user.username);
+    if (!error) {
+      setMisAdicciones(nuevasAdicciones);
+      setSeleccionAñadirAdiccion("");
+      alert(`✅ Se agregó "${seleccionAñadirAdiccion}" a tu panel.`);
+      cargarDatos();
+    } else {
+      alert("Error: " + error.message);
+    }
+  }
+
+  async function quitarAdiccionPerfil(adiccionKey) {
+    if (!confirm(`¿Dejar de hacer seguimiento a "${adiccionKey}"?`)) return;
+    const nuevasAdicciones = { ...misAdicciones };
+    delete nuevasAdicciones[adiccionKey];
+    const { error } = await supabase.from('usuarios').update({ adicciones: nuevasAdicciones }).eq('username', user.username);
+    if (!error) {
+      setMisAdicciones(nuevasAdicciones);
+      cargarDatos();
+    } else {
+      alert("Error: " + error.message);
+    }
+  }
+
+  async function sugerirNuevaAdiccion() {
+    if (!nuevaAdiccionSugerida.trim()) return alert("Escribe el nombre de la adicción.");
+    const nombreNormalizado = nuevaAdiccionSugerida.trim();
+    const { error } = await supabase.from('adicciones').insert([{
+      nombre: nombreNormalizado,
+      aprobado: false,
+      sede_id: user.grupoId,
+      sugerido_por: user.username
+    }]);
+    if (!error) {
+      setNuevaAdiccionSugerida("");
+      alert("📩 Tu sugerencia fue enviada al administrador de tu sede. Aparecerá en la app una vez sea aprobada.");
+      cargarDatos();
+    } else {
+      alert("Error al enviar sugerencia: " + error.message);
+    }
+  }
+
+  // Funciones de Invitación y Aceptación de Cargos de Administración
+  async function proponerAdministrador(usernameDest) {
+    if (!confirm("¿Deseas proponer a este usuario como Administrador de la sede? Deberá aceptar la invitación en su sesión.")) return;
+    const { error } = await supabase.from('usuarios').update({ estado_admin: 'invitado' }).eq('username', usernameDest);
+    if (!error) {
+      alert("✉️ Invitación enviada al usuario.");
+      cargarDatos();
+    } else {
+      alert("Error al invitar: " + error.message);
+    }
+  }
+
+  async function responderInvitacionAdmin(aceptar) {
+    const nuevoRol = aceptar ? 'admin' : user.rol;
+    const nuevoEstadoAdmin = aceptar ? 'activo' : 'ninguno';
+    const { error } = await supabase.from('usuarios').update({
+      rol: nuevoRol,
+      estado_admin: nuevoEstadoAdmin
+    }).eq('username', user.username);
+
+    if (!error) {
+      setUser(prev => ({ ...prev, rol: nuevoRol, estado_admin: nuevoEstadoAdmin }));
+      alert(aceptar ? "🎉 ¡Felicidades! Ahora eres Administrador de la sede." : "Invitación rechazada.");
+      cargarDatos();
+    } else {
+      alert("Error: " + error.message);
+    }
+  }
+
+  // Funciones de administración de adicciones
+  async function aprobarAdiccionSugerida(id, nombreAd) {
+    const { error } = await supabase.from('adicciones').update({ aprobado: true }).eq('id', id);
+    if (!error) {
+      alert(`✅ Adicción "${nombreAd}" aprobada globalmente.`);
+      cargarDatos();
+    } else {
+      alert("Error: " + error.message);
+    }
+  }
+
   async function aprobarUsuario(username) {
     const { error } = await supabase.from('usuarios').update({ estado: 'aprobado' }).eq('username', username);
     if (!error) { alert("✅ Usuario aprobado."); cargarDatos(); }
     else alert("Error: " + error.message);
   }
 
-  async function rechazarUsuario(username, nombre_real) {
+  async function  rechazarUsuario(username, nombre_real) {
     if (!confirm(`¿Rechazar la solicitud de ${nombre_real}?`)) return;
     const { error } = await supabase.from('usuarios').update({ estado: 'rechazado' }).eq('username', username);
     if (!error) { alert("❌ Solicitud rechazada."); cargarDatos(); }
@@ -655,7 +813,7 @@ function App() {
     GRUPOS.forEach(g => { grupos[g.id] = { nombre: g.nombre, admins: [], miembros: [] }; });
     directorio.forEach(d => {
       if (!grupos[d.grupo_id]) return;
-      if (d.rol === 'admin') grupos[d.grupo_id].admins.push(d);
+      if (d.rol === 'admin' || d.estado_admin === 'activo') grupos[d.grupo_id].admins.push(d);
       else grupos[d.grupo_id].miembros.push(d);
     });
     return grupos;
@@ -698,7 +856,7 @@ function App() {
             </div>
           )}
           <p style={{color: 'var(--warning)', fontWeight: 'bold', marginBottom: '10px', fontSize: '17px'}}>Padecimientos y último consumo:</p>
-          {ADICCIONES_DISPONIBLES.map(ad => (
+          {adiccionesLista.map(ad => (
             <div key={ad} className="checkbox-group">
               <label className="checkbox-label">
                 <input type="checkbox" className="checkbox-custom" checked={!!checks[ad]} onChange={e => setChecks({...checks, [ad]: e.target.checked})} />
@@ -778,26 +936,30 @@ function App() {
 
       {/* HEADER */}
       <div className="header">
-        <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+        <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px'}}>
           {/* Nombre y sede — izquierda */}
-          <div style={{textAlign: 'left', flex: 1}}>
-            <div style={{color: 'var(--accent)', fontWeight: 'bold', fontSize: '17px'}}>{user.nombreReal}</div>
-            <div style={{color: 'var(--text-muted)', fontSize: '14px'}}>{user.grupoNombre}{user.rol === 'admin' && <span className="tag-admin">ADMIN</span>}</div>
+          <div style={{textAlign: 'left', flex: 1.2}}>
+            <div style={{color: 'var(--accent)', fontWeight: 'bold', fontSize: '16px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{user.nombreReal}</div>
+            <div style={{color: 'var(--text-muted)', fontSize: '13px'}}>{user.grupoNombre}{user.rol === 'admin' && <span className="tag-admin">ADMIN</span>}</div>
           </div>
+          {/* Botón Compartir App */}
+          <button onClick={compartirAplicacion} className="btn btn-sm btn-success" style={{padding: '8px 12px', fontSize: '14px', borderRadius: '10px'}}>
+            🔗 Compartir
+          </button>
           {/* Campana — centro */}
-          <div style={{flex: 1, display: 'flex', justifyContent: 'center'}}>
+          <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
             <div style={{position: 'relative', cursor: 'pointer'}} onClick={() => setMostrarNotifs(true)}>
-              <span style={{fontSize: '32px'}}>🔔</span>
+              <span style={{fontSize: '28px'}}>🔔</span>
               {notifNuevas > 0 && (
-                <span style={{position: 'absolute', top: '-4px', right: '-4px', background: 'var(--danger)', color: 'white', borderRadius: '50%', width: '20px', height: '20px', fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                <span style={{position: 'absolute', top: '-4px', right: '-4px', background: 'var(--danger)', color: 'white', borderRadius: '50%', width: '18px', height: '18px', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
                   {notifNuevas > 9 ? '9+' : notifNuevas}
                 </span>
               )}
             </div>
           </div>
           {/* Salir — derecha */}
-          <div style={{flex: 1, display: 'flex', justifyContent: 'flex-end'}}>
-            <button onClick={cerrarSesion} style={{background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '15px', textDecoration: 'underline', padding: '8px 4px'}}>Salir</button>
+          <div style={{display: 'flex', justifyContent: 'flex-end'}}>
+            <button onClick={cerrarSesion} style={{background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '14px', textDecoration: 'underline', padding: '6px 2px'}}>Salir</button>
           </div>
         </div>
       </div>
@@ -832,6 +994,18 @@ function App() {
 
       <div className="main-content">
 
+        {/* BANNER DE INVITACIÓN PARA ASCENSO A ADMINISTRADOR */}
+        {user.estado_admin === 'invitado' && (
+          <div className="alert-banner-admin">
+            <h4 style={{margin: '0 0 6px 0', color: 'var(--badge-pending-text)'}}>✉️ Invitación de Sede</h4>
+            <p style={{fontSize: '16px', margin: '0 0 12px 0'}}>Has sido propuesto para ser nombrado administrador de la sede <strong>{user.grupoNombre}</strong>. ¿Aceptas el cargo?</p>
+            <div style={{display: 'flex', gap: '10px'}}>
+              <button className="btn btn-sm btn-success" onClick={() => responderInvitacionAdmin(true)}>Aceptar</button>
+              <button className="btn btn-sm btn-danger" onClick={() => responderInvitacionAdmin(false)}>Rechazar</button>
+            </div>
+          </div>
+        )}
+
         {/* ===== INICIO ===== */}
         {activeTab === "inicio" && (
           <div>
@@ -847,8 +1021,50 @@ function App() {
                 <button className="btn btn-sm" style={{marginTop: '8px'}} onClick={() => setActiveTab("eventos")}>Ver todos los eventos</button>
               </div>
             )}
+            
+            {/* PANEL DE GESTIÓN DE PERFIL PROPIO */}
+            <div className="card" style={{borderColor: 'var(--border)'}}>
+              <h3 style={{margin: '0 0 12px 0', fontSize: '20px', color: 'var(--primary)'}}>⚙️ Mi Perfil</h3>
+              
+              <label>Modificar mi Teléfono</label>
+              <div style={{display: 'flex', gap: '8px', marginBottom: '16px'}}>
+                <input type="tel" className="input-field" style={{margin: 0, flex: 1}} placeholder="Ej: +56912345678" value={nuevoTelefonoPerfil} onChange={e => setNuevoTelefonoPerfil(e.target.value)} />
+                <button className="btn btn-success btn-sm" style={{padding: '0 16px', borderRadius: '14px'}} onClick={actualizarTelefonoPerfil}>Guardar</button>
+              </div>
+
+              <label>Mis adicciones actuales:</label>
+              <div style={{margin: '8px 0 16px'}}>
+                {Object.keys(misAdicciones).length === 0 && <p style={{color: 'var(--text-muted)', fontSize: '15px'}}>Ninguna seleccionada.</p>}
+                {Object.keys(misAdicciones).map(ad => (
+                  <span key={ad} className="chip">
+                    {ad} <span className="chip-remove" onClick={() => quitarAdiccionPerfil(ad)}>×</span>
+                  </span>
+                ))}
+              </div>
+
+              <label>Añadir adicción de la lista oficial</label>
+              <div style={{display: 'flex', gap: '8px', marginBottom: '14px'}}>
+                <select className="select-field" style={{margin: 0, flex: 1}} value={seleccionAñadirAdiccion} onChange={e => setSeleccionAñadirAdiccion(e.target.value)}>
+                  <option value="">— Seleccionar —</option>
+                  {adiccionesLista.filter(a => !misAdicciones[a]).map(a => (
+                    <option key={a} value={a}>{a}</option>
+                  ))}
+                </select>
+                <button className="btn btn-sm" style={{padding: '0 16px', borderRadius: '14px'}} onClick={añadirAdiccionPerfil}>Añadir</button>
+              </div>
+
+              <div style={{background: 'var(--bg-main)', padding: '12px', borderRadius: '14px', marginTop: '14px', border: '1px solid var(--border)'}}>
+                <label style={{fontSize: '14px', fontWeight: 'bold'}}>¿No encuentras tu adicción en la lista?</label>
+                <p style={{fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px'}}>Sugiérela al administrador para que la apruebe en la sede:</p>
+                <div style={{display: 'flex', gap: '8px'}}>
+                  <input type="text" className="input-field" style={{margin: 0, flex: 1, padding: '10px'}} placeholder="Ej: Redes Sociales" value={nuevaAdiccionSugerida} onChange={e => setNuevaAdiccionSugerida(e.target.value)} />
+                  <button className="btn btn-sm btn-secondary" style={{borderRadius: '12px'}} onClick={sugerirNuevaAdiccion}>Pedir</button>
+                </div>
+              </div>
+            </div>
+
             <h3 className="section-title">Mis Indicadores</h3>
-            {Object.keys(misAdicciones).length === 0 && <p style={{color: 'var(--text-muted)'}}>No tienes padecimientos registrados.</p>}
+            {Object.keys(misAdicciones).length === 0 && <p style={{color: 'var(--text-muted)'}}>No tienes padecimientos registrados en seguimiento activos.</p>}
             {Object.keys(misAdicciones).map(ad => {
               const dias = calcularDias(misAdicciones[ad]);
               const porcentaje = Math.min((dias / 90) * 100, 100);
@@ -873,7 +1089,7 @@ function App() {
               Toca un paso para marcarlo. Los pasos anteriores se marcan automáticamente.
             </p>
             <div style={{background: 'var(--card)', borderRadius: '14px', padding: '14px', marginBottom: '18px', border: '2px solid var(--border)'}}>
-              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
+              <div style={{display: 'flex', justifycontent: 'space-between', marginBottom: '8px'}}>
                 <span style={{fontWeight: 'bold'}}>Mi progreso</span>
                 <span style={{color: 'var(--accent)', fontWeight: 'bold'}}>{pasosCompletados.length} / 12</span>
               </div>
@@ -1005,15 +1221,15 @@ function App() {
                 <div key={g.id} className="directorio-sede">
                   <div className="directorio-sede-titulo">{g.nombre}</div>
                   {todos.map((m, i) => (
-                    <div key={i} className={`directorio-item${m.rol === 'admin' ? ' es-admin' : ''}`}>
+                    <div key={i} className={`directorio-item${m.rol === 'admin' || m.estado_admin === 'activo' ? ' es-admin' : ''}`}>
                       <div>
                         <div className="directorio-nombre">
                           {m.nombre_real}
-                          {m.rol === 'admin' && <span className="tag-admin">ADMIN</span>}
+                          {(m.rol === 'admin' || m.estado_admin === 'activo') && <span className="tag-admin">ADMIN</span>}
                         </div>
                         <div style={{fontSize: '14px', color: 'var(--text-muted)'}}>{limpiarTelefono(m.telefono)}</div>
                       </div>
-                      
+                      <a 
                         href={`https://wa.me/${limpiarTelefono(m.telefono).replace('+', '')}`}
                         target="_blank"
                         rel="noreferrer"
@@ -1099,8 +1315,10 @@ function App() {
         {activeTab === "admin" && user.rol === 'admin' && (
           <div>
             <h3 className="section-title">👥 Administración de Sede</h3>
+            
+            {/* Gestión de solicitudes de registro */}
             <h4 style={{color: 'var(--warning)'}}>⏳ Solicitudes Pendientes ({solicitudesPendientes.length})</h4>
-            {solicitudesPendientes.length === 0 && <p style={{color: 'var(--text-muted)'}}>No hay solicitudes pendientes.</p>}
+            {solicitudesPendientes.length === 0 && <p style={{color: 'var(--text-muted)', fontSize: '15px', marginBottom: '14px'}}>No hay solicitudes pendientes.</p>}
             {solicitudesPendientes.map(sol => (
               <div key={sol.username} className="solicitud-card">
                 <span className="badge badge-pendiente">PENDIENTE</span>
@@ -1114,6 +1332,46 @@ function App() {
                 </div>
               </div>
             ))}
+
+            {/* Aprobación de nuevas adicciones sugeridas */}
+            <h4 style={{color: 'var(--primary)', marginTop: '20px'}}>✨ Adicciones Sugeridas por Usuarios ({adiccionesSugeridasPendientes.length})</h4>
+            {adiccionesSugeridasPendientes.length === 0 && <p style={{color: 'var(--text-muted)', fontSize: '15px', marginBottom: '14px'}}>No hay sugerencias por revisar.</p>}
+            {adiccionesSugeridasPendientes.map(adS => (
+              <div key={adS.id} className="solicitud-card" style={{borderColor: 'var(--primary)'}}>
+                <div className="solicitud-nombre">{adS.nombre}</div>
+                <div className="solicitud-info">Sugerido por: {adS.sugerido_por}</div>
+                <div className="solicitud-actions">
+                  <button className="btn btn-success btn-sm" onClick={() => aprobarAdiccionSugerida(adS.id, adS.nombre)}>✅ Aprobar e Incluir en la App</button>
+                </div>
+              </div>
+            ))}
+
+            {/* Promoción y nombramiento de nuevos administradores */}
+            <h4 style={{color: 'var(--accent)', marginTop: '20px'}}>👑 Nombrar Administradores en mi Sede</h4>
+            <p style={{color: 'var(--text-muted)', fontSize: '14px', marginBottom: '10px'}}>Envía una invitación para dar privilegios de administrador (sin límites) a los miembros activos:</p>
+            <div style={{background: 'var(--card)', borderRadius: '16px', border: '2px solid var(--border)', padding: '10px'}}>
+              {usuariosDeMiSede.filter(u => u.username !== user.username).length === 0 && <p style={{color: 'var(--text-muted)', fontSize: '14px'}}>No hay otros usuarios registrados en esta sede.</p>}
+              {usuariosDeMiSede.filter(u => u.username !== user.username).map(miembro => (
+                <div key={miembro.username} style={{display: 'flex', alignItems: 'center', justifycontent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border)'}}>
+                  <div>
+                    <div style={{fontWeight: 'bold', fontSize: '16px'}}>{miembro.nombre_real}</div>
+                    <div style={{fontSize: '13px', color: 'var(--text-muted)'}}>{miembro.username}</div>
+                  </div>
+                  <div>
+                    {miembro.rol === 'admin' || miembro.estado_admin === 'activo' ? (
+                      <span className="tag-admin" style={{margin: 0}}>YA ES ADMIN</span>
+                    ) : miembro.estado_admin === 'invitado' ? (
+                      <span style={{fontSize: '13px', color: 'var(--warning)', fontStyle: 'italic'}}>Invitado...</span>
+                    ) : (
+                      <button className="btn btn-sm btn-secondary" style={{padding: '6px 12px', fontSize: '13px'}} onClick={() => proponerAdministrador(miembro.username)}>
+                        Hacer Admin
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
             <hr className="divider" />
             <h4 style={{color: 'var(--text-muted)', cursor: 'pointer'}} onClick={() => setMostrarRechazados(!mostrarRechazados)}>
               🚫 Rechazados ({solicitudesRechazadas.length}) {mostrarRechazados ? '▲' : '▼'}
@@ -1156,7 +1414,7 @@ function App() {
         <div className={"nav-item" + (activeTab === "biblioteca" ? " active" : "")} onClick={() => setActiveTab("biblioteca")}>
           <div className="nav-icon">📚</div>Biblio
         </div>
-        {user.rol === 'admin' && (
+        {(user.rol === 'admin' || user.estado_admin === 'activo') && (
           <div className={"nav-item" + (activeTab === "admin" ? " active" : "")} onClick={() => setActiveTab("admin")}>
             <div className="nav-icon">⚙️</div>Admin
           </div>
