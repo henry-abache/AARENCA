@@ -418,52 +418,20 @@ function App() {
   
   const [temaApp, setTemaApp] = React.useState(() => {
     const temaSaved = localStorage.getItem('nuevavida_tema');
-    // Si no hay tema guardado, usar 'auto' (automático según preferencia del sistema)
-    console.log('📱 Tema cargado desde localStorage:', temaSaved || 'auto');
-    return temaSaved || 'auto';
+    return (temaSaved === 'light' || temaSaved === 'dark') ? temaSaved : 'dark';
   });
 
-  // UseEffect: Cada vez que temaApp cambia, actualizar el atributo data-theme
-  // Esto activa los CSS :root[data-theme="..."] definidos en el <style>
   React.useEffect(() => {
-    const html = document.documentElement;
-    
-    if (temaApp === 'auto') {
-      // En modo automático, remover el atributo para que CSS use @media (prefers-color-scheme)
-      html.removeAttribute('data-theme');
-      console.log('⚙️ Tema en AUTOMÁTICO (según preferencia del sistema)');
-    } else {
-      // En modo light o dark, establecer el atributo data-theme
-      html.setAttribute('data-theme', temaApp);
-      console.log(`🎨 Tema aplicado: ${temaApp === 'dark' ? '🌙 OSCURO' : '☀️ CLARO'}`);
-    }
-    
-    // Guardar la preferencia en localStorage para que persista entre sesiones
+    document.documentElement.setAttribute('data-theme', temaApp);
     localStorage.setItem('nuevavida_tema', temaApp);
   }, [temaApp]);
 
   function toggleTema() {
-    // Función para cambiar el tema cuando el usuario hace click
-    // Cicla: auto → dark → light → auto
-    setTemaApp(t => {
-      if (t === 'auto') {
-        console.log('🌙 Cambiando a tema OSCURO');
-        return 'dark';
-      }
-      if (t === 'dark') {
-        console.log('☀️ Cambiando a tema CLARO');
-        return 'light';
-      }
-      console.log('⚙️ Cambiando a tema AUTOMÁTICO');
-      return 'auto';
-    });
+    setTemaApp(t => t === 'dark' ? 'light' : 'dark');
   }
 
   function iconoTema() {
-    // Retorna el icono correcto según el tema actual
-    if (temaApp === 'dark') return '🌙';      // Oscuro
-    if (temaApp === 'light') return '☀️';     // Claro
-    return '⚙️';                               // Automático
+    return temaApp === 'dark' ? '🌙' : '☀️';
   }
   // ============================================================
 
@@ -536,10 +504,19 @@ function App() {
   }
   const [evImagenUrl, setEvImagenUrl] = React.useState("");
   const [guardandoEvento, setGuardandoEvento] = React.useState(false);
+  const [mostrarSugerirEvento, setMostrarSugerirEvento] = React.useState(false);
+  const [sugEvTitulo, setSugEvTitulo] = React.useState("");
+  const [sugEvDesc, setSugEvDesc] = React.useState("");
+  const [sugEvFecha, setSugEvFecha] = React.useState("");
+  const [sugEvHora, setSugEvHora] = React.useState("");
+  const [sugEvLugar, setSugEvLugar] = React.useState("");
+  const [enviandoSugerencia, setEnviandoSugerencia] = React.useState(false);
+  const [eventosSugeridos, setEventosSugeridos] = React.useState([]);
 
   const [notificaciones, setNotificaciones] = React.useState([]);
   const [mostrarNotifs, setMostrarNotifs] = React.useState(false);
   const [notifNuevas, setNotifNuevas] = React.useState(0);
+  const [respuestasAsistencia, setRespuestasAsistencia] = React.useState({});
 
   // Invitación pendiente de admin
   const [invitacionPendiente, setInvitacionPendiente] = React.useState(null);
@@ -672,6 +649,13 @@ function App() {
         const { data: solAdd } = await supabase.from('solicitudes_adiccion').select('*')
           .eq('grupo_id', user.grupoId).eq('estado', 'pendiente').order('created_at', { ascending: false });
         if (solAdd) setSolicitudesAdiccion(solAdd);
+
+        // Cargar eventos sugeridos pendientes
+        try {
+          const { data: evSug } = await supabase.from('eventos_sugeridos').select('*')
+            .eq('grupo_id', user.grupoId).eq('estado', 'pendiente').order('created_at', { ascending: false });
+          if (evSug) setEventosSugeridos(evSug);
+        } catch(e) { /* tabla puede no existir aún */ }
       }
     } catch(e) { console.error("Error cargando datos", e); }
   }
@@ -1098,6 +1082,76 @@ function App() {
     cargarDatos();
   }
 
+  async function sugerirEvento() {
+    if (!sugEvTitulo.trim() || !sugEvFecha || !sugEvHora) return alert("Título, fecha y hora son obligatorios.");
+    setEnviandoSugerencia(true);
+    try {
+      const { error } = await supabase.from('eventos_sugeridos').insert([{
+        grupo_id: user.grupoId,
+        titulo: sugEvTitulo.trim(),
+        descripcion: sugEvDesc.trim(),
+        fecha: sugEvFecha,
+        hora: sugEvHora,
+        lugar: sugEvLugar.trim(),
+        sugerido_por: user.username,
+        sugerido_por_nombre: user.nombreReal,
+        estado: 'pendiente'
+      }]);
+      if (!error) {
+        setSugEvTitulo(""); setSugEvDesc(""); setSugEvFecha(""); setSugEvHora(""); setSugEvLugar("");
+        setMostrarSugerirEvento(false);
+        alert("✅ Sugerencia enviada al administrador para su revisión.");
+      } else {
+        // Si la tabla no existe, avisar al admin
+        if (error.message.includes('relation') || error.message.includes('does not exist')) {
+          alert("⚠️ Para activar las sugerencias de eventos, el administrador debe crear la tabla 'eventos_sugeridos' en Supabase.\n\nSQL:\nCREATE TABLE eventos_sugeridos (\n  id BIGSERIAL PRIMARY KEY,\n  grupo_id TEXT,\n  titulo TEXT,\n  descripcion TEXT,\n  fecha DATE,\n  hora TEXT,\n  lugar TEXT,\n  sugerido_por TEXT,\n  sugerido_por_nombre TEXT,\n  estado TEXT DEFAULT 'pendiente',\n  created_at TIMESTAMPTZ DEFAULT NOW()\n);");
+        } else {
+          alert("Error al enviar sugerencia: " + error.message);
+        }
+      }
+    } catch(e) { alert("Error: " + e.message); }
+    setEnviandoSugerencia(false);
+  }
+
+  async function aprobarEventoSugerido(sug) {
+    const grupoSel = GRUPOS.find(g => g.id === user.grupoId);
+    const lugar = sug.lugar || grupoSel.nombre;
+    const nuevoEv = {
+      grupo_id: user.grupoId, titulo: sug.titulo, descripcion: sug.descripcion,
+      fecha: sug.fecha, hora: sug.hora, lugar,
+      direccion: sug.lugar, imagen_url: '',
+      creado_por: user.username, creado_por_nombre: user.nombreReal
+    };
+    const { data: evInserted, error } = await supabase.from('eventos').insert([nuevoEv]).select().single();
+    if (error) { alert("Error al crear evento: " + error.message); return; }
+    await supabase.from('eventos_sugeridos').update({ estado: 'aprobado' }).eq('id', sug.id);
+    // Notificar al que sugirió
+    await supabase.from('notificaciones').insert([{
+      grupo_id: user.grupoId,
+      username_destinatario: sug.sugerido_por,
+      tipo: 'evento',
+      titulo: '✅ Tu sugerencia fue aprobada',
+      mensaje: `El evento "${sug.titulo}" que sugeriste fue aprobado y publicado por el administrador.`,
+      leida: false
+    }]);
+    alert(`✅ Evento aprobado y publicado.`);
+    cargarDatos();
+  }
+
+  async function rechazarEventoSugerido(id, sugerido_por, titulo) {
+    await supabase.from('eventos_sugeridos').update({ estado: 'rechazado' }).eq('id', id);
+    await supabase.from('notificaciones').insert([{
+      grupo_id: user.grupoId,
+      username_destinatario: sugerido_por,
+      tipo: 'evento',
+      titulo: '❌ Tu sugerencia no fue aprobada',
+      mensaje: `La sugerencia de evento "${titulo}" no fue aprobada en esta oportunidad.`,
+      leida: false
+    }]);
+    alert("Sugerencia rechazada.");
+    cargarDatos();
+  }
+
   async function registrarAsistencia(eventoId, respuesta) {
     try {
       const { data: asistenciaExistente } = await supabase
@@ -1441,12 +1495,11 @@ function App() {
               )}
             </div>
           </div>
-          <div style={{flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '8px'}}>
-            <button onClick={toggleTema} title={temaApp==='auto'?'Automático':temaApp==='dark'?'Oscuro':'Claro'}
-              style={{background:'none', border:'none', cursor:'pointer', fontSize:'22px', padding:'4px', lineHeight:1}}>
+          <div style={{flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center'}}>
+            <button onClick={toggleTema} title={temaApp==='dark'?'Tema Oscuro — toca para cambiar a Claro':'Tema Claro — toca para cambiar a Oscuro'}
+              style={{background:'var(--input-bg)', border:'2px solid var(--border)', cursor:'pointer', fontSize:'22px', padding:'6px 12px', lineHeight:1, borderRadius:'10px', color:'var(--text-main)'}}>
               {iconoTema()}
             </button>
-            <button onClick={cerrarSesion} style={{background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '15px', textDecoration: 'underline', padding: '8px 4px'}}>Salir</button>
           </div>
         </div>
       </div>
@@ -1489,6 +1542,13 @@ function App() {
                 <button className="btn btn-sm" style={{marginTop: '8px'}} onClick={() => setActiveTab("eventos")}>Ver todos los eventos</button>
               </div>
             )}
+            {!esCualquierAdmin && (
+              <div style={{marginBottom:'16px'}}>
+                <button className="btn btn-warning" style={{fontSize:'15px', padding:'13px'}} onClick={() => { setActiveTab('eventos'); setMostrarSugerirEvento(true); }}>
+                  💡 Sugerir un Evento al Administrador
+                </button>
+              </div>
+            )}
 
             <h3 className="section-title">Mis Indicadores de Sobriedad</h3>
             {Object.keys(misAdicciones).length === 0 && (
@@ -1519,6 +1579,13 @@ function App() {
                 </button>
               </div>
             )}
+
+            {/* CERRAR SESIÓN */}
+            <div style={{marginTop: '10px', marginBottom: '10px'}}>
+              <button className="btn btn-danger" style={{fontSize: '20px', padding: '18px', letterSpacing: '1px'}} onClick={cerrarSesion}>
+                🔒 CERRAR SESIÓN
+              </button>
+            </div>
           </div>
         )}
 
@@ -1587,6 +1654,46 @@ function App() {
         {activeTab === "eventos" && (
           <div>
             <h3 className="section-title">📅 Eventos</h3>
+
+            {/* POPUP SUGERIR EVENTO (usuarios normales) */}
+            {mostrarSugerirEvento && (
+              <div className="popup-overlay" onClick={() => setMostrarSugerirEvento(false)}>
+                <div className="popup-card" style={{textAlign:'left', maxHeight:'85vh', overflowY:'auto'}} onClick={e => e.stopPropagation()}>
+                  <h3 style={{color:'var(--primary)', marginTop:0}}>💡 Sugerir un Evento</h3>
+                  <p style={{color:'var(--text-muted)', fontSize:'14px', margin:'0 0 14px'}}>Tu sugerencia será revisada por el administrador de la sede.</p>
+                  <label>Título del evento *</label>
+                  <input type="text" className="input-field" placeholder="Ej: Reunión especial" value={sugEvTitulo} onChange={e => setSugEvTitulo(e.target.value)} />
+                  <label>Descripción</label>
+                  <textarea className="input-field" placeholder="Detalles del evento..." rows={3} value={sugEvDesc} onChange={e => setSugEvDesc(e.target.value)} />
+                  <label>📆 Fecha *</label>
+                  <input type="date" className="input-field" value={sugEvFecha} onChange={e => setSugEvFecha(e.target.value)} min={hoy} />
+                  <label>⏰ Hora *</label>
+                  <div style={{display:'flex', gap:'8px', marginBottom:'16px', alignItems:'center'}}>
+                    <select className="select-field" style={{marginBottom:0, flex:1}} value={sugEvHora.split(':')[0] || ''} onChange={e => setSugEvHora((e.target.value||'00')+':'+(sugEvHora.split(':')[1]||'00'))}>
+                      <option value="">Hora</option>
+                      {Array.from({length:24},(_,i)=><option key={i} value={i.toString().padStart(2,'0')}>{i.toString().padStart(2,'0')}h</option>)}
+                    </select>
+                    <span style={{color:'var(--text-muted)',fontWeight:'bold',fontSize:'20px'}}>:</span>
+                    <select className="select-field" style={{marginBottom:0, flex:1}} value={sugEvHora.split(':')[1]||'00'} onChange={e => setSugEvHora((sugEvHora.split(':')[0]||'00')+':'+e.target.value)}>
+                      <option value="00">00 min</option>
+                      <option value="15">15 min</option>
+                      <option value="30">30 min</option>
+                      <option value="45">45 min</option>
+                    </select>
+                  </div>
+                  <label>📍 Lugar (opcional)</label>
+                  <input type="text" className="input-field" placeholder="Ej: Sala principal de la sede" value={sugEvLugar} onChange={e => setSugEvLugar(e.target.value)} />
+                  <div style={{display:'flex', gap:'10px', marginTop:'8px'}}>
+                    <button className="btn btn-success" style={{flex:1}} onClick={sugerirEvento} disabled={enviandoSugerencia}>
+                      {enviandoSugerencia ? 'Enviando...' : '✅ Enviar Sugerencia'}
+                    </button>
+                    <button className="btn btn-secondary" style={{flex:1}} onClick={() => setMostrarSugerirEvento(false)}>Cancelar</button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* FORMULARIO CREAR EVENTO (solo admins) */}
             {esCualquierAdmin && (
               <div className="card" style={{borderColor: 'var(--primary)'}}>
                 <h4 style={{color: 'var(--primary)', marginTop: 0}}>➕ Nuevo Evento</h4>
@@ -1643,7 +1750,46 @@ function App() {
                 </button>
               </div>
             )}
-            {eventosProximos.length === 0 && <p style={{color: 'var(--text-muted)'}}>No hay eventos próximos.</p>}
+
+            {/* SUGERENCIAS PENDIENTES (solo admins) */}
+            {esCualquierAdmin && eventosSugeridos.length > 0 && (
+              <div className="card" style={{borderColor:'var(--warning)', marginBottom:'16px'}}>
+                <h4 style={{marginTop:0, color:'var(--warning)'}}>💡 Sugerencias de Eventos ({eventosSugeridos.length})</h4>
+                {eventosSugeridos.map(sug => (
+                  <div key={sug.id} style={{background:'var(--input-bg)', padding:'12px', borderRadius:'12px', marginBottom:'10px', border:'1px solid var(--border)'}}>
+                    <div style={{fontWeight:'bold', fontSize:'16px'}}>{sug.titulo}</div>
+                    <div style={{fontSize:'13px', color:'var(--text-muted)', margin:'4px 0'}}>
+                      📆 {formatFecha(sug.fecha)} · ⏰ {formatHora(sug.hora)}
+                      {sug.lugar && <span> · 📍 {sug.lugar}</span>}
+                    </div>
+                    {sug.descripcion && <div style={{fontSize:'14px', color:'var(--text-secondary)', marginBottom:'6px'}}>{sug.descripcion}</div>}
+                    <div style={{fontSize:'13px', color:'var(--text-muted)', marginBottom:'10px'}}>Sugerido por: {sug.sugerido_por_nombre}</div>
+                    <div style={{display:'flex', gap:'8px'}}>
+                      <button className="btn btn-success btn-sm" onClick={() => aprobarEventoSugerido(sug)}>✅ Aprobar y Publicar</button>
+                      <button className="btn btn-danger btn-sm" onClick={() => rechazarEventoSugerido(sug.id, sug.sugerido_por, sug.titulo)}>❌ Rechazar</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* BOTÓN SUGERIR EVENTO (usuarios normales) */}
+            {!esCualquierAdmin && (
+              <div style={{marginBottom:'18px'}}>
+                <button className="btn btn-warning" style={{fontSize:'16px', padding:'14px'}} onClick={() => setMostrarSugerirEvento(true)}>
+                  💡 Sugerir un Evento al Administrador
+                </button>
+              </div>
+            )}
+
+            {/* LISTA DE EVENTOS PRÓXIMOS */}
+            {eventosProximos.length === 0 && (
+              <div className="card" style={{textAlign:'center', padding:'30px 20px'}}>
+                <div style={{fontSize:'48px', marginBottom:'12px'}}>📅</div>
+                <p style={{color:'var(--text-muted)', fontSize:'17px', margin:0}}>No hay eventos próximos programados.</p>
+                {!esCualquierAdmin && <p style={{color:'var(--text-muted)', fontSize:'14px', marginTop:'8px'}}>¿Tienes una idea? Usa el botón de arriba para sugerir uno.</p>}
+              </div>
+            )}
             {eventosProximos.map(ev => (
               <div key={ev.id} className="evento-card">
                 <div className="evento-titulo">{ev.titulo}</div>
@@ -1687,7 +1833,7 @@ function App() {
                   <button className="btn btn-danger btn-sm" style={{marginTop: '12px'}} onClick={() => eliminarEvento(ev.id)}>Eliminar evento</button>
                 )}
               </div>
-            ))}}
+            ))}
           </div>
         )}
 
@@ -1826,6 +1972,28 @@ function App() {
         {activeTab === "admin" && esCualquierAdmin && (
           <div>
             <h3 className="section-title">⚙️ Control de Sede</h3>
+
+            {/* SUGERENCIAS DE EVENTOS PENDIENTES */}
+            {eventosSugeridos.length > 0 && (
+              <div className="card" style={{borderColor:'var(--warning)'}}>
+                <h4 style={{marginTop:0, color:'var(--warning)'}}>💡 Sugerencias de Eventos ({eventosSugeridos.length})</h4>
+                {eventosSugeridos.map(sug => (
+                  <div key={sug.id} style={{background:'var(--input-bg)', padding:'12px', borderRadius:'12px', marginBottom:'10px', border:'1px solid var(--border)'}}>
+                    <div style={{fontWeight:'bold', fontSize:'16px'}}>{sug.titulo}</div>
+                    <div style={{fontSize:'13px', color:'var(--text-muted)', margin:'4px 0'}}>
+                      📆 {formatFecha(sug.fecha)} · ⏰ {formatHora(sug.hora)}
+                      {sug.lugar && <span> · 📍 {sug.lugar}</span>}
+                    </div>
+                    {sug.descripcion && <div style={{fontSize:'14px', color:'var(--text-secondary)', marginBottom:'6px'}}>{sug.descripcion}</div>}
+                    <div style={{fontSize:'13px', color:'var(--text-muted)', marginBottom:'10px'}}>Sugerido por: {sug.sugerido_por_nombre}</div>
+                    <div style={{display:'flex', gap:'8px'}}>
+                      <button className="btn btn-success btn-sm" onClick={() => aprobarEventoSugerido(sug)}>✅ Aprobar y Publicar</button>
+                      <button className="btn btn-danger btn-sm" onClick={() => rechazarEventoSugerido(sug.id, sug.sugerido_por, sug.titulo)}>❌ Rechazar</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* CATÁLOGO DE ADICCIONES */}
             <div className="card" style={{borderColor: 'var(--warning)'}}>
