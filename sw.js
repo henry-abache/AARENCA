@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nueva-vida-aa-v5';
+const CACHE_NAME = 'nueva-vida-aa-v6';
 const urlsToCache = [
   './',
   './index.html',
@@ -8,11 +8,11 @@ const urlsToCache = [
   'https://unpkg.com/react@18/umd/react.production.min.js',
   'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
   'https://unpkg.com/@babel/standalone/babel.min.js',
-  'https://unpkg.com/@supabase/supabase-js@2'
+  'https://unpkg.com/@supabase/supabase-js@2.39.3/dist/umd/supabase.js'
 ];
 
 self.addEventListener('install', event => {
-  console.log('[SW] Instalando v5...');
+  console.log('[SW] Instalando v6...');
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       return cache.addAll(urlsToCache).catch(err => {
@@ -25,7 +25,7 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('activate', event => {
-  console.log('[SW] Activando v5...');
+  console.log('[SW] Activando v6...');
   event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(
