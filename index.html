@@ -1376,10 +1376,17 @@ function App() {
                 <label>📆 Fecha *</label>
                 <input type="date" className="input-field" value={evFecha} onChange={e => setEvFecha(e.target.value)} min={hoy} />
                 <label>⏰ Hora *</label>
-                <div style={{display: 'flex', gap: '10px', marginBottom: '8px'}}>
-                  <select className="select-field" style={{marginBottom: 0, flex: 1}} value={evHora.split(':')[0] || ''} onChange={e => setEvHora(e.target.value + ':' + (evHora.split(':')[1] || '00'))}>
+                <div style={{display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center'}}>
+                  <select className="select-field" style={{marginBottom: 0, flex: 1}} value={evHora.split(':')[0] || ''} onChange={e => setEvHora((e.target.value || '00') + ':' + (evHora.split(':')[1] || '00'))}>
                     <option value="">Hora</option>
-                    {Array.from({length: 24}, (_, i) => <option key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}:00</option>)}
+                    {Array.from({length: 24}, (_, i) => <option key={i} value={i.toString().padStart(2, '0')}>{i.toString().padStart(2, '0')}h</option>)}
+                  </select>
+                  <span style={{color: 'var(--text-muted)', fontWeight: 'bold', fontSize: '20px'}}>:</span>
+                  <select className="select-field" style={{marginBottom: 0, flex: 1}} value={evHora.split(':')[1] || '00'} onChange={e => setEvHora((evHora.split(':')[0] || '00') + ':' + e.target.value)}>
+                    <option value="00">00 min</option>
+                    <option value="15">15 min</option>
+                    <option value="30">30 min</option>
+                    <option value="45">45 min</option>
                   </select>
                 </div>
                 <label>📍 Lugar</label>
