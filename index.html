@@ -236,6 +236,37 @@
       background: linear-gradient(135deg, #1e3a8a, #0f172a);
       border: 2px solid var(--primary); text-align: center;
     }
+    /* Pasos círculos gráficos */
+    .pasos-grafico {
+      display: grid; grid-template-columns: repeat(6, 1fr);
+      gap: 8px; margin-bottom: 22px;
+    }
+    .paso-circulo {
+      width: 100%; aspect-ratio: 1; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: bold;
+      border: 3px solid var(--border);
+      background: var(--input-bg); color: var(--text-muted);
+      transition: all 0.3s;
+    }
+    .paso-circulo.completado {
+      background: var(--accent); color: white; border-color: var(--accent);
+    }
+    .paso-circulo.trabajando {
+      background: var(--warning); color: white; border-color: var(--warning);
+      box-shadow: 0 0 14px rgba(217,119,6,0.6);
+      animation: pulse-paso 1.5s infinite;
+    }
+    @keyframes pulse-paso {
+      0%,100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+    /* Compartir card */
+    .share-card {
+      background: linear-gradient(135deg, #1e3a5f, #0f172a);
+      border: 2px solid var(--primary); border-radius: 20px;
+      padding: 20px; margin-bottom: 18px; text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -260,7 +291,15 @@ const FRASES_MOTIVACIONALES = [
   "Tu pasado no define tu destino. Cada amanecer es una nueva oportunidad.",
   "No estás solo en esta batalla. Juntos somos más fuertes.",
   "Valiente no es el que no cae, sino el que se levanta con más fuerza.",
-  "El cambio empieza cuando decides que el dolor de seguir igual es mayor que el miedo a cambiar."
+  "El cambio empieza cuando decides que el dolor de seguir igual es mayor que el miedo a cambiar.",
+  "Cada día sobrio es una victoria que merece ser celebrada.",
+  "La fuerza no viene de lo que puedes hacer, sino de superar lo que pensabas que no podías.",
+  "Un día a la vez, un paso a la vez, una victoria a la vez.",
+  "La sobriedad no es el fin del camino, es el comienzo de una nueva vida.",
+  "Cuando sientas que no puedes más, recuerda por qué empezaste.",
+  "Tu lucha de hoy es la fuerza de mañana.",
+  "No hay fracaso, solo lecciones en el camino hacia la recuperación.",
+  "La esperanza es el primer paso en cualquier viaje hacia la sanación."
 ];
 
 const PASOS_AA = [
@@ -343,12 +382,15 @@ function App() {
   const [fechas, setFechas] = React.useState({});
   const [mostrarCampoAdmin, setMostrarCampoAdmin] = React.useState(false);
   const [codigoAdmin, setCodigoAdmin] = React.useState("");
-  const [rol, setRol] = React.useState("basico");
   const [loginUsername, setLoginUsername] = React.useState("");
   const CODIGO_SECRETO_ADMIN = "felices24";
 
-  // Panel Global de Configuración de Adicciones globales de la sede
   const [nuevaAdiccionSede, setNuevaAdiccionSede] = React.useState("");
+
+  // Solicitudes de adicción de usuarios
+  const [mostrarSolicitarAdiccion, setMostrarSolicitarAdiccion] = React.useState(false);
+  const [adiccionSolicitada, setAdiccionSolicitada] = React.useState("");
+  const [solicitudesAdiccion, setSolicitudesAdiccion] = React.useState([]);
 
   const [biblioteca, setBiblioteca] = React.useState([]);
   const [nuevoTitulo, setNuevoTitulo] = React.useState("");
@@ -378,6 +420,9 @@ function App() {
   const [notificaciones, setNotificaciones] = React.useState([]);
   const [mostrarNotifs, setMostrarNotifs] = React.useState(false);
   const [notifNuevas, setNotifNuevas] = React.useState(0);
+
+  // Invitación pendiente de admin
+  const [invitacionPendiente, setInvitacionPendiente] = React.useState(null);
 
   const hoy = new Date().toISOString().split('T')[0];
 
@@ -410,6 +455,10 @@ function App() {
       setPasoActual(data.paso_actual || 0);
       setPasosCompletados(data.pasos_completados || []);
       setNuevoTelefonoEdit(data.telefono || "");
+      // Revisar invitaciones pendientes
+      if (data.invitacion_admin_pendiente) {
+        setInvitacionPendiente(data.invitacion_admin_pendiente);
+      }
     } else {
       localStorage.removeItem("nuevavida_session");
     }
@@ -421,7 +470,7 @@ function App() {
       nombreReal: data.nombre_real,
       grupoId: data.grupo_id,
       grupoNombre: data.grupo_nombre,
-      rol: data.rol, // 'admin_principal', 'admin_adjunto', 'basico'
+      rol: data.rol,
       estado: data.estado,
       telefono: data.telefono || ""
     };
@@ -440,7 +489,7 @@ function App() {
 
   async function cargarAdiccionesSede() {
     if (!user) return;
-    const { data, error } = await supabase.from('config_sede').select('adicciones_lista').eq('grupo_id', user.grupoId).maybeSingle();
+    const { data } = await supabase.from('config_sede').select('adicciones_lista').eq('grupo_id', user.grupoId).maybeSingle();
     if (data && data.adicciones_lista) {
       setAdiccionesDisponibles(data.adicciones_lista);
     } else {
@@ -457,6 +506,11 @@ function App() {
         setPasoActual(uData.paso_actual || 0);
         setPasosCompletados(uData.pasos_completados || []);
         setUser(prev => ({ ...prev, estado: uData.estado, rol: uData.rol }));
+        if (uData.invitacion_admin_pendiente) {
+          setInvitacionPendiente(uData.invitacion_admin_pendiente);
+        } else {
+          setInvitacionPendiente(null);
+        }
       }
 
       const { data: bData } = await supabase.from('biblioteca').select('*').eq('grupo_id', user.grupoId).order('id', { ascending: false });
@@ -478,7 +532,6 @@ function App() {
       const { data: dData } = await supabase.from('usuarios')
         .select('nombre_real, rol, telefono, grupo_id, grupo_nombre')
         .eq('estado', 'aprobado')
-        .neq('telefono', '')
         .order('nombre_real', { ascending: true });
       if (dData) setDirectorio(dData);
 
@@ -494,6 +547,11 @@ function App() {
         const { data: miembros } = await supabase.from('usuarios').select('*')
           .eq('grupo_id', user.grupoId).eq('estado', 'aprobado').order('nombre_real');
         if (miembros) setListaMiembrosSede(miembros);
+
+        // Cargar solicitudes de adicciones pendientes
+        const { data: solAdd } = await supabase.from('solicitudes_adiccion').select('*')
+          .eq('grupo_id', user.grupoId).eq('estado', 'pendiente').order('created_at', { ascending: false });
+        if (solAdd) setSolicitudesAdiccion(solAdd);
       }
     } catch(e) { console.error("Error cargando datos", e); }
   }
@@ -501,10 +559,10 @@ function App() {
   async function registrarCuenta(e) {
     e.preventDefault();
     if (!nombre.trim() || !sede) return alert("Por favor complete su nombre y seleccione una sede.");
-    
+
     const grupoSel = GRUPOS.find(g => g.id === sede);
     const uid = nombre.trim().replace(/\s+/g, "_") + "_" + grupoSel.id;
-    
+
     const adiccionesConfig = {};
     adiccionesDisponibles.forEach(ad => {
       if (checks[ad]) adiccionesConfig[ad] = fechas[ad] || new Date().toISOString().split('T')[0];
@@ -514,12 +572,8 @@ function App() {
     let estadoAsignado = "pendiente";
 
     if (mostrarCampoAdmin && codigoAdmin.trim() === CODIGO_SECRETO_ADMIN) {
-      // Validar si ya hay un administrador principal en esta sede
       const { data: principalExistente } = await supabase.from('usuarios')
-        .select('username')
-        .eq('grupo_id', sede)
-        .eq('rol', 'admin_principal')
-        .maybeSingle();
+        .select('username').eq('grupo_id', sede).eq('rol', 'admin_principal').maybeSingle();
 
       if (!principalExistente) {
         rolAsignado = "admin_principal";
@@ -547,23 +601,17 @@ function App() {
       }
 
       const nuevoUsr = {
-        username: uid,
-        nombre_real: nombre.trim(),
-        grupo_id: sede,
-        grupo_nombre: grupoSel.nombre,
-        rol: rolAsignado,
-        estado: estadoAsignado,
-        telefono: telefono.trim(),
-        adicciones: adiccionesConfig,
-        paso_actual: 0,
-        pasos_completados: []
+        username: uid, nombre_real: nombre.trim(), grupo_id: sede,
+        grupo_nombre: grupoSel.nombre, rol: rolAsignado, estado: estadoAsignado,
+        telefono: telefono.trim(), adicciones: adiccionesConfig,
+        paso_actual: 0, pasos_completados: []
       };
 
       const { error } = await supabase.from('usuarios').insert([nuevoUsr]);
       if (error) {
         alert("Error al registrar: " + error.message);
       } else {
-        const u = { username: uid, nombreReal: nombre.trim(), grupoId: sede, grupoNombre: grupoSel.nombre, rol: rolAsignado, estado: estadoAsignado, telefono: telefono.trim() };
+        const u = buildUser(nuevoUsr);
         setUser(u);
         setMisAdicciones(adiccionesConfig);
         localStorage.setItem("nuevavida_session", JSON.stringify(u));
@@ -581,6 +629,7 @@ function App() {
       setMisAdicciones(data.adicciones || {});
       setPasoActual(data.paso_actual || 0);
       setPasosCompletados(data.pasos_completados || []);
+      if (data.invitacion_admin_pendiente) setInvitacionPendiente(data.invitacion_admin_pendiente);
       localStorage.setItem("nuevavida_session", JSON.stringify(u));
     } else {
       alert("Identificador no encontrado. Verifique que esté escrito exactamente igual.");
@@ -639,14 +688,59 @@ function App() {
   }
 
   async function promoverAAdjunto(username, nombreReal) {
-    if (!confirm(`¿Estás seguro de que deseas promover a ${nombreReal} como Administrador Adjunto de esta sede?`)) return;
-    const { error } = await supabase.from('usuarios').update({ rol: 'admin_adjunto' }).eq('username', username);
-    if (!error) { alert(`✅ ${nombreReal} ahora es Administrador Adjunto.`); cargarDatos(); }
-    else alert("Error: " + error.message);
+    // En lugar de promover directamente, enviar invitación
+    if (!confirm(`¿Enviar invitación a ${nombreReal} para que se convierta en Administrador de esta sede?\n\nEl usuario deberá aceptar la invitación.`)) return;
+    
+    const { error } = await supabase.from('usuarios').update({
+      invitacion_admin_pendiente: { 
+        de: user.nombreReal, 
+        de_username: user.username, 
+        fecha: new Date().toISOString(),
+        grupo_id: user.grupoId,
+        grupo_nombre: user.grupoNombre
+      }
+    }).eq('username', username);
+
+    if (!error) {
+      // Enviar notificación
+      await supabase.from('notificaciones').insert([{
+        grupo_id: user.grupoId,
+        username_destinatario: username,
+        tipo: 'invitacion_admin',
+        titulo: '👑 Invitación a Administrador',
+        mensaje: `${user.nombreReal} te invita a convertirte en Administrador de ${user.grupoNombre}. Ingresa a la app para aceptar o rechazar.`,
+        leida: false
+      }]);
+      alert(`✅ Invitación enviada a ${nombreReal}. Cuando ingrese a la app, podrá aceptar o rechazar.`);
+      cargarDatos();
+    } else alert("Error: " + error.message);
+  }
+
+  async function aceptarInvitacionAdmin() {
+    const { error } = await supabase.from('usuarios').update({
+      rol: 'admin_adjunto',
+      invitacion_admin_pendiente: null
+    }).eq('username', user.username);
+    if (!error) {
+      setUser(prev => ({ ...prev, rol: 'admin_adjunto' }));
+      setInvitacionPendiente(null);
+      alert("✅ ¡Ahora eres Administrador de la sede!");
+      cargarDatos();
+    } else alert("Error: " + error.message);
+  }
+
+  async function rechazarInvitacionAdmin() {
+    const { error } = await supabase.from('usuarios').update({
+      invitacion_admin_pendiente: null
+    }).eq('username', user.username);
+    if (!error) {
+      setInvitacionPendiente(null);
+      alert("Has rechazado la invitación.");
+    } else alert("Error: " + error.message);
   }
 
   async function degradarAdminAdjunto(username, nombreReal) {
-    if (!confirm(`¿Estás seguro de que deseas revocar los permisos de administrador a ${nombreReal} y pasarlo a Miembro Básico?`)) return;
+    if (!confirm(`¿Revocar los permisos de administrador a ${nombreReal}?`)) return;
     const { error } = await supabase.from('usuarios').update({ rol: 'basico' }).eq('username', username);
     if (!error) { alert(`❌ ${nombreReal} ya no es administrador.`); cargarDatos(); }
     else alert("Error: " + error.message);
@@ -654,21 +748,16 @@ function App() {
 
   async function cederAdministradorPrincipal(nuevoPrincipalUsername, nuevoPrincipalNombre) {
     if (!confirm(`⚠️ ALERTA CRÍTICA:\n¿Estás seguro de que deseas transferir el puesto de ADMINISTRADOR PRINCIPAL a ${nuevoPrincipalNombre}?\nTu rol cambiará automáticamente a Administrador Adjunto.`)) return;
-    
-    // 1. Convertir al adjunto elegido en Principal
     const { error: err1 } = await supabase.from('usuarios').update({ rol: 'admin_principal' }).eq('username', nuevoPrincipalUsername);
     if (err1) return alert("Error en traspaso: " + err1.message);
-    
-    // 2. Degradarse a sí mismo a Adjunto
     const { error: err2 } = await supabase.from('usuarios').update({ rol: 'admin_adjunto' }).eq('username', user.username);
     if (err2) return alert("Error al modificar tu rol: " + err2.message);
-
-    alert(`✅ Traspaso completado con éxito. Ahora ${nuevoPrincipalNombre} es el Administrador Principal.`);
+    alert(`✅ Traspaso completado. Ahora ${nuevoPrincipalNombre} es el Administrador Principal.`);
     setUser(prev => ({ ...prev, rol: 'admin_adjunto' }));
     cargarDatos();
   }
 
-  async function FuelRechazarUsuario(username, nombre_real) {
+  async function rechazarUsuario(username, nombre_real) {
     if (!confirm(`¿Rechazar la solicitud de ${nombre_real}?`)) return;
     const { error } = await supabase.from('usuarios').update({ estado: 'rechazado' }).eq('username', username);
     if (!error) { alert("❌ Solicitud rechazada."); cargarDatos(); }
@@ -678,11 +767,8 @@ function App() {
   async function agregarAdiccionSede() {
     if (!nuevaAdiccionSede.trim()) return;
     if (adiccionesDisponibles.includes(nuevaAdiccionSede.trim())) return alert("Esta adicción ya se encuentra en la lista.");
-    
     const nuevaLista = [...adiccionesDisponibles, nuevaAdiccionSede.trim()];
-    
     const { data: configExistente } = await supabase.from('config_sede').select('id').eq('grupo_id', user.grupoId).maybeSingle();
-    
     let error = null;
     if (configExistente) {
       const { error: err } = await supabase.from('config_sede').update({ adicciones_lista: nuevaLista }).eq('grupo_id', user.grupoId);
@@ -691,34 +777,78 @@ function App() {
       const { error: err } = await supabase.from('config_sede').insert([{ grupo_id: user.grupoId, adicciones_lista: nuevaLista }]);
       error = err;
     }
-
     if (!error) {
       setAdiccionesDisponibles(nuevaLista);
       setNuevaAdiccionSede("");
-      alert("✅ Nueva adicción agregada al catálogo de la sede.");
-    } else {
-      alert("Error al guardar: " + error.message);
-    }
+      alert("✅ Nueva adicción agregada al catálogo.");
+    } else alert("Error al guardar: " + error.message);
   }
 
   async function eliminarAdiccionSede(item) {
-    if (!confirm(`¿Eliminar "${item}" de las adicciones disponibles para esta sede?\n(Nota: No borrará los datos históricos de los miembros que ya la tengan seleccionada).`)) return;
+    if (!confirm(`¿Eliminar "${item}" de las adicciones disponibles?`)) return;
     const nuevaLista = adiccionesDisponibles.filter(a => a !== item);
-    
     const { error } = await supabase.from('config_sede').update({ adicciones_lista: nuevaLista }).eq('grupo_id', user.grupoId);
     if (!error) {
       setAdiccionesDisponibles(nuevaLista);
-      alert("❌ Adicción retirada del catálogo.");
-    } else {
-      alert("Error: " + error.message);
+    } else alert("Error: " + error.message);
+  }
+
+  // Solicitar nueva adicción (usuario normal)
+  async function solicitarAdiccionNueva() {
+    if (!adiccionSolicitada.trim()) return alert("Escribe el nombre de la adicción.");
+    if (adiccionesDisponibles.includes(adiccionSolicitada.trim())) return alert("Esa adicción ya está en la lista.");
+    
+    try {
+      // Verificar si la tabla existe, si no, intentar guardar de todas formas
+      const { error } = await supabase.from('solicitudes_adiccion').insert([{
+        grupo_id: user.grupoId,
+        solicitante_username: user.username,
+        solicitante_nombre: user.nombreReal,
+        adiccion: adiccionSolicitada.trim(),
+        estado: 'pendiente'
+      }]);
+      if (!error) {
+        setAdiccionSolicitada("");
+        setMostrarSolicitarAdiccion(false);
+        alert("✅ Solicitud enviada al administrador de tu sede.");
+      } else {
+        alert("Error al enviar solicitud: " + error.message);
+      }
+    } catch(e) {
+      alert("Error: " + e.message);
     }
+  }
+
+  async function aprobarSolicitudAdiccion(solicitud) {
+    const nuevaLista = [...adiccionesDisponibles, solicitud.adiccion];
+    const { data: configExistente } = await supabase.from('config_sede').select('id').eq('grupo_id', user.grupoId).maybeSingle();
+    let err = null;
+    if (configExistente) {
+      const { error } = await supabase.from('config_sede').update({ adicciones_lista: nuevaLista }).eq('grupo_id', user.grupoId);
+      err = error;
+    } else {
+      const { error } = await supabase.from('config_sede').insert([{ grupo_id: user.grupoId, adicciones_lista: nuevaLista }]);
+      err = error;
+    }
+    if (!err) {
+      await supabase.from('solicitudes_adiccion').update({ estado: 'aprobado' }).eq('id', solicitud.id);
+      setAdiccionesDisponibles(nuevaLista);
+      alert(`✅ Adicción "${solicitud.adiccion}" aprobada y agregada al catálogo.`);
+      cargarDatos();
+    } else alert("Error: " + err.message);
+  }
+
+  async function rechazarSolicitudAdiccion(id) {
+    await supabase.from('solicitudes_adiccion').update({ estado: 'rechazado' }).eq('id', id);
+    alert("Solicitud rechazada.");
+    cargarDatos();
   }
 
   async function registrarRecaida(adiccion) {
     if (!confirm(`¿Desea reiniciar el contador de "${adiccion}"?`)) return;
     const hoyStr = new Date().toISOString().split('T')[0];
     const nuevas = { ...misAdicciones, [adiccion]: hoyStr };
-    const { error = null } = await supabase.from('usuarios').update({ adicciones: nuevas }).eq('username', user.username);
+    const { error } = await supabase.from('usuarios').update({ adicciones: nuevas }).eq('username', user.username);
     if (!error) {
       setMisAdicciones(nuevas);
       setLecturaRecomendada(LECTURAS[Math.floor(Math.random() * LECTURAS.length)]);
@@ -728,49 +858,51 @@ function App() {
 
   async function cambiarPaso(n) {
     let nuevosPasos = [];
-    for (let i = 1; i < n; i++) {
-      nuevosPasos.push(i);
-    }
-    
+    for (let i = 1; i < n; i++) nuevosPasos.push(i);
     const { error } = await supabase.from('usuarios').update({
-      paso_actual: n,
-      pasos_completados: nuevosPasos
+      paso_actual: n, pasos_completados: nuevosPasos
     }).eq('username', user.username);
-
     if (!error) {
       setPasoActual(n);
       setPasosCompletados(nuevosPasos);
-    } else {
-      alert("Error al actualizar paso: " + error.message);
-    }
+    } else alert("Error al actualizar paso: " + error.message);
   }
 
   async function subirMaterial() {
     if (!nuevoTitulo) return alert("Escribe un título para el material.");
     let linkFinal = nuevoLink;
+    
     if (modoSubida === 'archivo') {
       if (!archivoLocal) return alert("Selecciona un archivo.");
       setSubiendoArchivo(true);
-      const nombreArchivo = `${user.grupoId}/${Date.now()}_${archivoLocal.name.replace(/\s+/g, '_')}`;
-      const { error: upError } = await supabase.storage
-        .from('biblioteca-archivos')
-        .upload(nombreArchivo, archivoLocal, { cacheControl: '3600', upsert: false });
-      if (upError) {
+      try {
+        const nombreArchivo = `${user.grupoId}/${Date.now()}_${archivoLocal.name.replace(/\s+/g, '_')}`;
+        const { error: upError, data: upData } = await supabase.storage
+          .from('biblioteca-archivos')
+          .upload(nombreArchivo, archivoLocal, { cacheControl: '3600', upsert: false });
+        if (upError) {
+          setSubiendoArchivo(false);
+          return alert("Error al subir archivo: " + upError.message + "\n\nVerifica que el bucket 'biblioteca-archivos' existe en Supabase Storage con acceso público.");
+        }
+        const { data: urlData } = supabase.storage.from('biblioteca-archivos').getPublicUrl(nombreArchivo);
+        linkFinal = urlData.publicUrl;
+      } catch(err) {
         setSubiendoArchivo(false);
-        return alert("Error al subir archivo: " + upError.message);
+        return alert("Error al subir archivo: " + err.message);
       }
-      const { data: urlData } = supabase.storage.from('biblioteca-archivos').getPublicUrl(nombreArchivo);
-      linkFinal = urlData.publicUrl;
     } else {
       if (!nuevoLink) return alert("Pega un enlace válido.");
+      linkFinal = nuevoLink;
     }
+
     const { error } = await supabase.from('biblioteca').insert([{
       grupo_id: user.grupoId, titulo: nuevoTitulo, tipo: nuevoTipo, link: linkFinal
     }]);
     setSubiendoArchivo(false);
     if (!error) {
       setNuevoTitulo(""); setNuevoLink(""); setArchivoLocal(null); setModoSubida('enlace');
-      cargarDatos(); alert("✅ Publicado.");
+      cargarDatos();
+      alert("✅ Publicado en la biblioteca.");
     } else alert("Error: " + error.message);
   }
 
@@ -786,16 +918,10 @@ function App() {
     const grupoSel = GRUPOS.find(g => g.id === user.grupoId);
     const lugar = evLugar.trim() || grupoSel.nombre;
     const nuevoEv = {
-      grupo_id: user.grupoId,
-      titulo: evTitulo.trim(),
-      descripcion: evDesc.trim(),
-      fecha: evFecha,
-      hora: evHora,
-      lugar,
-      direccion: evDireccion.trim(),
-      imagen_url: evImagenUrl.trim(),
-      creado_por: user.username,
-      creado_por_nombre: user.nombreReal
+      grupo_id: user.grupoId, titulo: evTitulo.trim(), descripcion: evDesc.trim(),
+      fecha: evFecha, hora: evHora, lugar,
+      direccion: evDireccion.trim(), imagen_url: evImagenUrl.trim(),
+      creado_por: user.username, creado_por_nombre: user.nombreReal
     };
     const { data: evInserted, error } = await supabase.from('eventos').insert([nuevoEv]).select().single();
     if (error) { alert("Error al crear evento: " + error.message); setGuardandoEvento(false); return; }
@@ -803,19 +929,16 @@ function App() {
     const { data: miembros } = await supabase.from('usuarios').select('username').eq('grupo_id', user.grupoId).eq('estado', 'aprobado');
     if (miembros && miembros.length > 0) {
       const notifs = miembros.map(m => ({
-        grupo_id: user.grupoId,
-        username_destinatario: m.username,
-        tipo: 'evento',
-        titulo: `📅 Nuevo Evento: ${evTitulo.trim()}`,
+        grupo_id: user.grupoId, username_destinatario: m.username,
+        tipo: 'evento', titulo: `📅 Nuevo Evento: ${evTitulo.trim()}`,
         mensaje: `${user.nombreReal} agregó un evento para el ${formatFecha(evFecha)} a las ${formatHora(evHora)} en ${lugar}.`,
-        evento_id: evInserted.id,
-        leida: false
+        evento_id: evInserted.id, leida: false
       }));
       await supabase.from('notificaciones').insert(notifs);
     }
     setEvTitulo(""); setEvDesc(""); setEvFecha(""); setEvHora(""); setEvLugar(""); setEvDireccion(""); setEvImagenUrl("");
     setGuardandoEvento(false);
-    alert("✅ Evento creado y notificaciones enviadas.");
+    alert("✅ Evento creado.");
     cargarDatos();
   }
 
@@ -850,8 +973,24 @@ function App() {
     return grupos;
   }
 
+  function compartirApp() {
+    const url = window.location.href;
+    const texto = "¡Te invito a usar Nueva Vida AA! Es una app de apoyo para la recuperación. Descárgala aquí: " + url;
+    if (navigator.share) {
+      navigator.share({ title: "Nueva Vida AA", text: texto, url: url })
+        .catch(() => {});
+    } else {
+      navigator.clipboard.writeText(url).then(() => {
+        alert("✅ Enlace copiado al portapapeles. ¡Compártelo con quien lo necesite!");
+      }).catch(() => {
+        prompt("Copia este enlace y compártelo:", url);
+      });
+    }
+  }
+
   const esCualquierAdmin = user && (user.rol === 'admin_principal' || user.rol === 'admin_adjunto');
 
+  // ===================== PANTALLA LOGIN =====================
   if (!user) {
     return (
       <div className="app-container" style={{padding: '20px'}}>
@@ -860,6 +999,13 @@ function App() {
           <h1 style={{color: 'var(--primary)', fontSize: '28px', margin: '10px 0 0'}}>Nueva Vida AA</h1>
           <p style={{color: 'var(--text-muted)', marginTop: '4px'}}>Alcohólicos Anónimos</p>
         </div>
+
+        {/* COMPARTIR APP en login */}
+        <div className="share-card" style={{margin: '0 0 16px'}}>
+          <p style={{color: '#60a5fa', fontWeight: 'bold', margin: '0 0 8px', fontSize: '16px'}}>📲 ¿Conoces a alguien que necesite apoyo?</p>
+          <button className="btn btn-sm" style={{background: 'var(--primary)'}} onClick={compartirApp}>🔗 Compartir esta App</button>
+        </div>
+
         <div className="card">
           <h3 style={{color: 'var(--accent)', marginTop: 0}}>📝 Registrarse</h3>
           <label>Su nombre o alias</label>
@@ -881,8 +1027,7 @@ function App() {
             <div style={{background: 'var(--input-bg)', border: '2px solid var(--primary)', borderRadius: '14px', padding: '16px', marginBottom: '16px'}}>
               <label style={{color: 'var(--primary)', fontWeight: 'bold'}}>🔐 Palabra de Seguridad</label>
               <input type="password" className="input-field" placeholder="Escribe aquí la palabra clave"
-                value={codigoAdmin}
-                onChange={e => setCodigoAdmin(e.target.value)} />
+                value={codigoAdmin} onChange={e => setCodigoAdmin(e.target.value)} />
             </div>
           )}
           <p style={{color: 'var(--warning)', fontWeight: 'bold', marginBottom: '10px', fontSize: '17px'}}>Seleccione sus padecimientos iniciales:</p>
@@ -923,7 +1068,7 @@ function App() {
           <p style={{color: 'var(--text-muted)', fontSize: '16px'}}>Tu identificador es:</p>
           <p style={{background: 'var(--bg-main)', padding: '14px', borderRadius: '12px', color: 'var(--primary)', fontFamily: 'monospace', fontWeight: 'bold', fontSize: '19px', wordBreak: 'break-all'}}>{user.username}</p>
           <p style={{color: 'var(--text-muted)', fontSize: '14px'}}>Guarda este identificador para poder ingresar una vez aprobado.</p>
-          <button className="btn btn-secondary" style={{marginTop: '10pxfixed'}} onClick={cerrarSesion}>Volver</button>
+          <button className="btn btn-secondary" style={{marginTop: '10px'}} onClick={cerrarSesion}>Volver</button>
         </div>
       </div>
     );
@@ -935,7 +1080,7 @@ function App() {
         <div className="card" style={{borderColor: 'var(--danger)'}}>
           <div style={{fontSize: '60px'}}>❌</div>
           <h2>Solicitud No Aprobada</h2>
-          <p style={{color: 'var(--text-muted)', fontSize: '18px'}}>Tu solicitud no fue aprobada. Si crees que es un error, comunícate con el administrador.</p>
+          <p style={{color: 'var(--text-muted)', fontSize: '18px'}}>Tu solicitud no fue aprobada. Comunícate con el administrador.</p>
           <button className="btn btn-secondary" style={{marginTop: '10px'}} onClick={cerrarSesion}>Volver al Inicio</button>
         </div>
       </div>
@@ -944,12 +1089,12 @@ function App() {
 
   const gruposDir = directorioAgrupado();
   const eventosProximos = eventos.filter(ev => ev.fecha >= hoy);
-  const eventosPasados = eventos.filter(ev => ev.fecha < hoy);
   const porcentajePasos = pasoActual > 0 ? Math.min(Math.round((pasoActual / 12) * 100), 100) : 0;
 
   return (
     <div className="app-container">
 
+      {/* POPUP ALIENTO */}
       {mostrarAliento && (
         <div className="popup-overlay">
           <div className="popup-card" style={{textAlign: 'center'}}>
@@ -961,14 +1106,31 @@ function App() {
         </div>
       )}
 
+      {/* POPUP INVITACIÓN ADMIN */}
+      {invitacionPendiente && (
+        <div className="popup-overlay">
+          <div className="popup-card" style={{textAlign: 'center', borderColor: 'var(--warning)'}}>
+            <div style={{fontSize: '50px'}}>👑</div>
+            <h2 style={{marginTop: '10px', color: 'var(--warning)'}}>Invitación de Administrador</h2>
+            <p style={{color: 'var(--text-secondary)', fontSize: '17px'}}>
+              <strong>{invitacionPendiente.de}</strong> te invita a convertirte en Administrador de <strong>{invitacionPendiente.grupo_nombre || user.grupoNombre}</strong>.
+            </p>
+            <p style={{color: 'var(--text-muted)', fontSize: '14px'}}>¿Deseas aceptar este rol?</p>
+            <div style={{display: 'flex', gap: '10px', marginTop: '16px'}}>
+              <button className="btn btn-success" style={{flex: 1}} onClick={aceptarInvitacionAdmin}>✅ Aceptar</button>
+              <button className="btn btn-danger" style={{flex: 1}} onClick={rechazarInvitacionAdmin}>❌ Rechazar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* POPUP EDITAR PERFIL */}
       {mostrarEditarPerfil && (
         <div className="popup-overlay" onClick={() => setMostrarEditarPerfil(false)}>
           <div className="popup-card" style={{textAlign: 'left', maxHeight: '85vh', overflowY: 'auto'}} onClick={e => e.stopPropagation()}>
             <h3 style={{color: 'var(--primary)', marginTop: 0}}>⚙️ Editar Mi Perfil</h3>
-            
             <label>Número de teléfono</label>
             <input type="tel" className="input-field" placeholder="Ej: +56912345678" value={nuevoTelefonoEdit} onChange={e => setNuevoTelefonoEdit(e.target.value)} />
-            
             <p style={{color: 'var(--warning)', fontWeight: 'bold', marginBottom: '10px', fontSize: '16px'}}>Modificar mis padecimientos activos:</p>
             {adiccionesDisponibles.map(ad => (
               <div key={ad} className="checkbox-group">
@@ -978,13 +1140,21 @@ function App() {
                 </label>
                 {checksEdit[ad] && (
                   <div style={{marginTop: '8px'}}>
-                    <label style={{fontSize: '13px'}}>Fecha de inicio sobriedad (Último consumo):</label>
+                    <label style={{fontSize: '13px'}}>Fecha de inicio sobriedad:</label>
                     <input type="date" className="input-field" style={{marginBottom: 0, marginTop: '4px', padding: '10px'}} value={fechasEdit[ad] || ""} onChange={e => setFechasEdit({...fechasEdit, [ad]: e.target.value})} />
                   </div>
                 )}
               </div>
             ))}
-            
+            {/* Solicitar adicción nueva */}
+            {!esCualquierAdmin && (
+              <div style={{marginTop: '12px', padding: '14px', background: 'var(--input-bg)', borderRadius: '14px', border: '2px dashed var(--border)'}}>
+                <p style={{fontSize: '14px', color: 'var(--text-muted)', margin: '0 0 8px'}}>¿No encuentras tu padecimiento? Puedes solicitarlo al administrador.</p>
+                <button className="btn btn-sm btn-warning" onClick={() => { setMostrarEditarPerfil(false); setMostrarSolicitarAdiccion(true); }}>
+                  📨 Solicitar nueva adicción
+                </button>
+              </div>
+            )}
             <div style={{display: 'flex', gap: '10px', marginTop: '18px'}}>
               <button className="btn btn-success" style={{flex: 1}} onClick={guardarPerfil}>Guardar</button>
               <button className="btn btn-secondary" style={{flex: 1}} onClick={() => setMostrarEditarPerfil(false)}>Cancelar</button>
@@ -993,44 +1163,37 @@ function App() {
         </div>
       )}
 
-      <div className="header">
-        <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
-          <div style={{textAlign: 'left', flex: 1}}>
-            <div style={{color: 'var(--accent)', fontWeight: 'bold', fontSize: '17px'}}>{user.nombreReal}</div>
-            <div style={{color: 'var(--text-muted)', fontSize: '13px'}}>
-              {user.grupoNombre}
-              {user.rol === 'admin_principal' && <span className="tag-admin-principal">PRINCIPAL</span>}
-              {user.rol === 'admin_adjunto' && <span className="tag-admin">ADJUNTO</span>}
+      {/* POPUP SOLICITAR ADICCIÓN */}
+      {mostrarSolicitarAdiccion && (
+        <div className="popup-overlay" onClick={() => setMostrarSolicitarAdiccion(false)}>
+          <div className="popup-card" onClick={e => e.stopPropagation()}>
+            <h3 style={{color: 'var(--warning)', marginTop: 0}}>📨 Solicitar Nueva Adicción</h3>
+            <p style={{color: 'var(--text-muted)', fontSize: '15px'}}>Tu solicitud será revisada por el administrador de la sede. Si es aprobada, aparecerá en la lista.</p>
+            <label>Nombre del padecimiento</label>
+            <input type="text" className="input-field" placeholder="Ej: Ludopatía" value={adiccionSolicitada} onChange={e => setAdiccionSolicitada(e.target.value)} />
+            <div style={{display: 'flex', gap: '10px'}}>
+              <button className="btn btn-success" style={{flex: 1}} onClick={solicitarAdiccionNueva}>Enviar Solicitud</button>
+              <button className="btn btn-secondary" style={{flex: 1}} onClick={() => setMostrarSolicitarAdiccion(false)}>Cancelar</button>
             </div>
-          </div>
-          <div style={{flex: 1, display: 'flex', justifyContent: 'center'}}>
-            <div style={{position: 'relative', cursor: 'pointer'} } onClick={() => setMostrarNotifs(true)}>
-              <span style={{fontSize: '32px'}}>🔔</span>
-              {notifNuevas > 0 && (
-                <span style={{position: 'absolute', top: '-4px', right: '-4px', background: 'var(--danger)', color: 'white', borderRadius: '50%', width: '20px', height: '20px', fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-                  {notifNuevas > 9 ? '9+' : notifNuevas}
-                </span>
-              )}
-            </div>
-          </div>
-          <div style={{flex: 1, display: 'flex', justifyContent: 'flex-end'}}>
-            <button onClick={cerrarSesion} style={{background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '15px', textDecoration: 'underline', padding: '8px 4px'}}>Salir</button>
           </div>
         </div>
-      </div>
+      )}
 
+      {/* POPUP NOTIFICACIONES */}
       {mostrarNotifs && (
         <div className="popup-overlay" onClick={() => setMostrarNotifs(false)}>
           <div className="popup-card" style={{maxWidth: '460px', textAlign: 'left', maxHeight: '80vh', overflow: 'hidden', display: 'flex', flexDirection: 'column'}} onClick={e => e.stopPropagation()}>
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
               <h3 style={{margin: 0}}>🔔 Notificaciones</h3>
-              <button className="btn btn-sm btn-secondary" onClick={marcarTodasLeidas} style={{fontSize: '13px', padding: '8px 12px'}}>Marcar todas leídas</button>
+              {notificaciones.some(n => !n.leida) && (
+                <button className="btn btn-sm btn-secondary" onClick={marcarTodasLeidas} style={{fontSize: '13px', padding: '8px 12px'}}>Marcar todas leídas</button>
+              )}
             </div>
             <div style={{overflowY: 'auto', flex: 1}}>
               {notificaciones.length === 0 && <p style={{color: 'var(--text-muted)', textAlign: 'center'}}>Sin notificaciones aún.</p>}
               {notificaciones.map(n => (
                 <div key={n.id} className={`notif-banner${n.leida ? ' leida' : ''}`} onClick={() => marcarLeida(n.id)} style={{cursor: 'pointer'}}>
-                  <div className="notif-icon">📅</div>
+                  <div className="notif-icon">{n.tipo === 'invitacion_admin' ? '👑' : '📅'}</div>
                   <div className="notif-texto">
                     <div className="notif-titulo">{n.titulo}</div>
                     <div className="notif-msg">{n.mensaje}</div>
@@ -1045,13 +1208,49 @@ function App() {
         </div>
       )}
 
+      {/* HEADER */}
+      <div className="header">
+        <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+          <div style={{textAlign: 'left', flex: 1}}>
+            <div style={{color: 'var(--accent)', fontWeight: 'bold', fontSize: '17px'}}>{user.nombreReal}</div>
+            <div style={{color: 'var(--text-muted)', fontSize: '13px'}}>
+              {user.grupoNombre}
+              {user.rol === 'admin_principal' && <span className="tag-admin-principal">PRINCIPAL</span>}
+              {user.rol === 'admin_adjunto' && <span className="tag-admin">ADJUNTO</span>}
+            </div>
+          </div>
+          <div style={{flex: 1, display: 'flex', justifyContent: 'center'}}>
+            <div style={{position: 'relative', cursor: 'pointer'}} onClick={() => setMostrarNotifs(true)}>
+              <span style={{fontSize: '32px'}}>🔔</span>
+              {notifNuevas > 0 && (
+                <span style={{position: 'absolute', top: '-4px', right: '-4px', background: 'var(--danger)', color: 'white', borderRadius: '50%', width: '20px', height: '20px', fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                  {notifNuevas > 9 ? '9+' : notifNuevas}
+                </span>
+              )}
+            </div>
+          </div>
+          <div style={{flex: 1, display: 'flex', justifyContent: 'flex-end'}}>
+            <button onClick={cerrarSesion} style={{background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '15px', textDecoration: 'underline', padding: '8px 4px'}}>Salir</button>
+          </div>
+        </div>
+      </div>
+
       <div className="main-content">
 
+        {/* ==================== INICIO ==================== */}
         {activeTab === "inicio" && (
           <div>
             <div className="card motivacion-banner" style={{padding: '20px', marginBottom: '18px'}}>
               <p style={{fontSize: '22px', fontWeight: 'bold', color: '#60a5fa', margin: '0 0 6px 0'}}>¡Solo por Hoy! 🌅</p>
-              <p style={{fontSize: '17px', fontStyle: 'italic', margin: 0, color: 'var(--text-main)'}} Caravaca>"{fraseDiaria}"</p>
+              <p style={{fontSize: '17px', fontStyle: 'italic', margin: 0, color: 'var(--text-main)'}}>{fraseDiaria}</p>
+            </div>
+
+            {/* Compartir app */}
+            <div className="share-card">
+              <p style={{color: '#93c5fd', fontWeight: 'bold', margin: '0 0 6px', fontSize: '15px'}}>📲 Comparte esta app con quien lo necesite</p>
+              <button className="btn btn-sm" style={{background: 'rgba(59,130,246,0.3)', border: '1px solid var(--primary)'}} onClick={compartirApp}>
+                🔗 Compartir Nueva Vida AA
+              </button>
             </div>
 
             <div style={{marginBottom: '20px'}}>
@@ -1069,10 +1268,10 @@ function App() {
                 <button className="btn btn-sm" style={{marginTop: '8px'}} onClick={() => setActiveTab("eventos")}>Ver todos los eventos</button>
               </div>
             )}
-            
+
             <h3 className="section-title">Mis Indicadores de Sobriedad</h3>
             {Object.keys(misAdicciones).length === 0 && (
-              <p style={{color: 'var(--text-muted)'}}>No tienes padecimientos activos. Presiona el botón de arriba "Editar Perfil" para agregar.</p>
+              <p style={{color: 'var(--text-muted)'}}>No tienes padecimientos activos. Presiona "Editar Perfil" para agregar.</p>
             )}
             {Object.keys(misAdicciones).map(ad => {
               const dias = calcularDias(misAdicciones[ad]);
@@ -1082,46 +1281,79 @@ function App() {
                   <div className="progress-container">
                     <div className="progress-label"><span>{ad}</span><span style={{color: 'var(--accent)'}}>{dias} Días Sobrio</span></div>
                     <div className="progress-bar-bg"><div className="progress-bar-fill" style={{width: (porcentaje || 3) + "%"}}></div></div>
+                    <div style={{textAlign: 'center', fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px'}}>
+                      Desde: {formatFecha(misAdicciones[ad])}
+                    </div>
                   </div>
                   <button className="btn btn-danger" onClick={() => registrarRecaida(ad)}>🔄 Reiniciar Contador</button>
                 </div>
               );
             })}
+
+            {/* Solicitar adicción (usuarios normales) */}
+            {!esCualquierAdmin && (
+              <div style={{marginTop: '8px', marginBottom: '18px'}}>
+                <button className="btn btn-sm btn-warning" onClick={() => setMostrarSolicitarAdiccion(true)}>
+                  📨 Solicitar nueva adicción al administrador
+                </button>
+              </div>
+            )}
           </div>
         )}
 
+        {/* ==================== PASOS ==================== */}
         {activeTab === "pasos" && (
           <div>
             <h3 className="section-title">Los 12 Pasos de AA</h3>
             <p style={{color: 'var(--text-muted)', fontSize: '15px', marginBottom: '16px'}}>
-              Selecciona el paso en el que te encuentras trabajando actualmente.
+              Toca el paso en el que te encuentras trabajando actualmente.
             </p>
-            
-            <div style={{background: 'var(--card)', borderRadius: '14px', padding: '16px', marginBottom: '22px', border: '2px solid var(--border)'}}>
-              <div style={{display: 'flex', justifycontent: 'space-between', marginBottom: '8px'}}>
+
+            {/* Gráfico visual de pasos */}
+            <div className="card" style={{marginBottom: '22px'}}>
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '10px', alignItems: 'center'}}>
                 <span style={{fontWeight: 'bold'}}>Evolución del Programa</span>
-                <span style={{color: 'var(--warning)', fontWeight: 'bold'}}>{porcentajePasos}% Completado</span>
+                <span style={{color: 'var(--warning)', fontWeight: 'bold'}}>{porcentajePasos}%</span>
               </div>
-              <div className="progress-bar-bg" style={{height: '24px'}}>
+              <div className="progress-bar-bg" style={{height: '24px', marginBottom: '18px'}}>
                 <div className="progress-bar-fill" style={{width: porcentajePasos + "%", background: 'linear-gradient(90deg, #d97706, #f59e0b)'}}></div>
+              </div>
+              {/* Círculos de pasos */}
+              <div className="pasos-grafico">
+                {PASOS_AA.map((_, i) => {
+                  const num = i + 1;
+                  const esCompletado = num < pasoActual;
+                  const esTrabajando = num === pasoActual;
+                  let cls = "paso-circulo";
+                  if (esCompletado) cls += " completado";
+                  if (esTrabajando) cls += " trabajando";
+                  return (
+                    <div key={i} className={cls} onClick={() => cambiarPaso(num)} title={`Paso ${num}`}>
+                      {esCompletado ? '⭐' : esTrabajando ? '⚡' : num}
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{textAlign: 'center', fontSize: '14px', color: 'var(--text-muted)', marginTop: '8px'}}>
+                {pasoActual === 0 ? 'Selecciona el paso en que estás trabajando' :
+                 pasoActual === 12 ? '🏆 ¡Has completado todos los pasos!' :
+                 `Trabajando en Paso ${pasoActual} · ${pasoActual - 1} paso${pasoActual > 2 ? 's' : ''} completado${pasoActual > 2 ? 's' : ''}`}
               </div>
             </div>
 
             {PASOS_AA.map((texto, i) => {
               const num = i + 1;
-              const esPasoTrabajando = pasoActual === num;
-              const esPasoCompletado = num < pasoActual;
-              
+              const esTrabajando = pasoActual === num;
+              const esCompletado = num < pasoActual;
               let claseFila = "paso-row";
-              if (esPasoCompletado) claseFila += " completado";
-              if (esPasoTrabajando) claseFila += " trabajando";
-
+              if (esCompletado) claseFila += " completado";
+              if (esTrabajando) claseFila += " trabajando";
               return (
                 <div key={i} className={claseFila} onClick={() => cambiarPaso(num)}>
                   <div className="paso-header">
                     <span className="paso-numero">Paso {num}</span>
-                    {esPasoCompletado && <span style={{fontSize: '18px'}}>⭐ <span style={{fontSize: '11px', color:'var(--accent)', fontWeight:'bold'}}>COMPLETADO</span></span>}
-                    {esPasoTrabajando && <span className="badge-trabajando">⚡ TRABAJANDO</span>}
+                    {esCompletado && <span style={{fontSize: '18px'}}>⭐ <span style={{fontSize: '11px', color: 'var(--accent)', fontWeight: 'bold'}}>COMPLETADO</span></span>}
+                    {esTrabajando && <span className="badge-trabajando">⚡ TRABAJANDO</span>}
                   </div>
                   <div style={{fontSize: '16px', marginTop: '4px'}}>{texto}</div>
                 </div>
@@ -1130,6 +1362,7 @@ function App() {
           </div>
         )}
 
+        {/* ==================== EVENTOS ==================== */}
         {activeTab === "eventos" && (
           <div>
             <h3 className="section-title">📅 Eventos</h3>
@@ -1151,13 +1384,16 @@ function App() {
                 </div>
                 <label>📍 Lugar</label>
                 <input type="text" className="input-field" placeholder={user.grupoNombre} value={evLugar} onChange={e => setEvLugar(e.target.value)} />
-                <button className="btn btn-success" onClick={crearEvento} disabled={guardandoEvento}>Publicar Evento</button>
+                <button className="btn btn-success" onClick={crearEvento} disabled={guardandoEvento}>
+                  {guardandoEvento ? 'Publicando...' : 'Publicar Evento'}
+                </button>
               </div>
             )}
+            {eventosProximos.length === 0 && <p style={{color: 'var(--text-muted)'}}>No hay eventos próximos.</p>}
             {eventosProximos.map(ev => (
               <div key={ev.id} className="evento-card">
                 <div className="evento-titulo">{ev.titulo}</div>
-                <div className="evento-meta">📆 {formatFecha(ev.fecha)} · ⏰ {ev.hora}</div>
+                <div className="evento-meta">📆 {formatFecha(ev.fecha)} · ⏰ {formatHora(ev.hora)}</div>
                 <div className="evento-meta">📍 {ev.lugar}</div>
                 {ev.descripcion && <div className="evento-desc">{ev.descripcion}</div>}
                 {esCualquierAdmin && (
@@ -1168,6 +1404,7 @@ function App() {
           </div>
         )}
 
+        {/* ==================== DIRECTORIO ==================== */}
         {activeTab === "directorio" && (
           <div>
             <h3 className="section-title">📞 Directorio</h3>
@@ -1179,7 +1416,7 @@ function App() {
                 <div key={g.id} className="directorio-sede">
                   <div className="directorio-sede-titulo">{g.nombre}</div>
                   {todos.map((m, i) => (
-                    <div key={i} className="directorio-item">
+                    <div key={i} className={`directorio-item${(m.rol === 'admin_principal' || m.rol === 'admin_adjunto') ? ' es-admin' : ''}`}>
                       <div>
                         <div className="directorio-nombre">
                           {m.nombre_real}
@@ -1189,7 +1426,7 @@ function App() {
                         <div style={{fontSize: '14px', color: 'var(--text-muted)'}}>{m.telefono || "Sin teléfono"}</div>
                       </div>
                       {m.telefono && (
-                        <a href={`https://wa.me/${limpiarTelefono(m.telefono)}`} target="_blank" rel="noreferrer" className="whatsapp-btn">💬 WhatsApp</a>
+                        <a href={`https://wa.me/${limpiarTelefono(m.telefono)}`} target="_blank" rel="noreferrer" className="whatsapp-btn">💬 WA</a>
                       )}
                     </div>
                   ))}
@@ -1199,6 +1436,7 @@ function App() {
           </div>
         )}
 
+        {/* ==================== BIBLIOTECA ==================== */}
         {activeTab === "biblioteca" && (
           <div>
             <h3 className="section-title">📚 Biblioteca</h3>
@@ -1206,27 +1444,56 @@ function App() {
               <div className="card" style={{borderColor: 'var(--accent)'}}>
                 <h4 style={{color: 'var(--accent)', marginTop: 0}}>➕ Agregar Material</h4>
                 <label>Título</label>
-                <input type="text" className="input-field" placeholder="Nombre" value={nuevoTitulo} onChange={e => setNuevoTitulo(e.target.value)} />
-                <label>Tipo</label>
+                <input type="text" className="input-field" placeholder="Nombre del material" value={nuevoTitulo} onChange={e => setNuevoTitulo(e.target.value)} />
+                <label>Tipo de material</label>
                 <select className="select-field" value={nuevoTipo} onChange={e => setNuevoTipo(e.target.value)}>
-                  <option>Documento</option><option>Video</option><option>Audio</option><option>Enlace</option>
+                  <option>Documento</option>
+                  <option>Video</option>
+                  <option>Audio</option>
+                  <option>Enlace</option>
                 </select>
                 <div style={{display: 'flex', gap: '10px', marginBottom: '14px'}}>
-                  <button type="button" className={"btn btn-sm " + (modoSubida === 'enlace' ? '' : 'btn-secondary')} onClick={() => setModoSubida('enlace')}>🔗 Enlace URL</button>
-                  <button type="button" className={"btn btn-sm " + (modoSubida === 'archivo' ? '' : 'btn-secondary')} onClick={() => setModoSubida('archivo')}>📁 Subir Archivo</button>
+                  <button type="button" className={`btn btn-sm${modoSubida === 'enlace' ? '' : ' btn-secondary'}`} onClick={() => { setModoSubida('enlace'); setArchivoLocal(null); }}>🔗 URL / Enlace</button>
+                  <button type="button" className={`btn btn-sm${modoSubida === 'archivo' ? '' : ' btn-secondary'}`} onClick={() => { setModoSubida('archivo'); setNuevoLink(''); }}>📁 Archivo Local</button>
                 </div>
                 {modoSubida === 'enlace' ? (
-                  <input type="url" className="input-field" placeholder="https://..." value={nuevoLink} onChange={e => setNuevoLink(e.target.value)} />
+                  <div>
+                    <label>Enlace o URL</label>
+                    <input type="url" className="input-field" placeholder="https://..." value={nuevoLink} onChange={e => setNuevoLink(e.target.value)} />
+                  </div>
                 ) : (
-                  <input type="file" className="input-field" style={{padding:'12px'}} onChange={e => setArchivoLocal(e.target.files[0])} />
+                  <div>
+                    <label>Seleccionar archivo desde el dispositivo</label>
+                    <input
+                      type="file"
+                      className="input-field"
+                      style={{padding: '12px', cursor: 'pointer'}}
+                      accept=".pdf,.doc,.docx,.mp3,.mp4,.jpg,.jpeg,.png,.txt,.ppt,.pptx"
+                      onChange={e => setArchivoLocal(e.target.files[0])}
+                    />
+                    {archivoLocal && (
+                      <p style={{color: 'var(--accent)', fontSize: '14px', margin: '4px 0 8px'}}>
+                        ✅ Seleccionado: {archivoLocal.name} ({(archivoLocal.size / 1024 / 1024).toFixed(2)} MB)
+                      </p>
+                    )}
+                    <p style={{color: 'var(--text-muted)', fontSize: '13px', margin: '0 0 12px'}}>
+                      Nota: Se subirá al almacenamiento de la sede. Requiere que el bucket "biblioteca-archivos" exista en Supabase.
+                    </p>
+                  </div>
                 )}
-                <button className="btn btn-success" onClick={subirMaterial} disabled={subiendoArchivo}>Publicar en Biblioteca</button>
+                <button className="btn btn-success" onClick={subirMaterial} disabled={subiendoArchivo}>
+                  {subiendoArchivo ? '⏳ Subiendo archivo...' : '📤 Publicar en Biblioteca'}
+                </button>
               </div>
             )}
+            {biblioteca.length === 0 && <p style={{color: 'var(--text-muted)'}}>La biblioteca está vacía.</p>}
             {biblioteca.map(b => (
               <div key={b.id} className="biblioteca-item">
-                <div><strong>{b.titulo}</strong> ({b.type || b.tipo})</div>
-                <div style={{display:'flex', gap:'6px'}}>
+                <div style={{flex: 1, marginRight: '10px'}}>
+                  <strong style={{fontSize: '16px'}}>{b.titulo}</strong>
+                  <div style={{fontSize: '13px', color: 'var(--text-muted)', marginTop: '2px'}}>{b.tipo || b.type}</div>
+                </div>
+                <div style={{display: 'flex', gap: '6px', flexShrink: 0}}>
                   <a href={b.link} target="_blank" rel="noreferrer" className="btn btn-sm">Abrir</a>
                   {esCualquierAdmin && <button className="btn btn-sm btn-danger" onClick={() => eliminarMaterial(b.id)}>🗑️</button>}
                 </div>
@@ -1235,20 +1502,54 @@ function App() {
           </div>
         )}
 
+        {/* ==================== COMPARTIR ==================== */}
+        {activeTab === "compartir" && (
+          <div>
+            <h3 className="section-title">📲 Compartir App</h3>
+            <div className="share-card" style={{margin: '0 0 20px', padding: '28px'}}>
+              <div style={{fontSize: '60px', marginBottom: '12px'}}>🌟</div>
+              <h3 style={{color: '#60a5fa', margin: '0 0 10px'}}>Nueva Vida AA</h3>
+              <p style={{color: 'var(--text-secondary)', fontSize: '16px', margin: '0 0 20px'}}>
+                ¿Conoces a alguien que esté luchando contra una adicción? Comparte esta app y ayúdales a dar el primer paso.
+              </p>
+              <button className="btn" style={{marginBottom: '12px'}} onClick={compartirApp}>
+                🔗 Compartir ahora
+              </button>
+            </div>
+            <div className="card">
+              <h4 style={{marginTop: 0, color: 'var(--text-main)'}}>¿Cómo funciona el registro?</h4>
+              <p style={{color: 'var(--text-muted)', fontSize: '15px'}}>1. La persona abre el enlace de la app.</p>
+              <p style={{color: 'var(--text-muted)', fontSize: '15px'}}>2. Se registra con su nombre y selecciona su sede.</p>
+              <p style={{color: 'var(--text-muted)', fontSize: '15px'}}>3. El administrador de la sede aprueba su solicitud.</p>
+              <p style={{color: 'var(--text-muted)', fontSize: '15px'}}>4. ¡Ya puede usar todas las funciones!</p>
+            </div>
+            <div className="card" style={{borderColor: 'var(--warning)'}}>
+              <h4 style={{marginTop: 0, color: 'var(--warning)'}}>💡 Instalar como App</h4>
+              <p style={{color: 'var(--text-muted)', fontSize: '15px'}}>
+                <strong>Android:</strong> Al abrir en Chrome, toca el menú (⋮) y selecciona "Agregar a pantalla de inicio".
+              </p>
+              <p style={{color: 'var(--text-muted)', fontSize: '15px', marginBottom: 0}}>
+                <strong>iPhone:</strong> Al abrir en Safari, toca el ícono de compartir (📤) y selecciona "Agregar a pantalla de inicio".
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* ==================== ADMIN ==================== */}
         {activeTab === "admin" && esCualquierAdmin && (
           <div>
             <h3 className="section-title">⚙️ Control de Sede</h3>
-            
-            {/* AGREGAR / ELIMINAR ADICCIONES GLOBAL DE LA SEDE (Ambos admins pueden) */}
+
+            {/* CATÁLOGO DE ADICCIONES */}
             <div className="card" style={{borderColor: 'var(--warning)'}}>
-              <h4 style={{marginTop: 0, color: 'var(--warning)'}}>🧬 Catálogo de Padecimientos de la Sede</h4>
+              <h4 style={{marginTop: 0, color: 'var(--warning)'}}>🧬 Catálogo de Padecimientos</h4>
               <label>Agregar nueva adicción/padecimiento:</label>
               <div style={{display: 'flex', gap: '8px', marginTop: '6px'}}>
                 <input type="text" className="input-field" style={{marginBottom: 0}} placeholder="Ej: Ludopatía" value={nuevaAdiccionSede} onChange={e => setNuevaAdiccionSede(e.target.value)} />
                 <button className="btn btn-success btn-sm" onClick={agregarAdiccionSede}>Añadir</button>
               </div>
               <div style={{marginTop: '16px'}}>
-                <label>Lista Actual (Toca 🗑️ para eliminar del catálogo):</label>
+                <label>Lista Actual:</label>
                 <div style={{display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '8px'}}>
                   {adiccionesDisponibles.map((ad, i) => (
                     <div key={i} style={{background: 'var(--input-bg)', padding: '10px 14px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--border)'}}>
@@ -1260,28 +1561,150 @@ function App() {
               </div>
             </div>
 
-            {/* SECCIÓN EXCLUSIVA DEL ADMINISTRADOR PRINCIPAL: TRASPASO DE MANDO */}
-            {user.role === 'admin_principal' || user.rol === 'admin_principal' ? (
+            {/* SOLICITUDES DE ADICCIÓN PENDIENTES */}
+            {solicitudesAdiccion.length > 0 && (
+              <div className="card" style={{borderColor: 'var(--primary)'}}>
+                <h4 style={{marginTop: 0, color: 'var(--primary)'}}>📨 Solicitudes de Adicción ({solicitudesAdiccion.length})</h4>
+                {solicitudesAdiccion.map(sol => (
+                  <div key={sol.id} style={{background: 'var(--input-bg)', padding: '12px', borderRadius: '12px', marginBottom: '10px', border: '1px solid var(--border)'}}>
+                    <div style={{fontWeight: 'bold'}}>{sol.adiccion}</div>
+                    <div style={{fontSize: '14px', color: 'var(--text-muted)'}}>Solicitado por: {sol.solicitante_nombre}</div>
+                    <div style={{display: 'flex', gap: '8px', marginTop: '10px'}}>
+                      <button className="btn btn-success btn-sm" onClick={() => aprobarSolicitudAdiccion(sol)}>✅ Aprobar</button>
+                      <button className="btn btn-danger btn-sm" onClick={() => rechazarSolicitudAdiccion(sol.id)}>❌ Rechazar</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* LISTA DE MIEMBROS DE LA SEDE */}
+            <div className="card" style={{borderColor: 'var(--primary)'}}>
+              <h4 style={{marginTop: 0, color: 'var(--primary)'}}>👥 Miembros de la Sede ({listaMiembrosSede.length})</h4>
+              {listaMiembrosSede.map(m => (
+                <div key={m.username} style={{background: 'var(--input-bg)', padding: '12px 14px', borderRadius: '12px', marginBottom: '10px', border: `2px solid ${m.rol === 'admin_principal' ? 'var(--danger)' : m.rol === 'admin_adjunto' ? 'var(--warning)' : 'var(--border)'}`}}>
+                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px'}}>
+                    <div>
+                      <div style={{fontWeight: 'bold', fontSize: '17px'}}>
+                        {m.nombre_real}
+                        {m.rol === 'admin_principal' && <span className="tag-admin-principal">PRIN.</span>}
+                        {m.rol === 'admin_adjunto' && <span className="tag-admin">ADJ.</span>}
+                      </div>
+                      <div style={{fontSize: '13px', color: 'var(--text-muted)'}}>{m.telefono || "Sin teléfono"}</div>
+                    </div>
+                    <div style={{display: 'flex', gap: '6px', flexWrap: 'wrap'}}>
+                      {/* Invitar a admin (si no es admin ya) */}
+                      {m.rol === 'basico' && (
+                        <button className="btn btn-sm btn-warning" style={{fontSize: '13px', padding: '6px 10px'}} onClick={() => promoverAAdjunto(m.username, m.nombre_real)}>
+                          👑 Invitar Admin
+                        </button>
+                      )}
+                      {/* Solo admin principal puede revocar a adjuntos */}
+                      {user.rol === 'admin_principal' && m.rol === 'admin_adjunto' && (
+                        <button className="btn btn-sm btn-danger" style={{fontSize: '13px', padding: '6px 10px'}} onClick={() => degradarAdminAdjunto(m.username, m.nombre_real)}>
+                          ❌ Revocar
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* TRASPASO DE MANDO - solo admin principal */}
+            {user.rol === 'admin_principal' && (
               <div className="card" style={{borderColor: 'var(--danger)', background: 'rgba(220, 38, 38, 0.05)'}}>
-                <h4 style={{marginTop: 0, color: 'var(--danger)'}}>👑 Traspaso de Mando Autorizado</h4>
+                <h4 style={{marginTop: 0, color: 'var(--danger)'}}>👑 Traspaso de Mando Principal</h4>
                 <p style={{fontSize: '14px', color: 'var(--text-secondary)'}}>
-                  Como <strong>Administrador Principal</strong>, puedes transferir completamente tu rango de liderazgo a un Administrador Adjunto aprobado.
+                  Transfiere el rol de <strong>Administrador Principal</strong> a otro administrador adjunto. Tu rol pasará a ser Adjunto.
                 </p>
                 <label>Selecciona al nuevo Administrador Principal:</label>
                 <select className="select-field" defaultValue="" onChange={e => {
-                  if(e.target.value) {
+                  if (e.target.value) {
                     const adjSel = listaMiembrosSede.find(m => m.username === e.target.value);
-                    cederAdministradorPrincipal(adjSel.username, adjSel.nombre_real);
+                    if (adjSel) cederAdministradorPrincipal(adjSel.username, adjSel.nombre_real);
                     e.target.value = "";
                   }
                 }}>
-                  <option value="">— Seleccionar Adjunto Autorizado —</option>
+                  <option value="">— Seleccionar Administrador Adjunto —</option>
                   {listaMiembrosSede.filter(m => m.rol === 'admin_adjunto').map(m => (
                     <option key={m.username} value={m.username}>{m.nombre_real}</option>
                   ))}
                 </select>
               </div>
-            ) : null}
+            )}
 
-            {/* SOLICITUDES DE ACCESO */}
-            <h4 style={{color: 'var(--warning)'}}>⏳ Solicitudes Pendientes ({
+            {/* SOLICITUDES PENDIENTES */}
+            <h4 style={{color: 'var(--warning)'}}>⏳ Solicitudes Pendientes ({solicitudesPendientes.length})</h4>
+            {solicitudesPendientes.length === 0 && <p style={{color: 'var(--text-muted)', fontSize: '15px'}}>No hay solicitudes pendientes.</p>}
+            {solicitudesPendientes.map(s => (
+              <div key={s.username} className="solicitud-card">
+                <span className="badge badge-pendiente">PENDIENTE</span>
+                <div className="solicitud-nombre">{s.nombre_real}</div>
+                <div className="solicitud-info">📞 {s.telefono || "Sin teléfono"}</div>
+                <div className="solicitud-info">ID: <code style={{fontSize: '13px'}}>{s.username}</code></div>
+                <div className="solicitud-actions">
+                  <button className="btn btn-success btn-sm" onClick={() => aprobarUsuario(s.username)}>✅ Aprobar</button>
+                  <button className="btn btn-danger btn-sm" onClick={() => rechazarUsuario(s.username, s.nombre_real)}>❌ Rechazar</button>
+                </div>
+              </div>
+            ))}
+
+            {/* SOLICITUDES RECHAZADAS */}
+            {solicitudesRechazadas.length > 0 && (
+              <div style={{marginTop: '16px'}}>
+                <button className="btn btn-secondary btn-sm" onClick={() => setMostrarRechazados(!mostrarRechazados)}>
+                  {mostrarRechazados ? 'Ocultar' : 'Ver'} Rechazados ({solicitudesRechazadas.length})
+                </button>
+                {mostrarRechazados && solicitudesRechazadas.map(s => (
+                  <div key={s.username} className="solicitud-card rechazada" style={{marginTop: '10px'}}>
+                    <span className="badge badge-rechazado">RECHAZADO</span>
+                    <div className="solicitud-nombre">{s.nombre_real}</div>
+                    <div className="solicitud-info">📞 {s.telefono || "Sin teléfono"}</div>
+                    <div className="solicitud-actions">
+                      <button className="btn btn-success btn-sm" onClick={() => aprobarUsuario(s.username)}>✅ Aprobar ahora</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+      </div>
+
+      {/* NAVBAR */}
+      <div className="navbar">
+        <div className={`nav-item${activeTab === 'inicio' ? ' active' : ''}`} onClick={() => setActiveTab('inicio')}>
+          <div className="nav-icon">🏠</div>Inicio
+        </div>
+        <div className={`nav-item${activeTab === 'pasos' ? ' active' : ''}`} onClick={() => setActiveTab('pasos')}>
+          <div className="nav-icon">🪜</div>12 Pasos
+        </div>
+        <div className={`nav-item${activeTab === 'eventos' ? ' active' : ''}`} onClick={() => setActiveTab('eventos')}>
+          <div className="nav-icon">📅</div>Eventos
+        </div>
+        <div className={`nav-item${activeTab === 'biblioteca' ? ' active' : ''}`} onClick={() => setActiveTab('biblioteca')}>
+          <div className="nav-icon">📚</div>Biblioteca
+        </div>
+        <div className={`nav-item${activeTab === 'directorio' ? ' active' : ''}`} onClick={() => setActiveTab('directorio')}>
+          <div className="nav-icon">📞</div>Directorio
+        </div>
+        <div className={`nav-item${activeTab === 'compartir' ? ' active' : ''}`} onClick={() => setActiveTab('compartir')}>
+          <div className="nav-icon">📲</div>Compartir
+        </div>
+        {esCualquierAdmin && (
+          <div className={`nav-item${activeTab === 'admin' ? ' active' : ''}`} onClick={() => setActiveTab('admin')}>
+            <div className="nav-icon">⚙️</div>Admin
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
+</html>
