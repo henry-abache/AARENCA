@@ -84,7 +84,7 @@
             font-weight: bold;
         }
 
-        /* --- CONTADOR DE SOBRIEDAD INTUITIVO (TERCERA EDAD) --- */
+        /* --- CONTADOR DE SOBRIEDAD INTUITIVO --- */
         .bloque-contador {
             background: linear-gradient(135deg, #1e3a8a, #1d4ed8);
             color: white;
@@ -120,11 +120,6 @@
             cursor: pointer;
             margin-top: 10px;
             transition: all 0.2s;
-        }
-
-        .btn-reiniciar-contador:active {
-            background-color: white;
-            color: #1d4ed8;
         }
 
         /* --- CONTROL DE VISTAS (PESTAÑAS) --- */
@@ -188,13 +183,62 @@
             background-color: var(--verde-exito);
         }
 
-        /* --- LISTAS GENERALES --- */
-        .lista-items-admin {
+        /* --- BIBLIOTECA DE RECURSOS --- */
+        .categoria-bloque {
+            margin-top: 15px;
+        }
+
+        .categoria-titulo {
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: var(--purpura-admin);
+            border-bottom: 1px solid var(--borde);
+            padding-bottom: 4px;
+            margin-bottom: 8px;
+        }
+
+        .lista-archivos {
             list-style: none;
             padding: 0;
             margin: 0;
         }
 
+        .archivo-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            background-color: var(--bg-principal);
+            border-radius: 8px;
+            margin-bottom: 6px;
+            border: 1px solid var(--borde);
+        }
+
+        .archivo-nombre {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .archivo-meta {
+            font-size: 11px;
+            color: var(--texto-secundario);
+            display: block;
+        }
+
+        .btn-descargar {
+            background: none;
+            border: 1px solid var(--azul-botones);
+            color: var(--azul-botones);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        /* --- LISTAS ADMIN --- */
         .item-admin-card {
             display: flex;
             justify-content: space-between;
@@ -220,7 +264,7 @@
         .btn-mini-rechazar { background-color: var(--rojo-institucional); }
         .btn-mini-eliminar { background-color: #6b7280; }
 
-        /* --- DIRECTORIO TELEFÓNICO POR SEDE --- */
+        /* --- DIRECTORIO --- */
         .sede-seccion {
             margin-bottom: 20px;
         }
@@ -245,9 +289,8 @@
             border: 1px solid var(--borde);
         }
 
-        /* Estilo especial destacado para el Administrador */
         .contacto-item.es-admin {
-            background-color: #fef3c7; /* Fondo amarillo claro */
+            background-color: #fef3c7;
             border: 2px solid var(--amarillo-corona);
         }
         [data-theme="dark"] .contacto-item.es-admin {
@@ -273,7 +316,7 @@
             color: var(--texto-secundario);
         }
 
-        /* --- MENÚ INFERIOR --- */
+        /* --- NAVBAR INFERIOR --- */
         .nav-inferior {
             position: fixed;
             bottom: 0;
@@ -412,22 +455,18 @@
     <div id="pes-perfil" class="pestaña-contenido">
         <div class="tarjeta-modulo">
             <div class="titulo-modulo">👤 Configurar Mi Perfil</div>
-            
             <div class="grupo-input">
                 <label>Nombre de Usuario</label>
                 <input type="text" id="perfilNombre" value="Henry">
             </div>
-
             <div class="grupo-input">
                 <label>Número Telefónico</label>
                 <input type="text" id="perfilTelefono" placeholder="+56912345678">
             </div>
-
             <div class="grupo-input">
                 <label>Otras Adicciones / Padecimientos Relacionados</label>
-                <textarea id="perfilAdicciones" rows="3" placeholder="Ej: Tabaquismo, Control de impulsos, Ansiedad..."></textarea>
+                <textarea id="perfilAdicciones" rows="3" placeholder="Ej: Tabaquismo, Ansiedad..."></textarea>
             </div>
-
             <button type="button" class="btn-principal" onclick="guardarDatosPerfil()">Guardar Cambios de Perfil</button>
         </div>
     </div>
@@ -466,15 +505,14 @@
         }
     }
 
-    // --- LÓGICA DEL CONTADOR DE SOBRIEDAD ---
-    let diasSobriedad = localStorage.getItem('diasSobriedad') ? parseInt(localStorage.getItem('diasSobriedad')) : 42; // Valor base ejemplo
+    // --- CONTADOR DE SOBRIEDAD ---
+    let diasSobriedad = localStorage.getItem('diasSobriedad') ? parseInt(localStorage.getItem('diasSobriedad')) : 42;
 
     function actualizarPantallaContador() {
         document.getElementById('contadorDias').innerText = diasSobriedad;
     }
 
     function confirmarReiniciarContador() {
-        // Alerta de confirmación de alto impacto y fácil comprensión para adultos mayores
         let confirmar = confirm("⚠️ ¿Estás completamente seguro de que quieres reiniciar tu contador de sobriedad a 0 días?\n\nEsta acción no se puede deshacer.");
         if (confirmar) {
             diasSobriedad = 0;
@@ -484,17 +522,16 @@
         }
     }
 
-    // --- BASE DE DATOS DE MIEMBROS Y SOLICITUDES ---
+    // --- BASE DE DATOS DE USUARIOS ---
     let usuariosSistema = [
-        { id: 1, nombre: "Henry", telefono: "+56987654321", sede: "Sede San José de Renca", esAdmin: true, estado: "activo" },
-        { id: 2, nombre: "Juan Carlos", telefono: "+56911112222", sede: "Sede San José de Renca", esAdmin: false, estado: "activo" },
-        { id: 3, nombre: "Pedro Almonte", telefono: "+56933334444", sede: "Sede Providencia", esAdmin: true, estado: "activo" },
-        { id: 4, nombre: "Claudio Muñoz", telefono: "+56955556666", sede: "Sede Providencia", esAdmin: false, estado: "activo" },
-        { id: 5, nombre: "Desconocido99", telefono: "+56900000000", sede: "Sede San José de Renca", esAdmin: false, estado: "pendiente" },
-        { id: 6, nombre: "BotSospechoso", telefono: "+56912312312", sede: "Sede San José de Renca", esAdmin: false, estado: "pendiente" }
+        { id: 1, nombre: "Henry", telefono: "+56987654321", Sede: "Sede San José de Renca", esAdmin: true, estado: "activo" },
+        { id: 2, nombre: "Juan Carlos", telefono: "+56911112222", Sede: "Sede San José de Renca", esAdmin: false, estado: "activo" },
+        { id: 3, nombre: "Pedro Almonte", telefono: "+56933334444", Sede: "Sede Providencia", esAdmin: true, estado: "activo" },
+        { id: 4, nombre: "Claudio Muñoz", telefono: "+56955556666", Sede: "Sede Providencia", esAdmin: false, estado: "activo" },
+        { id: 5, nombre: "Desconocido99", telefono: "+56900000000", Sede: "Sede San José de Renca", esAdmin: false, estado: "pendiente" },
+        { id: 6, nombre: "BotSospechoso", telefono: "+56912312312", Sede: "Sede San José de Renca", esAdmin: false, estado: "pendiente" }
     ];
 
-    // --- LÓGICA DEL PANEL DE ADMINISTRACIÓN ---
     function actualizarListasAdmin() {
         const contenedorPendientes = document.getElementById('listaSolicitudesNuevas');
         const contenedorActivos = document.getElementById('listaMiembrosActivos');
@@ -508,12 +545,11 @@
         let activos = usuariosSistema.filter(u => u.estado === 'activo');
         let rechazados = usuariosSistema.filter(u => u.estado === 'rechazado');
 
-        // Renderizar Pendientes
         if(pendientes.length === 0) contenedorPendientes.innerHTML = '<p style="font-size:13px; color:var(--texto-secundario);">No hay solicitudes pendientes.</p>';
         pendientes.forEach(u => {
             contenedorPendientes.innerHTML += `
                 <div class="item-admin-card">
-                    <div><strong>${u.nombre}</strong><br><span style="font-size:11px; color:grey;">Sede: ${u.sede}</span></div>
+                    <div><strong>${u.nombre}</strong><br><span style="font-size:11px; color:grey;">Sede: ${u.Sede}</span></div>
                     <div style="display:flex; gap:5px;">
                         <button class="btn-mini btn-mini-aceptar" onclick="cambiarEstadoUsuario(${u.id}, 'activo')">Aceptar</button>
                         <button class="btn-mini btn-mini-rechazar" onclick="cambiarEstadoUsuario(${u.id}, 'rechazado')">Rechazar</button>
@@ -521,9 +557,7 @@
                 </div>`;
         });
 
-        // Renderizar Activos
         activos.forEach(u => {
-            // El propio Henry no se puede eliminar a sí mismo de la lista para no romper la app
             let botonEliminar = u.nombre === "Henry" ? '' : `<button class="btn-mini btn-mini-eliminar" onclick="cambiarEstadoUsuario(${u.id}, 'rechazado')">Eliminar</button>`;
             contenedorActivos.innerHTML += `
                 <div class="item-admin-card">
@@ -532,8 +566,7 @@
                 </div>`;
         });
 
-        // Renderizar Rechazados (Rescate Inmediato)
-        if(rechazados.length === 0) contenedorRechazados.innerHTML = '<p style="font-size:13px; color:var(--texto-secundario);">Ningún usuario rechazado en esta sesión.</p>';
+        if(rechazados.length === 0) contenedorRechazados.innerHTML = '<p style="font-size:13px; color:var(--texto-secundario);">Ningún usuario rechazado.</p>';
         rechazados.forEach(u => {
             contenedorRechazados.innerHTML += `
                 <div class="item-admin-card">
@@ -542,7 +575,6 @@
                 </div>`;
         });
 
-        // Refrescar automáticamente el directorio telefónico cada vez que cambien los estados
         actualizarDirectorioTelefonico();
     }
 
@@ -554,18 +586,16 @@
         }
     }
 
-    // --- LÓGICA DEL DIRECTORIO TELEFÓNICO (AGRUPADO + ADMIN PRIMERO) ---
     function actualizarDirectorioTelefonico() {
         const contenedor = document.getElementById('contenedorDirectorio');
         contenedor.innerHTML = '';
 
         let activos = usuariosSistema.filter(u => u.estado === 'activo');
-
-        // Agrupar por sede de manera dinámica
         let sedes = {};
+        
         activos.forEach(u => {
-            if (!sedes[u.sede]) sedes[u.sede] = [];
-            sedes[u.sede].push(u);
+            if (!sedes[u.Sede]) sedes[u.Sede] = [];
+            sedes[u.Sede].push(u);
         });
 
         for (let sede in sedes) {
@@ -573,7 +603,6 @@
             cajaSede.className = 'sede-seccion';
             cajaSede.innerHTML = `<div class="sede-nombre-titulo">🏢 ${sede}</div>`;
 
-            // Ordenar: Los administradores van primero arriba obligatoriamente
             sedes[sede].sort((a, b) => (b.esAdmin ? 1 : 0) - (a.esAdmin ? 1 : 0));
 
             sedes[sede].forEach(contacto => {
@@ -588,34 +617,29 @@
                         <span class="contacto-telefono">${contacto.telefono || 'Sin Número'}</span>
                     </div>`;
             });
-
             contenedor.appendChild(cajaSede);
         }
     }
 
-    // --- LÓGICA DEL PERFIL (Fijo y sin pérdidas de focus) ---
     function guardarDatosPerfil() {
         const nuevoNombre = document.getElementById('perfilNombre').value.trim();
         const nuevoTelefono = document.getElementById('perfilTelefono').value.trim();
-        const nuevasAdicciones = document.getElementById('perfilAdicciones').value.trim();
-
         if(!nuevoNombre) { alert("El nombre no puede estar vacío."); return; }
 
-        // Actualizar registro de Henry en la base simulada
-        let henry = usuariosSistema.find(u => u.nombre === "Henry" || u.id === 1);
+        let henry = usuariosSistema.find(u => u.id === 1);
         if (henry) {
             henry.nombre = nuevoNombre;
             henry.telefono = nuevoTelefono;
         }
 
-        alert("¡Tus cambios de perfil y padecimientos se guardaron exitosamente!");
+        alert("¡Tus cambios de perfil se guardaron exitosamente!");
         actualizarListasAdmin(); 
     }
 
-    // --- LÓGICA DE LA BIBLIOTECA DE RECURSOS ---
+    // --- LÓGICA DE LA BIBLIOTECA DE RECURSOS (CORREGIDA AL 100%) ---
     let bibliotecaDatos = [
-        { nombre: "Guía de los 12 Pasos Tradicionales", tipo: "PASOS Y LITERATURA", enlace: "https://www.aa.org", origen: "Enlace Web" },
-        { nombre: "Balance de Caja Abril - Renca", tipo: "INFORMES FINANCIEROS", enlace: "#", origen: "Carga Local" }
+        { nombre: "Guía de los 12 Pasos Tradicionales", tipo: "PASOS Y LITERATURA", url: "https://www.aa.org", origen: "Enlace Web" },
+        { nombre: "Balance de Caja Abril - Renca", tipo: "INFORMES FINANCIEROS", url: "#", origen: "Carga Local" }
     ];
 
     function procesarPublicacionRecurso() {
@@ -628,7 +652,7 @@
         bibliotecaDatos.push({ 
             nombre: titulo, 
             tipo: category, 
-            enlace: urlInput ? urlInput : "#",
+            url: urlInput ? urlInput : "#",
             origen: urlInput ? "Enlace Web" : "Carga Local" 
         });
 
@@ -670,7 +694,7 @@
                             <span class="archivo-nombre">${archivo.nombre}</span>
                             <span class="archivo-meta">Procedencia: ${archivo.origen}</span>
                         </div>
-                        <a href="${archivo.enlace}" target="_blank" class="btn-descargar" style="display:inline-block; padding: 4px 8px; border: 1px solid var(--azul-botones); border-radius:4px; text-decoration:none;">Ver</a>
+                        <a href="${archivo.url}" target="_blank" class="btn-descargar">Ver</a>
                     </li>`;
             });
             bloque.appendChild(ul);
@@ -678,10 +702,10 @@
         }
     }
 
-    // --- CARGA INICIAL ---
     document.addEventListener('DOMContentLoaded', () => {
         actualizarPantallaContador();
         actualizarListasAdmin();
+        actualizarVistaBiblioteca();
     });
 </script>
 </body>
