@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nueva-vida-aa-v4';
+const CACHE_NAME = 'nueva-vida-aa-v5';
 const urlsToCache = [
   './',
   './index.html',
@@ -12,12 +12,11 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', event => {
-  console.log('Service Worker installing...');
+  console.log('[SW] Instalando v5...');
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       return cache.addAll(urlsToCache).catch(err => {
-        console.log('Cache addAll error:', err);
-        // Continuar aunque algún recurso falle
+        console.warn('[SW] Error cacheando algunos recursos:', err);
         return Promise.resolve();
       });
     })
@@ -26,16 +25,14 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('activate', event => {
-  console.log('Service Worker activating...');
+  console.log('[SW] Activando v5...');
   event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(
-        keys
-          .filter(k => k !== CACHE_NAME)
-          .map(k => {
-            console.log('Deleting old cache:', k);
-            return caches.delete(k);
-          })
+        keys.filter(k => k !== CACHE_NAME).map(k => {
+          console.log('[SW] Eliminando caché viejo:', k);
+          return caches.delete(k);
+        })
       )
     )
   );
@@ -43,44 +40,38 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // Solo cachear GET requests
-  if (event.request.method !== 'GET') {
+  // Solo cachear GET
+  if (event.request.method !== 'GET') return;
+
+  // No interceptar peticiones a Supabase (siempre deben ir a la red)
+  if (event.request.url.includes('supabase.co')) {
+    event.respondWith(fetch(event.request).catch(() =>
+      new Response(JSON.stringify({ error: 'Sin conexión' }), {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' }
+      })
+    ));
     return;
   }
 
   event.respondWith(
-    caches.match(event.request).then(response => {
-      // Si el recurso está en caché, retornarlo
-      if (response) {
-        return response;
-      }
+    caches.match(event.request).then(cached => {
+      if (cached) return cached;
 
-      // Si no está en caché, intentar obtenerlo de la red
       return fetch(event.request).then(response => {
-        // No cachear respuestas no-exitosas
         if (!response || response.status !== 200 || response.type === 'error') {
           return response;
         }
-
-        // Clonar la respuesta
-        const responseToCache = response.clone();
-
-        // Cachear la respuesta para futuros usos
-        caches.open(CACHE_NAME).then(cache => {
-          cache.put(event.request, responseToCache);
-        });
-
+        const toCache = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, toCache));
         return response;
-      }).catch(() => {
-        // Si ambos fallan (caché y red), retornar una respuesta offline
-        return new Response('Offline - Por favor revisa tu conexión', {
+      }).catch(() =>
+        new Response('Sin conexión — Por favor revisa tu red', {
           status: 503,
           statusText: 'Service Unavailable',
-          headers: new Headers({
-            'Content-Type': 'text/plain'
-          })
-        });
-      });
+          headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+        })
+      );
     })
   );
 });

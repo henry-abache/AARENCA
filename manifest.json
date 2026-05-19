@@ -7,6 +7,7 @@
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
   "orientation": "portrait",
+  "description": "Aplicación de apoyo para Alcohólicos Anónimos",
   "icons": [
     {
       "src": "./1-192.png",
