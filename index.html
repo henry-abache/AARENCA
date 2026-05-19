@@ -1,712 +1,1127 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nueva Vida AA - San José de Renca</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1d4ed8">
-    <style>
-        /* --- COLORES ADAPTABLES CON ALTO CONTRASTE --- */
-        :root {
-            --bg-principal: #f4f6f9;
-            --bg-tarjetas: #ffffff;
-            --borde: #d1d5db;
-            --texto-principal: #1f2937; 
-            --texto-secundario: #4b5563; 
-            --texto-placeholder: #6b7280;
-            --azul-botones: #1d4ed8;
-            --verde-exito: #16a34a;
-            --rojo-institucional: #dc2626;
-            --purpura-admin: #7c3aed;
-            --amarillo-corona: #f59e0b;
-        }
+  <link rel="manifest" href="manifest.json">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Nueva Vida - Alcohólicos Anónimos</title>
+  <link rel="icon" type="image/png" href="./1-192.png">
+  <link rel="apple-touch-icon" href="./1-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Nueva Vida AA">
+  <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f1f5f9" media="(prefers-color-scheme: light)">
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <style>
+    /* ===== TEMA OSCURO (por defecto) ===== */
+    :root {
+      --bg-main: #020617;
+      --bg-app: #0f172a;
+      --card: #1e293b;
+      --border: #334155;
+      --input-bg: #0f172a;
+      --primary: #3b82f6;
+      --accent: #16a34a;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-secondary: #cbd5e1;
+      --navbar-bg: #1e293b;
+      --badge-pending-bg: #92400e;
+      --badge-pending-text: #fde68a;
+      --overlay: rgba(0,0,0,0.85);
+      --popup-border: #d97706;
+      --notif-bg: #1e3a5f;
+      --notif-border: #3b82f6;
+    }
 
-        [data-theme="dark"] {
-            --bg-principal: #0f172a;
-            --bg-tarjetas: #1e293b;
-            --borde: #334155;
-            --texto-principal: #f1f5f9;
-            --texto-secundario: #cbd5e1;
-            --texto-placeholder: #94a3b8;
-        }
+    /* ===== TEMA CLARO AUTOMÁTICO ===== */
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg-main: #e2e8f0;
+        --bg-app: #f1f5f9;
+        --card: #ffffff;
+        --border: #cbd5e1;
+        --input-bg: #f8fafc;
+        --primary: #2563eb;
+        --accent: #15803d;
+        --warning: #b45309;
+        --danger: #dc2626;
+        --text-main: #0f172a;
+        --text-muted: #475569;
+        --text-secondary: #334155;
+        --navbar-bg: #ffffff;
+        --badge-pending-bg: #fef3c7;
+        --badge-pending-text: #92400e;
+        --overlay: rgba(0,0,0,0.6);
+        --popup-border: #d97706;
+        --notif-bg: #dbeafe;
+        --notif-border: #2563eb;
+      }
+    }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-principal);
-            color: var(--texto-principal);
-            margin: 0;
-            padding: 15px;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        .contenedor-app {
-            max-width: 500px;
-            margin: 0 auto;
-            padding-bottom: 90px; 
-        }
-
-        /* --- CABECERA --- */
-        .header-sede {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: var(--bg-tarjetas);
-            padding: 10px 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            border: 1px solid var(--borde);
-        }
-
-        .header-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .logo-aa-img {
-            width: 50px;
-            height: 50px;
-            object-fit: contain;
-            border-radius: 6px;
-        }
-
-        .titulo-sede h1 {
-            font-size: 15px;
-            margin: 0;
-            color: var(--texto-principal);
-        }
-
-        .titulo-sede h2 {
-            font-size: 13px;
-            margin: 0;
-            color: var(--rojo-institucional);
-            font-weight: bold;
-        }
-
-        /* --- CONTADOR DE SOBRIEDAD INTUITIVO --- */
-        .bloque-contador {
-            background: linear-gradient(135deg, #1e3a8a, #1d4ed8);
-            color: white;
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-        }
-
-        .numero-sobriedad {
-            font-size: 55px;
-            font-weight: 900;
-            margin: 5px 0;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-
-        .txt-sobriedad {
-            font-size: 16px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .btn-reiniciar-contador {
-            background-color: rgba(255, 255, 255, 0.2);
-            border: 2px solid white;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 13px;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: all 0.2s;
-        }
-
-        /* --- CONTROL DE VISTAS (PESTAÑAS) --- */
-        .pestaña-contenido {
-            display: none; 
-        }
-
-        .pestaña-contenido.activa {
-            display: block; 
-        }
-
-        .tarjeta-modulo {
-            background-color: var(--bg-tarjetas);
-            border-radius: 12px;
-            border: 1px solid var(--borde);
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-
-        .titulo-modulo {
-            font-size: 16px;
-            font-weight: bold;
-            margin-top: 0;
-            margin-bottom: 15px;
-            color: var(--texto-principal);
-        }
-
-        /* --- COMPONENTES FORMULARIOS --- */
-        .grupo-input {
-            margin-bottom: 12px;
-        }
-
-        .grupo-input label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 6px;
-            color: var(--texto-secundario);
-        }
-
-        input[type="text"], select, textarea {
-            width: 100%;
-            padding: 12px;
-            box-sizing: border-box;
-            border: 1px solid var(--borde);
-            border-radius: 8px;
-            background-color: var(--bg-principal);
-            color: var(--texto-principal);
-            font-size: 15px;
-        }
-
-        .btn-principal {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 15px;
-            cursor: pointer;
-            color: white;
-            background-color: var(--verde-exito);
-        }
-
-        /* --- BIBLIOTECA DE RECURSOS --- */
-        .categoria-bloque {
-            margin-top: 15px;
-        }
-
-        .categoria-titulo {
-            font-size: 11px;
-            font-weight: bold;
-            text-transform: uppercase;
-            color: var(--purpura-admin);
-            border-bottom: 1px solid var(--borde);
-            padding-bottom: 4px;
-            margin-bottom: 8px;
-        }
-
-        .lista-archivos {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .archivo-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 12px;
-            background-color: var(--bg-principal);
-            border-radius: 8px;
-            margin-bottom: 6px;
-            border: 1px solid var(--borde);
-        }
-
-        .archivo-nombre {
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .archivo-meta {
-            font-size: 11px;
-            color: var(--texto-secundario);
-            display: block;
-        }
-
-        .btn-descargar {
-            background: none;
-            border: 1px solid var(--azul-botones);
-            color: var(--azul-botones);
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: bold;
-            cursor: pointer;
-            text-decoration: none;
-        }
-
-        /* --- LISTAS ADMIN --- */
-        .item-admin-card {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            background-color: var(--bg-principal);
-            border-radius: 8px;
-            margin-bottom: 8px;
-            border: 1px solid var(--borde);
-        }
-
-        .btn-mini {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            color: white;
-        }
-
-        .btn-mini-aceptar { background-color: var(--verde-exito); }
-        .btn-mini-rechazar { background-color: var(--rojo-institucional); }
-        .btn-mini-eliminar { background-color: #6b7280; }
-
-        /* --- DIRECTORIO --- */
-        .sede-seccion {
-            margin-bottom: 20px;
-        }
-        .sede-nombre-titulo {
-            font-size: 14px;
-            font-weight: bold;
-            color: var(--azul-botones);
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            border-left: 4px solid var(--azul-botones);
-            padding-left: 8px;
-        }
-
-        .contacto-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 12px;
-            background-color: var(--bg-principal);
-            border-radius: 8px;
-            margin-bottom: 5px;
-            border: 1px solid var(--borde);
-        }
-
-        .contacto-item.es-admin {
-            background-color: #fef3c7;
-            border: 2px solid var(--amarillo-corona);
-        }
-        [data-theme="dark"] .contacto-item.es-admin {
-            background-color: #78350f;
-            border: 2px solid var(--amarillo-corona);
-        }
-
-        .contacto-nombre {
-            font-size: 14px;
-            font-weight: 500;
-        }
-        .contacto-item.es-admin .contacto-nombre {
-            font-weight: bold;
-            color: #b45309;
-        }
-        [data-theme="dark"] .contacto-item.es-admin .contacto-nombre {
-            color: #fef3c7;
-        }
-
-        .contacto-telefono {
-            font-size: 13px;
-            font-weight: bold;
-            color: var(--texto-secundario);
-        }
-
-        /* --- NAVBAR INFERIOR --- */
-        .nav-inferior {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 65px;
-            background-color: var(--bg-tarjetas);
-            border-top: 1px solid var(--borde);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            z-index: 100;
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            font-size: 10px;
-            color: var(--texto-secundario);
-            cursor: pointer;
-            background: none;
-            border: none;
-            padding: 5px;
-            width: 14%;
-        }
-
-        .nav-item.activo {
-            color: var(--azul-botones);
-            font-weight: bold;
-        }
-
-        .nav-icon {
-            font-size: 20px;
-            margin-bottom: 2px;
-        }
-    </style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 0;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 18px;
+    }
+    .app-container {
+      max-width: 500px; margin: 0 auto; min-height: 100vh;
+      background-color: var(--bg-app);
+      display: flex; flex-direction: column; position: relative;
+      box-shadow: 0 0 30px rgba(0,0,0,0.4);
+      padding-bottom: 100px;
+    }
+    .header {
+      padding: 18px 20px;
+      background-color: var(--card);
+      border-bottom: 2px solid var(--border);
+      text-align: center;
+      position: sticky; top: 0; z-index: 10;
+    }
+    .header h1 { margin: 0; font-size: 22px; }
+    .main-content { flex: 1; padding: 18px; overflow-y: auto; }
+    .card {
+      background-color: var(--card);
+      border-radius: 20px; padding: 22px;
+      margin-bottom: 18px;
+      border: 2px solid var(--border);
+    }
+    .input-field, .select-field {
+      width: 100%; padding: 15px;
+      background-color: var(--input-bg);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      color: var(--text-main);
+      font-size: 18px;
+      margin-top: 6px; margin-bottom: 16px;
+    }
+    .input-field:focus, .select-field:focus {
+      outline: none; border-color: var(--primary);
+    }
+    .btn {
+      background-color: var(--primary); color: white;
+      border: none; padding: 17px; border-radius: 16px;
+      font-size: 19px; font-weight: bold; cursor: pointer;
+      width: 100%; display: block; text-align: center;
+      text-decoration: none; transition: opacity 0.2s;
+    }
+    .btn:active { opacity: 0.8; }
+    .btn-danger { background-color: var(--danger); }
+    .btn-success { background-color: var(--accent); }
+    .btn-secondary { background-color: var(--text-muted); }
+    .btn-warning { background-color: var(--warning); }
+    .btn-sm { padding: 10px 16px; font-size: 16px; width: auto; border-radius: 12px; display: inline-block; }
+    .checkbox-group {
+      background: var(--input-bg); padding: 14px; border-radius: 14px;
+      margin-bottom: 12px; border: 2px solid var(--border);
+    }
+    .checkbox-label { display: flex; align-items: center; font-size: 20px; cursor: pointer; }
+    .checkbox-custom { width: 28px; height: 28px; margin-right: 14px; }
+    .progress-container { margin-bottom: 18px; }
+    .progress-label { display: flex; justify-content: space-between; font-weight: bold; font-size: 19px; margin-bottom: 8px; }
+    .progress-bar-bg { background-color: var(--bg-main); border-radius: 15px; height: 30px; width: 100%; overflow: hidden; border: 1px solid var(--border); }
+    .progress-bar-fill { background: linear-gradient(90deg, #16a34a, #4ade80); height: 100%; transition: width 0.5s ease; }
+    .paso-row {
+      display: flex; align-items: center; padding: 15px;
+      background: var(--input-bg); border-radius: 14px;
+      margin-bottom: 10px; cursor: pointer;
+      border: 2px solid var(--border);
+    }
+    .paso-row.completado { border-color: var(--warning); background: var(--card); }
+    .paso-numero { font-size: 24px; font-weight: bold; margin-right: 14px; min-width: 32px; color: var(--text-muted); }
+    .paso-row.completado .paso-numero { color: var(--warning); }
+    .popup-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--overlay);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px; z-index: 999;
+    }
+    .popup-card {
+      background: var(--card); border-radius: 24px; padding: 28px;
+      text-align: center; max-width: 420px; width: 100%;
+      border: 3px solid var(--popup-border);
+    }
+    .biblioteca-item {
+      background: var(--input-bg); padding: 16px; border-radius: 14px;
+      margin-bottom: 10px; display: flex;
+      align-items: center; justify-content: space-between;
+      border: 2px solid var(--border);
+    }
+    .navbar {
+      position: fixed; bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%; max-width: 500px;
+      height: 90px;
+      background-color: var(--navbar-bg);
+      border-top: 2px solid var(--border);
+      display: flex; justify-content: space-around; align-items: center;
+      z-index: 100;
+    }
+    .nav-item { color: var(--text-muted); cursor: pointer; text-align: center; font-size: 13px; font-weight: bold; padding: 8px 4px; min-width: 52px; }
+    .nav-item.active { color: var(--primary); }
+    .nav-icon { font-size: 26px; margin-bottom: 2px; }
+    .solicitud-card {
+      background: var(--card); border-radius: 16px; padding: 16px;
+      margin-bottom: 12px; border: 2px solid var(--warning);
+    }
+    .solicitud-card.rechazada { border-color: var(--border); opacity: 0.85; }
+    .solicitud-nombre { font-size: 19px; font-weight: bold; margin-bottom: 4px; color: var(--text-main); }
+    .solicitud-info { font-size: 15px; color: var(--text-muted); margin-bottom: 6px; }
+    .solicitud-actions { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+    .badge {
+      font-size: 13px; padding: 3px 10px; border-radius: 20px;
+      display: inline-block; margin-bottom: 8px; font-weight: bold;
+    }
+    .badge-pendiente { background: var(--badge-pending-bg); color: var(--badge-pending-text); }
+    .badge-rechazado { background: var(--border); color: var(--text-muted); }
+    .badge-aprobado { background: #14532d; color: #86efac; }
+    .directorio-sede { margin-bottom: 22px; }
+    .directorio-sede-titulo {
+      font-size: 20px; font-weight: bold; padding: 12px 16px;
+      background: var(--primary); color: white;
+      border-radius: 14px 14px 0 0; margin-bottom: 0;
+    }
+    .directorio-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 16px;
+      background: var(--card);
+      border-left: 2px solid var(--border);
+      border-right: 2px solid var(--border);
+      border-bottom: 2px solid var(--border);
+    }
+    .directorio-item:last-child { border-radius: 0 0 14px 14px; }
+    .directorio-item.es-admin { background: var(--input-bg); border-left-color: var(--warning); }
+    .directorio-nombre { font-size: 18px; font-weight: bold; }
+    .directorio-tel { font-size: 17px; color: var(--primary); }
+    .notif-banner {
+      background: var(--notif-bg); border: 2px solid var(--notif-border);
+      border-radius: 14px; padding: 14px 16px; margin-bottom: 12px;
+      display: flex; align-items: flex-start; gap: 12px;
+    }
+    .notif-banner.leida { opacity: 0.55; }
+    .notif-icon { font-size: 26px; flex-shrink: 0; }
+    .notif-texto { flex: 1; }
+    .notif-titulo { font-size: 17px; font-weight: bold; margin-bottom: 4px; }
+    .notif-msg { font-size: 15px; color: var(--text-muted); }
+    .notif-hora { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+    .evento-card {
+      background: var(--card); border-radius: 16px; padding: 18px;
+      margin-bottom: 14px; border: 2px solid var(--border);
+    }
+    .evento-titulo { font-size: 20px; font-weight: bold; margin-bottom: 6px; }
+    .evento-meta { font-size: 15px; color: var(--text-muted); margin-bottom: 6px; }
+    .evento-desc { font-size: 17px; margin-bottom: 10px; }
+    .evento-imagen { width: 100%; border-radius: 12px; margin-top: 10px; max-height: 220px; object-fit: cover; }
+    .date-picker-row { display: flex; gap: 10px; margin-bottom: 16px; }
+    .date-picker-row .input-field { margin-bottom: 0; flex: 1; }
+    .section-title { font-size: 22px; font-weight: bold; margin-bottom: 16px; color: var(--text-main); }
+    .divider { border: none; border-top: 2px solid var(--border); margin: 20px 0; }
+    label { font-size: 16px; color: var(--text-muted); display: block; margin-bottom: 2px; }
+    .tag-admin { background: var(--warning); color: white; font-size: 12px; padding: 2px 8px; border-radius: 10px; margin-left: 8px; font-weight: bold; }
+  </style>
 </head>
 <body>
+<div id="root"></div>
+<script type="text/babel">
 
-<div class="contenedor-app">
+const SUPABASE_URL = "https://xzkuywsitdwikzksiesf.supabase.co";
+const SUPABASE_KEY = "sb_publishable_8NSIOBCEbc4_mM9KWMKJvA_MPWW5Cv3";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    <header class="header-sede">
-        <div class="header-info">
-            <img src="1-192.png" alt="Logo 24 Horas" class="logo-aa-img">
-            <div class="titulo-sede">
-                <h1>Nueva Vida AA</h1>
-                <h2>24 HORAS RENCA</h2>
-            </div>
-        </div>
-        <button class="btn-tema" onclick="alternarTema()">🌙</button>
-    </header>
+const GRUPOS = [
+  { id: "san-jose-renca", nombre: "SAN JOSÉ DE RENCA" },
+  { id: "grupo-esperanza", nombre: "GRUPO ESPERANZA" }
+];
 
-    <div id="pes-inicio" class="pestaña-contenido activa">
-        <div class="bloque-contador">
-            <div class="txt-sobriedad">Mi Tiempo de Sobriedad</div>
-            <div id="contadorDias" class="numero-sobriedad">0</div>
-            <div class="txt-sobriedad">Días Limpio</div>
-            <button class="btn-reiniciar-contador" onclick="confirmarReiniciarContador()">🔄 Reiniciar Contador</button>
-        </div>
+const ADICCIONES_DISPONIBLES = ["Alcohol", "Marihuana", "Cocaína", "Tabaco", "Juego Compulsivo"];
 
-        <div class="tarjeta-modulo" style="text-align: center; font-style: italic;">
-            <p>"Sólo por hoy, un día a la vez. El esfuerzo de hoy es la victoria de mañana."</p>
-        </div>
-    </div>
+const PASOS_AA = [
+  "Admitimos que éramos impotentes ante el alcohol y nuestras vidas se habían vuelto ingobernables.",
+  "Llegamos a creer que un Poder superior a nosotros mismos podría devolvernos el sano juicio.",
+  "Decidimos poner nuestra voluntad y nuestras vidas al cuidado de Dios, tal como nosotros lo entendíamos.",
+  "Sin miedo, hicimos un minucioso examen de conciencia de nosotros mismos.",
+  "Admitimos ante Dios, ante nosotros mismos y ante otro ser humano la naturaleza exacta de nuestros defectos.",
+  "Estuvimos enteramente dispuestos a dejar que Dios nos liberase de todos estos defectos de carácter.",
+  "Humildemente le pedimos que nos librase de nuestros defectos.",
+  "Hicimos una lista de todas aquellas personas a quienes habíamos ofendido y estuvimos dispuestos a reparar el daño.",
+  "Reparamos directamente a cuantos nos fue posible el daño causado, excepto cuando el hacerlo implicaba perjuicio.",
+  "Continuamos con nuestro examen de conciencia, admitiendo inmediatamente nuestros errores cuando los descubríamos.",
+  "Buscamos a través de la oración y la meditación mejorar nuestro contacto con Dios.",
+  "Habiendo experimentado un despertar espiritual, tratamos de llevar este mensaje a otros alcohólicos."
+];
 
-    <div id="pes-pasos" class="pestaña-contenido">
-        <div class="tarjeta-modulo">
-            <div class="titulo-modulo">📋 Plan de los 12 Pasos</div>
-            <p>Sección para lectura guiada y estudio de los principios tradicionales de recuperación.</p>
-        </div>
-    </div>
+const LECTURAS = [
+  "Libro Grande de AA — Capítulo 5: Cómo Funciona",
+  "Viviendo Sobrio — Evitar el primer trago",
+  "Folleto: El miembro de más edad en AA",
+  "Reflexiones Diarias — Un día a la vez"
+];
 
-    <div id="pes-recursos" class="pestaña-contenido">
-        <section class="tarjeta-modulo">
-            <div class="titulo-modulo">📚 Publicar Recurso (Sólo Admin)</div>
-            <div class="grupo-input">
-                <label>Título de la Literatura o Informe</label>
-                <input type="text" id="tituloRecurso" placeholder="Ej: Libro Azul Completo...">
-            </div>
-            <div class="grupo-input">
-                <label>Categoría</label>
-                <select id="categoriaRecurso">
-                    <option value="PASOS Y LITERATURA">Pasos y Literatura</option>
-                    <option value="INFORMES FINANCIEROS">Informes Financieros</option>
-                    <option value="FORMATOS Y PLANTILLAS">Formatos y Plantillas</option>
-                </select>
-            </div>
-            <div class="grupo-input">
-                <label>Dirección URL del enlace web</label>
-                <input type="text" id="urlRecurso" placeholder="https://drive.google.com/...">
-            </div>
-            <button type="button" class="btn-principal" onclick="procesarPublicacionRecurso()">Publicar en la Sede</button>
-        </section>
+// ====== HELPERS ======
+function calcularDias(fechaStr) {
+  if (!fechaStr) return 0;
+  const d = Math.floor((new Date() - new Date(fechaStr)) / (1000 * 60 * 60 * 24));
+  return d < 0 ? 0 : d;
+}
+function formatFecha(dateStr) {
+  if (!dateStr) return "";
+  const [y, m, d] = dateStr.split("-");
+  return `${d}/${m}/${y}`;
+}
+function formatHora(timeStr) {
+  if (!timeStr) return "";
+  const [h, m] = timeStr.split(":");
+  const hh = parseInt(h);
+  const ampm = hh >= 12 ? "PM" : "AM";
+  const h12 = hh % 12 || 12;
+  return `${h12}:${m} ${ampm}`;
+}
+function tiempoDesde(ts) {
+  if (!ts) return "";
+  const diff = Date.now() - new Date(ts).getTime();
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return "Ahora";
+  if (min < 60) return `Hace ${min} min`;
+  const h = Math.floor(min / 60);
+  if (h < 24) return `Hace ${h} h`;
+  return `Hace ${Math.floor(h/24)} días`;
+}
 
-        <section class="tarjeta-modulo">
-            <div class="titulo-modulo">🔍 Biblioteca de Recursos</div>
-            <div class="grupo-input">
-                <input type="text" id="inputBuscarBiblioteca" placeholder="Buscar documento..." oninput="actualizarVistaBiblioteca()">
-            </div>
-            <div id="listaCategoriasBiblioteca"></div>
-        </section>
-    </div>
+// ====== APP PRINCIPAL ======
+function App() {
+  const [user, setUser] = React.useState(null);
+  const [activeTab, setActiveTab] = React.useState("inicio");
 
-    <div id="pes-eventos" class="pestaña-contenido">
-        <div class="tarjeta-modulo">
-            <div class="titulo-modulo">📅 Calendario de Reuniones</div>
-            <p>Reunión Ordinaria: Todos los días a las 20:00 hrs.</p>
-        </div>
-    </div>
+  // Datos del usuario
+  const [misAdicciones, setMisAdicciones] = React.useState({});
+  const [pasoActual, setPasoActual] = React.useState(1);
 
-    <div id="pes-contactos" class="pestaña-contenido">
-        <div class="tarjeta-modulo">
-            <div class="titulo-modulo">👥 Directorio Telefónico Inter-Sedes</div>
-            <div id="contenedorDirectorio"></div>
-        </div>
-    </div>
+  // Pantalla aliento
+  const [mostrarAliento, setMostrarAliento] = React.useState(false);
+  const [lecturaRecomendada, setLecturaRecomendada] = React.useState("");
 
-    <div id="pes-admin" class="pestaña-contenido">
-        <div class="tarjeta-modulo">
-            <div class="titulo-modulo">🔔 Solicitudes de Registro Nuevas</div>
-            <div id="listaSolicitudesNuevas"></div>
-        </div>
+  // Registro/Login
+  const [nombre, setNombre] = React.useState("");
+  const [sede, setSede] = React.useState("");
+  const [telefono, setTelefono] = React.useState("");
+  const [checks, setChecks] = React.useState({});
+  const [fechas, setFechas] = React.useState({});
+  const [mostrarCampoAdmin, setMostrarCampoAdmin] = React.useState(false);
+  const [codigoAdmin, setCodigoAdmin] = React.useState("");
+  const [rol, setRol] = React.useState("basico");
+  const [loginUsername, setLoginUsername] = React.useState("");
+  const CODIGO_SECRETO_ADMIN = "felices24";
 
-        <div class="tarjeta-modulo">
-            <div class="titulo-modulo">👥 Miembros de la Sede Activos</div>
-            <div id="listaMiembrosActivos"></div>
-        </div>
+  // Biblioteca
+  const [biblioteca, setBiblioteca] = React.useState([]);
+  const [nuevoTitulo, setNuevoTitulo] = React.useState("");
+  const [nuevoTipo, setNuevoTipo] = React.useState("Documento");
+  const [nuevoLink, setNuevoLink] = React.useState("");
 
-        <div class="tarjeta-modulo" style="border-color: #fca5a5;">
-            <div class="titulo-modulo" style="color: var(--rojo-institucional);">❌ Usuarios Rechazados (Permite Recuperar)</div>
-            <div id="listaUsuariosRechazados"></div>
-        </div>
-    </div>
+  // Admin
+  const [solicitudesPendientes, setSolicitudesPendientes] = React.useState([]);
+  const [solicitudesRechazadas, setSolicitudesRechazadas] = React.useState([]);
+  const [mostrarRechazados, setMostrarRechazados] = React.useState(false);
 
-    <div id="pes-perfil" class="pestaña-contenido">
-        <div class="tarjeta-modulo">
-            <div class="titulo-modulo">👤 Configurar Mi Perfil</div>
-            <div class="grupo-input">
-                <label>Nombre de Usuario</label>
-                <input type="text" id="perfilNombre" value="Henry">
-            </div>
-            <div class="grupo-input">
-                <label>Número Telefónico</label>
-                <input type="text" id="perfilTelefono" placeholder="+56912345678">
-            </div>
-            <div class="grupo-input">
-                <label>Otras Adicciones / Padecimientos Relacionados</label>
-                <textarea id="perfilAdicciones" rows="3" placeholder="Ej: Tabaquismo, Ansiedad..."></textarea>
-            </div>
-            <button type="button" class="btn-principal" onclick="guardarDatosPerfil()">Guardar Cambios de Perfil</button>
-        </div>
-    </div>
+  // Directorio
+  const [directorio, setDirectorio] = React.useState([]);
 
-    <nav class="nav-inferior">
-        <button class="nav-item activo" onclick="navegarA('inicio', this)"><span class="nav-icon">🏠</span>Inicio</button>
-        <button class="nav-item" onclick="navegarA('pasos', this)"><span class="nav-icon">📋</span>Pasos</button>
-        <button class="nav-item" onclick="navegarA('recursos', this)"><span class="nav-icon">📚</span>Recursos</button>
-        <button class="nav-item" onclick="navegarA('eventos', this)"><span class="nav-icon">📅</span>Eventos</button>
-        <button class="nav-item" onclick="navegarA('contactos', this)"><span class="nav-icon">👥</span>Contac.</button>
-        <button class="nav-item" onclick="navegarA('admin', this)"><span class="nav-icon">⚙️</span>Admin</button>
-        <button class="nav-item" onclick="navegarA('perfil', this)"><span class="nav-icon">👤</span>Perfil</button>
-    </nav>
+  // Eventos
+  const [eventos, setEventos] = React.useState([]);
+  const [evTitulo, setEvTitulo] = React.useState("");
+  const [evDesc, setEvDesc] = React.useState("");
+  const [evFecha, setEvFecha] = React.useState("");
+  const [evHora, setEvHora] = React.useState("");
+  const [evLugar, setEvLugar] = React.useState("");
+  const [evDireccion, setEvDireccion] = React.useState("");
+  const [evImagenUrl, setEvImagenUrl] = React.useState("");
+  const [guardandoEvento, setGuardandoEvento] = React.useState(false);
 
-</div>
+  // Notificaciones
+  const [notificaciones, setNotificaciones] = React.useState([]);
+  const [mostrarNotifs, setMostrarNotifs] = React.useState(false);
+  const [notifNuevas, setNotifNuevas] = React.useState(0);
 
-<script>
-    // --- NAVEGACIÓN ---
-    function navegarA(idPestaña, botonPresionado) {
-        document.querySelectorAll('.pestaña-contenido').forEach(c => c.classList.remove('activa'));
-        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('activo'));
-
-        document.getElementById('pes-' + idPestaña).classList.add('activa');
-        botonPresionado.classList.add('activo');
+  // ===== SERVICE WORKER =====
+  React.useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js')
+        .then(() => console.log("SW activo"))
+        .catch(e => console.error("SW error", e));
     }
+  }, []);
 
-    function alternarTema() {
-        const html = document.documentElement;
-        const boton = document.querySelector('.btn-tema');
-        if (html.getAttribute('data-theme') === 'dark') {
-            html.removeAttribute('data-theme');
-            boton.innerText = '🌙';
-        } else {
-            html.setAttribute('data-theme', 'dark');
-            boton.innerText = '☀️';
-        }
+  // ===== PERSISTENCIA LOGIN =====
+  React.useEffect(() => {
+    const session = localStorage.getItem("nuevavida_session");
+    if (session) {
+      try {
+        const u = JSON.parse(session);
+        verificarSesion(u.username);
+      } catch(e) { localStorage.removeItem("nuevavida_session"); }
     }
+  }, []);
 
-    // --- CONTADOR DE SOBRIEDAD ---
-    let diasSobriedad = localStorage.getItem('diasSobriedad') ? parseInt(localStorage.getItem('diasSobriedad')) : 42;
-
-    function actualizarPantallaContador() {
-        document.getElementById('contadorDias').innerText = diasSobriedad;
+  async function verificarSesion(username) {
+    const { data } = await supabase.from('usuarios').select('*').eq('username', username).maybeSingle();
+    if (data) {
+      const u = buildUser(data);
+      setUser(u);
+      setMisAdicciones(data.adicciones || {});
+      setPasoActual(data.paso_actual || 1);
+    } else {
+      localStorage.removeItem("nuevavida_session");
     }
+  }
 
-    function confirmarReiniciarContador() {
-        let confirmar = confirm("⚠️ ¿Estás completamente seguro de que quieres reiniciar tu contador de sobriedad a 0 días?\n\nEsta acción no se puede deshacer.");
-        if (confirmar) {
-            diasSobriedad = 0;
-            localStorage.setItem('diasSobriedad', diasSobriedad);
-            actualizarPantallaContador();
-            alert("Tu contador ha vuelto a comenzar. ¡Un día a la vez!");
-        }
+  function buildUser(data) {
+    return {
+      username: data.username,
+      nombreReal: data.nombre_real,
+      grupoId: data.grupo_id,
+      grupoNombre: data.grupo_nombre,
+      rol: data.rol,
+      estado: data.estado,
+      telefono: data.telefono || ""
+    };
+  }
+
+  // ===== POLLING DATOS =====
+  React.useEffect(() => {
+    if (!user) return;
+    cargarDatos();
+    const interval = setInterval(cargarDatos, 8000);
+    return () => clearInterval(interval);
+  }, [user?.username]);
+
+  async function cargarDatos() {
+    if (!user) return;
+    try {
+      // Usuario actualizado
+      const { data: uData } = await supabase.from('usuarios').select('*').eq('username', user.username).single();
+      if (uData) {
+        setMisAdicciones(uData.adicciones || {});
+        setPasoActual(uData.paso_actual || 1);
+        setUser(prev => ({ ...prev, estado: uData.estado }));
+      }
+
+      // Biblioteca
+      const { data: bData } = await supabase.from('biblioteca').select('*').eq('grupo_id', user.grupoId).order('id', { ascending: false });
+      if (bData) setBiblioteca(bData);
+
+      // Eventos de la sede
+      const { data: evData } = await supabase.from('eventos').select('*').eq('grupo_id', user.grupoId).order('fecha', { ascending: true });
+      if (evData) setEventos(evData);
+
+      // Notificaciones del usuario
+      const { data: nData } = await supabase.from('notificaciones')
+        .select('*')
+        .eq('username_destinatario', user.username)
+        .order('created_at', { ascending: false })
+        .limit(30);
+      if (nData) {
+        setNotificaciones(nData);
+        setNotifNuevas(nData.filter(n => !n.leida).length);
+      }
+
+      // Directorio de la sede (solo aprobados con teléfono)
+      const { data: dData } = await supabase.from('usuarios')
+        .select('nombre_real, rol, telefono, grupo_id, grupo_nombre')
+        .eq('estado', 'aprobado')
+        .neq('telefono', '')
+        .order('nombre_real', { ascending: true });
+      if (dData) setDirectorio(dData);
+
+      // Admin: solicitudes
+      if (user.rol === 'admin') {
+        const { data: pend } = await supabase.from('usuarios').select('*')
+          .eq('grupo_id', user.grupoId).eq('estado', 'pendiente').order('nombre_real');
+        if (pend) setSolicitudesPendientes(pend);
+
+        const { data: rech } = await supabase.from('usuarios').select('*')
+          .eq('grupo_id', user.grupoId).eq('estado', 'rechazado').order('nombre_real');
+        if (rech) setSolicitudesRechazadas(rech);
+      }
+    } catch(e) { console.error("Error cargando datos", e); }
+  }
+
+  // ===== REGISTRO =====
+  async function registrarCuenta(e) {
+    e.preventDefault();
+    if (!nombre.trim() || !sede) return alert("Por favor complete su nombre y seleccione una sede.");
+    if (rol === 'admin' && codigoAdmin.trim() !== CODIGO_SECRETO_ADMIN) {
+      return alert("❌ Código de administrador incorrecto.");
     }
-
-    // --- BASE DE DATOS DE USUARIOS ---
-    let usuariosSistema = [
-        { id: 1, nombre: "Henry", telefono: "+56987654321", Sede: "Sede San José de Renca", esAdmin: true, estado: "activo" },
-        { id: 2, nombre: "Juan Carlos", telefono: "+56911112222", Sede: "Sede San José de Renca", esAdmin: false, estado: "activo" },
-        { id: 3, nombre: "Pedro Almonte", telefono: "+56933334444", Sede: "Sede Providencia", esAdmin: true, estado: "activo" },
-        { id: 4, nombre: "Claudio Muñoz", telefono: "+56955556666", Sede: "Sede Providencia", esAdmin: false, estado: "activo" },
-        { id: 5, nombre: "Desconocido99", telefono: "+56900000000", Sede: "Sede San José de Renca", esAdmin: false, estado: "pendiente" },
-        { id: 6, nombre: "BotSospechoso", telefono: "+56912312312", Sede: "Sede San José de Renca", esAdmin: false, estado: "pendiente" }
-    ];
-
-    function actualizarListasAdmin() {
-        const contenedorPendientes = document.getElementById('listaSolicitudesNuevas');
-        const contenedorActivos = document.getElementById('listaMiembrosActivos');
-        const contenedorRechazados = document.getElementById('listaUsuariosRechazados');
-
-        contenedorPendientes.innerHTML = '';
-        contenedorActivos.innerHTML = '';
-        contenedorRechazados.innerHTML = '';
-
-        let pendientes = usuariosSistema.filter(u => u.estado === 'pendiente');
-        let activos = usuariosSistema.filter(u => u.estado === 'activo');
-        let rechazados = usuariosSistema.filter(u => u.estado === 'rechazado');
-
-        if(pendientes.length === 0) contenedorPendientes.innerHTML = '<p style="font-size:13px; color:var(--texto-secundario);">No hay solicitudes pendientes.</p>';
-        pendientes.forEach(u => {
-            contenedorPendientes.innerHTML += `
-                <div class="item-admin-card">
-                    <div><strong>${u.nombre}</strong><br><span style="font-size:11px; color:grey;">Sede: ${u.Sede}</span></div>
-                    <div style="display:flex; gap:5px;">
-                        <button class="btn-mini btn-mini-aceptar" onclick="cambiarEstadoUsuario(${u.id}, 'activo')">Aceptar</button>
-                        <button class="btn-mini btn-mini-rechazar" onclick="cambiarEstadoUsuario(${u.id}, 'rechazado')">Rechazar</button>
-                    </div>
-                </div>`;
-        });
-
-        activos.forEach(u => {
-            let botonEliminar = u.nombre === "Henry" ? '' : `<button class="btn-mini btn-mini-eliminar" onclick="cambiarEstadoUsuario(${u.id}, 'rechazado')">Eliminar</button>`;
-            contenedorActivos.innerHTML += `
-                <div class="item-admin-card">
-                    <div><strong>${u.nombre}</strong> ${u.esAdmin ? '👑' : ''}<br><span style="font-size:11px; color:grey;">${u.telefono || 'Sin Teléfono'}</span></div>
-                    <div>${botonEliminar}</div>
-                </div>`;
-        });
-
-        if(rechazados.length === 0) contenedorRechazados.innerHTML = '<p style="font-size:13px; color:var(--texto-secundario);">Ningún usuario rechazado.</p>';
-        rechazados.forEach(u => {
-            contenedorRechazados.innerHTML += `
-                <div class="item-admin-card">
-                    <div><strong>${u.nombre}</strong></div>
-                    <button class="btn-mini btn-mini-aceptar" onclick="cambiarEstadoUsuario(${u.id}, 'activo')">🔄 Admitir de Nuevo</button>
-                </div>`;
-        });
-
-        actualizarDirectorioTelefonico();
-    }
-
-    function cambiarEstadoUsuario(id, nuevoEstado) {
-        let usuario = usuariosSistema.find(u => u.id === id);
-        if(usuario) {
-            usuario.estado = nuevoEstado;
-            actualizarListasAdmin();
-        }
-    }
-
-    function actualizarDirectorioTelefonico() {
-        const contenedor = document.getElementById('contenedorDirectorio');
-        contenedor.innerHTML = '';
-
-        let activos = usuariosSistema.filter(u => u.estado === 'activo');
-        let sedes = {};
-        
-        activos.forEach(u => {
-            if (!sedes[u.Sede]) sedes[u.Sede] = [];
-            sedes[u.Sede].push(u);
-        });
-
-        for (let sede in sedes) {
-            let cajaSede = document.createElement('div');
-            cajaSede.className = 'sede-seccion';
-            cajaSede.innerHTML = `<div class="sede-nombre-titulo">🏢 ${sede}</div>`;
-
-            sedes[sede].sort((a, b) => (b.esAdmin ? 1 : 0) - (a.esAdmin ? 1 : 0));
-
-            sedes[sede].forEach(contacto => {
-                let claseAdmin = contacto.esAdmin ? 'es-admin' : '';
-                let insigniaAdmin = contacto.esAdmin ? '👑 <strong>(ADMINISTRADOR)</strong>' : '';
-                
-                cajaSede.innerHTML += `
-                    <div class="contacto-item ${claseAdmin}">
-                        <div>
-                            <span class="contacto-nombre">${contacto.nombre} ${insigniaAdmin}</span>
-                        </div>
-                        <span class="contacto-telefono">${contacto.telefono || 'Sin Número'}</span>
-                    </div>`;
-            });
-            contenedor.appendChild(cajaSede);
-        }
-    }
-
-    function guardarDatosPerfil() {
-        const nuevoNombre = document.getElementById('perfilNombre').value.trim();
-        const nuevoTelefono = document.getElementById('perfilTelefono').value.trim();
-        if(!nuevoNombre) { alert("El nombre no puede estar vacío."); return; }
-
-        let henry = usuariosSistema.find(u => u.id === 1);
-        if (henry) {
-            henry.nombre = nuevoNombre;
-            henry.telefono = nuevoTelefono;
-        }
-
-        alert("¡Tus cambios de perfil se guardaron exitosamente!");
-        actualizarListasAdmin(); 
-    }
-
-    // --- LÓGICA DE LA BIBLIOTECA DE RECURSOS (CORREGIDA AL 100%) ---
-    let bibliotecaDatos = [
-        { nombre: "Guía de los 12 Pasos Tradicionales", tipo: "PASOS Y LITERATURA", url: "https://www.aa.org", origen: "Enlace Web" },
-        { nombre: "Balance de Caja Abril - Renca", tipo: "INFORMES FINANCIEROS", url: "#", origen: "Carga Local" }
-    ];
-
-    function procesarPublicacionRecurso() {
-        const titulo = document.getElementById('tituloRecurso').value.trim();
-        const category = document.getElementById('categoriaRecurso').value;
-        const urlInput = document.getElementById('urlRecurso').value.trim();
-
-        if (!titulo) { alert("Introduce un título."); return; }
-
-        bibliotecaDatos.push({ 
-            nombre: titulo, 
-            tipo: category, 
-            url: urlInput ? urlInput : "#",
-            origen: urlInput ? "Enlace Web" : "Carga Local" 
-        });
-
-        document.getElementById('tituloRecurso').value = '';
-        document.getElementById('urlRecurso').value = '';
-        
-        actualizarVistaBiblioteca();
-        alert("¡Documento publicado en la biblioteca!");
-    }
-
-    function actualizarVistaBiblioteca() {
-        const contenedor = document.getElementById('listaCategoriasBiblioteca');
-        const busqueda = document.getElementById('inputBuscarBiblioteca').value.toLowerCase().trim();
-        contenedor.innerHTML = '';
-
-        const datosFiltrados = bibliotecaDatos.filter(item => item.nombre.toLowerCase().includes(busqueda));
-        if (datosFiltrados.length === 0) {
-            contenedor.innerHTML = '<div style="text-align:center; padding:15px; font-style:italic;">Sin coincidencias.</div>';
-            return;
-        }
-
-        const categorias = {};
-        datosFiltrados.forEach(item => {
-            if (!categorias[item.tipo]) categorias[item.tipo] = [];
-            categorias[item.tipo].push(item);
-        });
-
-        for (const cat in categorias) {
-            const bloque = document.createElement('div');
-            bloque.className = 'categoria-bloque';
-            bloque.innerHTML = `<div class="categoria-titulo">${cat}</div>`;
-            const ul = document.createElement('ul');
-            ul.className = 'lista-archivos';
-
-            categorias[cat].forEach(archivo => {
-                ul.innerHTML += `
-                    <li class="archivo-item">
-                        <div>
-                            <span class="archivo-nombre">${archivo.nombre}</span>
-                            <span class="archivo-meta">Procedencia: ${archivo.origen}</span>
-                        </div>
-                        <a href="${archivo.url}" target="_blank" class="btn-descargar">Ver</a>
-                    </li>`;
-            });
-            bloque.appendChild(ul);
-            contenedor.appendChild(bloque);
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        actualizarPantallaContador();
-        actualizarListasAdmin();
-        actualizarVistaBiblioteca();
+    const grupoSel = GRUPOS.find(g => g.id === sede);
+    const uid = nombre.trim().replace(/\s+/g, "_") + "_" + grupoSel.id;
+    const adiccionesConfig = {};
+    ADICCIONES_DISPONIBLES.forEach(ad => {
+      if (checks[ad]) adiccionesConfig[ad] = fechas[ad] || new Date().toISOString().split('T')[0];
     });
+    try {
+      const { data: existente } = await supabase.from('usuarios').select('*').eq('username', uid).maybeSingle();
+      if (existente) {
+        const u = buildUser(existente);
+        setUser(u);
+        setMisAdicciones(existente.adicciones || {});
+        setPasoActual(existente.paso_actual || 1);
+        localStorage.setItem("nuevavida_session", JSON.stringify(u));
+        return;
+      }
+      const nuevoUsr = {
+        username: uid,
+        nombre_real: nombre.trim(),
+        grupo_id: sede,
+        grupo_nombre: grupoSel.nombre,
+        rol,
+        estado: rol === 'admin' ? 'aprobado' : 'pendiente',
+        telefono: telefono.trim(),
+        adicciones: adiccionesConfig,
+        paso_actual: 1
+      };
+      const { error } = await supabase.from('usuarios').insert([nuevoUsr]);
+      if (error) {
+        alert("Error al registrar: " + error.message);
+      } else {
+        const u = { username: uid, nombreReal: nombre.trim(), grupoId: sede, grupoNombre: grupoSel.nombre, rol, estado: nuevoUsr.estado, telefono: telefono.trim() };
+        setUser(u);
+        setMisAdicciones(adiccionesConfig);
+        localStorage.setItem("nuevavida_session", JSON.stringify(u));
+      }
+    } catch(err) { alert("Error de conexión: " + err.message); }
+  }
+
+  // ===== LOGIN =====
+  async function entrarCuenta(e) {
+    e.preventDefault();
+    if (!loginUsername.trim()) return;
+    const { data } = await supabase.from('usuarios').select('*').eq('username', loginUsername.trim()).maybeSingle();
+    if (data) {
+      const u = buildUser(data);
+      setUser(u);
+      setMisAdicciones(data.adicciones || {});
+      setPasoActual(data.paso_actual || 1);
+      localStorage.setItem("nuevavida_session", JSON.stringify(u));
+    } else {
+      alert("Identificador no encontrado. Verifique que esté escrito exactamente igual.");
+    }
+  }
+
+  // ===== CERRAR SESIÓN =====
+  function cerrarSesion() {
+    localStorage.removeItem("nuevavida_session");
+    setUser(null);
+    setActiveTab("inicio");
+  }
+
+  // ===== APROBAR / RECHAZAR =====
+  async function aprobarUsuario(username) {
+    const { error } = await supabase.from('usuarios').update({ estado: 'aprobado' }).eq('username', username);
+    if (!error) { alert("✅ Usuario aprobado."); cargarDatos(); }
+    else alert("Error: " + error.message);
+  }
+  async function rechazarUsuario(username, nombre_real) {
+    if (!confirm(`¿Rechazar la solicitud de ${nombre_real}?`)) return;
+    const { error } = await supabase.from('usuarios').update({ estado: 'rechazado' }).eq('username', username);
+    if (!error) { alert("❌ Solicitud rechazada."); cargarDatos(); }
+    else alert("Error: " + error.message);
+  }
+
+  // ===== REGISTRAR RECAÍDA =====
+  async function registrarRecaida(adiccion) {
+    if (!confirm(`¿Desea reiniciar el contador de "${adiccion}"?`)) return;
+    const hoy = new Date().toISOString().split('T')[0];
+    const nuevas = { ...misAdicciones, [adiccion]: hoy };
+    const { error } = await supabase.from('usuarios').update({ adicciones: nuevas }).eq('username', user.username);
+    if (!error) {
+      setMisAdicciones(nuevas);
+      setLecturaRecomendada(LECTURAS[Math.floor(Math.random() * LECTURAS.length)]);
+      setMostrarAliento(true);
+    }
+  }
+
+  // ===== CAMBIAR PASO =====
+  async function cambiarPaso(n) {
+    const { error } = await supabase.from('usuarios').update({ paso_actual: n }).eq('username', user.username);
+    if (!error) setPasoActual(n);
+  }
+
+  // ===== SUBIR MATERIAL =====
+  async function subirMaterial(e) {
+    e.preventDefault();
+    if (!nuevoTitulo || !nuevoLink) return alert("Completa el título y el enlace.");
+    const { error } = await supabase.from('biblioteca').insert([{ grupo_id: user.grupoId, titulo: nuevoTitulo, tipo: nuevoTipo, link: nuevoLink }]);
+    if (!error) { setNuevoTitulo(""); setNuevoLink(""); cargarDatos(); alert("✅ Publicado."); }
+  }
+
+  async function eliminarMaterial(id) {
+    if (!confirm("¿Eliminar este material?")) return;
+    await supabase.from('biblioteca').delete().eq('id', id);
+    cargarDatos();
+  }
+
+  // ===== CREAR EVENTO =====
+  async function crearEvento(e) {
+    e.preventDefault();
+    if (!evTitulo || !evFecha || !evHora) return alert("Título, fecha y hora son obligatorios.");
+    setGuardandoEvento(true);
+    const grupoSel = GRUPOS.find(g => g.id === user.grupoId);
+    const lugar = evLugar.trim() || grupoSel.nombre;
+    const nuevoEv = {
+      grupo_id: user.grupoId,
+      titulo: evTitulo.trim(),
+      descripcion: evDesc.trim(),
+      fecha: evFecha,
+      hora: evHora,
+      lugar,
+      direccion: evDireccion.trim(),
+      imagen_url: evImagenUrl.trim(),
+      creado_por: user.username,
+      creado_por_nombre: user.nombreReal
+    };
+    const { data: evInserted, error } = await supabase.from('eventos').insert([nuevoEv]).select().single();
+    if (error) { alert("Error al crear evento: " + error.message); setGuardandoEvento(false); return; }
+
+    // Crear notificaciones para todos los miembros aprobados de la sede
+    const { data: miembros } = await supabase.from('usuarios').select('username').eq('grupo_id', user.grupoId).eq('estado', 'aprobado');
+    if (miembros && miembros.length > 0) {
+      const notifs = miembros.map(m => ({
+        grupo_id: user.grupoId,
+        username_destinatario: m.username,
+        tipo: 'evento',
+        titulo: `📅 Nuevo Evento: ${evTitulo.trim()}`,
+        mensaje: `${user.nombreReal} agregó un evento para el ${formatFecha(evFecha)} a las ${formatHora(evHora)} en ${lugar}.`,
+        evento_id: evInserted.id,
+        leida: false
+      }));
+      await supabase.from('notificaciones').insert(notifs);
+    }
+
+    setEvTitulo(""); setEvDesc(""); setEvFecha(""); setEvHora(""); setEvLugar(""); setEvDireccion(""); setEvImagenUrl("");
+    setGuardandoEvento(false);
+    alert("✅ Evento creado y notificaciones enviadas.");
+    cargarDatos();
+  }
+
+  async function eliminarEvento(id) {
+    if (!confirm("¿Eliminar este evento?")) return;
+    await supabase.from('eventos').delete().eq('id', id);
+    cargarDatos();
+  }
+
+  // ===== MARCAR NOTIF LEÍDA =====
+  async function marcarLeida(id) {
+    await supabase.from('notificaciones').update({ leida: true }).eq('id', id);
+    setNotificaciones(prev => prev.map(n => n.id === id ? {...n, leida: true} : n));
+    setNotifNuevas(prev => Math.max(0, prev - 1));
+  }
+
+  async function marcarTodasLeidas() {
+    const ids = notificaciones.filter(n => !n.leida).map(n => n.id);
+    if (ids.length === 0) return;
+    await supabase.from('notificaciones').update({ leida: true }).in('id', ids);
+    setNotificaciones(prev => prev.map(n => ({...n, leida: true})));
+    setNotifNuevas(0);
+  }
+
+  // ===== DIRECTORIO AGRUPADO =====
+  function directorioAgrupado() {
+    const grupos = {};
+    GRUPOS.forEach(g => { grupos[g.id] = { nombre: g.nombre, admins: [], miembros: [] }; });
+    directorio.forEach(d => {
+      if (!grupos[d.grupo_id]) return;
+      if (d.rol === 'admin') grupos[d.grupo_id].admins.push(d);
+      else grupos[d.grupo_id].miembros.push(d);
+    });
+    return grupos;
+  }
+
+  // ====================================
+  // PANTALLAS SIN SESIÓN
+  // ====================================
+  if (!user) {
+    return (
+      <div className="app-container" style={{padding: '20px'}}>
+        <div style={{textAlign: 'center', padding: '30px 0 10px'}}>
+          <img src="./logo-aa.png" alt="AA" style={{width: '80px', height: '80px', borderRadius: '20px'}} onError={e => e.target.style.display='none'} />
+          <h1 style={{color: 'var(--primary)', fontSize: '28px', margin: '10px 0 0'}}>Nueva Vida AA</h1>
+          <p style={{color: 'var(--text-muted)', marginTop: '4px'}}>Alcohólicos Anónimos</p>
+        </div>
+
+        <div className="card">
+          <h3 style={{color: 'var(--accent)', marginTop: 0}}>📝 Registrarse</h3>
+
+          <label>Su nombre o alias</label>
+          <input type="text" className="input-field" placeholder="Ej: Pedro González" value={nombre} onChange={e => setNombre(e.target.value)} />
+
+          <label>Número de teléfono (opcional)</label>
+          <input type="tel" className="input-field" placeholder="Ej: +56 9 1234 5678" value={telefono} onChange={e => setTelefono(e.target.value)} />
+
+          <label>Sede a la que pertenece</label>
+          <select className="select-field" value={sede} onChange={e => setSede(e.target.value)}>
+            <option value="">— Seleccionar Sede —</option>
+            {GRUPOS.map(g => <option key={g.id} value={g.id}>{g.nombre}</option>)}
+          </select>
+
+          <div style={{textAlign: 'right', marginBottom: '12px'}}>
+            <span style={{fontSize: '14px', color: 'var(--text-muted)', cursor: 'pointer', textDecoration: 'underline'}}
+              onClick={() => { setMostrarCampoAdmin(!mostrarCampoAdmin); setRol("basico"); setCodigoAdmin(""); }}>
+              ¿Soy administrador autorizado?
+            </span>
+          </div>
+
+          {mostrarCampoAdmin && (
+            <div style={{background: 'var(--input-bg)', border: '2px solid var(--primary)', borderRadius: '14px', padding: '16px', marginBottom: '16px'}}>
+              <label style={{color: 'var(--primary)', fontWeight: 'bold'}}>🔐 Código de Administrador</label>
+              <input type="password" className="input-field" placeholder="Código secreto"
+                value={codigoAdmin}
+                onChange={e => { setCodigoAdmin(e.target.value); setRol(e.target.value === CODIGO_SECRETO_ADMIN ? "admin" : "basico"); }} />
+            </div>
+          )}
+
+          <p style={{color: 'var(--warning)', fontWeight: 'bold', marginBottom: '10px', fontSize: '17px'}}>Padecimientos y último consumo:</p>
+          {ADICCIONES_DISPONIBLES.map(ad => (
+            <div key={ad} className="checkbox-group">
+              <label className="checkbox-label">
+                <input type="checkbox" className="checkbox-custom" checked={!!checks[ad]} onChange={e => setChecks({...checks, [ad]: e.target.checked})} />
+                {ad}
+              </label>
+              {checks[ad] && (
+                <div style={{marginTop: '8px'}}>
+                  <label style={{fontSize: '14px'}}>Fecha del último consumo:</label>
+                  <input type="date" className="input-field" style={{marginBottom: 0, marginTop: '4px'}} value={fechas[ad] || ""} onChange={e => setFechas({...fechas, [ad]: e.target.value})} />
+                </div>
+              )}
+            </div>
+          ))}
+
+          <button className="btn btn-success" style={{marginTop: '10px'}} onClick={registrarCuenta}>Registrar e Ingresar</button>
+        </div>
+
+        <div className="card" style={{marginTop: '4px'}}>
+          <h3 style={{color: 'var(--text-main)', marginTop: 0}}>🔑 Ya tengo cuenta</h3>
+          <label>Mi identificador</label>
+          <input type="text" className="input-field" placeholder="Ej: Pedro_González_san-jose-renca"
+            value={loginUsername} onChange={e => setLoginUsername(e.target.value)} />
+          <button className="btn btn-secondary" onClick={entrarCuenta}>Entrar</button>
+        </div>
+      </div>
+    );
+  }
+
+  // PENDIENTE
+  if (user.estado === 'pendiente') {
+    return (
+      <div className="app-container" style={{padding: '24px', justifyContent: 'center', textAlign: 'center'}}>
+        <div className="card">
+          <div style={{fontSize: '60px'}}>⏳</div>
+          <h2>Solicitud en Revisión</h2>
+          <p style={{color: 'var(--text-muted)', fontSize: '18px'}}>El administrador de tu sede revisará tu solicitud pronto.</p>
+          <p style={{color: 'var(--text-muted)', fontSize: '16px'}}>Tu identificador es:</p>
+          <p style={{background: 'var(--bg-main)', padding: '14px', borderRadius: '12px', color: 'var(--primary)', fontFamily: 'monospace', fontWeight: 'bold', fontSize: '19px', wordBreak: 'break-all'}}>{user.username}</p>
+          <p style={{color: 'var(--text-muted)', fontSize: '14px'}}>Guarda este identificador para poder ingresar una vez aprobado.</p>
+          <button className="btn btn-secondary" style={{marginTop: '10px'}} onClick={cerrarSesion}>Volver</button>
+        </div>
+      </div>
+    );
+  }
+
+  // RECHAZADO
+  if (user.estado === 'rechazado') {
+    return (
+      <div className="app-container" style={{padding: '24px', justifyContent: 'center', textAlign: 'center'}}>
+        <div className="card" style={{borderColor: 'var(--danger)'}}>
+          <div style={{fontSize: '60px'}}>❌</div>
+          <h2>Solicitud No Aprobada</h2>
+          <p style={{color: 'var(--text-muted)', fontSize: '18px'}}>Tu solicitud no fue aprobada por el administrador de la sede. Si crees que es un error, comunícate con el administrador.</p>
+          <button className="btn btn-secondary" style={{marginTop: '10px'}} onClick={cerrarSesion}>Volver al Inicio</button>
+        </div>
+      </div>
+    );
+  }
+
+  // ====================================
+  // APP PRINCIPAL
+  // ====================================
+  const gruposDir = directorioAgrupado();
+  const hoy = new Date().toISOString().split('T')[0];
+  const eventosProximos = eventos.filter(ev => ev.fecha >= hoy);
+  const eventosPasados = eventos.filter(ev => ev.fecha < hoy);
+
+  return (
+    <div className="app-container">
+
+      {/* POPUP ALIENTO */}
+      {mostrarAliento && (
+        <div className="popup-overlay">
+          <div className="popup-card">
+            <div style={{fontSize: '50px'}}>🌟</div>
+            <h2 style={{marginTop: '10px'}}>Un paso a la vez</h2>
+            <p style={{color: 'var(--text-muted)', fontSize: '17px'}}>{lecturaRecomendada}</p>
+            <button className="btn btn-success" onClick={() => setMostrarAliento(false)}>Continuar</button>
+          </div>
+        </div>
+      )}
+
+      {/* HEADER */}
+      <div className="header">
+        <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+          <div style={{textAlign: 'left', flex: 1}}>
+            <div style={{color: 'var(--accent)', fontWeight: 'bold', fontSize: '17px'}}>{user.nombreReal}</div>
+            <div style={{color: 'var(--text-muted)', fontSize: '14px'}}>{user.grupoNombre}{user.rol === 'admin' && <span className="tag-admin">ADMIN</span>}</div>
+          </div>
+          <div style={{display: 'flex', gap: '12px', alignItems: 'center'}}>
+            {/* Campana notificaciones */}
+            <div style={{position: 'relative', cursor: 'pointer'}} onClick={() => { setMostrarNotifs(true); }}>
+              <span style={{fontSize: '28px'}}>🔔</span>
+              {notifNuevas > 0 && (
+                <span style={{position: 'absolute', top: '-4px', right: '-4px', background: 'var(--danger)', color: 'white', borderRadius: '50%', width: '20px', height: '20px', fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                  {notifNuevas > 9 ? '9+' : notifNuevas}
+                </span>
+              )}
+            </div>
+            <button onClick={cerrarSesion} style={{background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '14px', textDecoration: 'underline'}}>Salir</button>
+          </div>
+        </div>
+      </div>
+
+      {/* PANEL NOTIFICACIONES */}
+      {mostrarNotifs && (
+        <div className="popup-overlay" onClick={() => setMostrarNotifs(false)}>
+          <div className="popup-card" style={{maxWidth: '460px', textAlign: 'left', maxHeight: '80vh', overflow: 'hidden', display: 'flex', flexDirection: 'column'}}
+            onClick={e => e.stopPropagation()}>
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
+              <h3 style={{margin: 0}}>🔔 Notificaciones</h3>
+              <button className="btn btn-sm btn-secondary" onClick={marcarTodasLeidas} style={{fontSize: '13px', padding: '8px 12px'}}>Marcar todas leídas</button>
+            </div>
+            <div style={{overflowY: 'auto', flex: 1}}>
+              {notificaciones.length === 0 && <p style={{color: 'var(--text-muted)', textAlign: 'center'}}>Sin notificaciones aún.</p>}
+              {notificaciones.map(n => (
+                <div key={n.id} className={`notif-banner${n.leida ? ' leida' : ''}`} onClick={() => marcarLeida(n.id)} style={{cursor: 'pointer'}}>
+                  <div className="notif-icon">📅</div>
+                  <div className="notif-texto">
+                    <div className="notif-titulo">{n.titulo}</div>
+                    <div className="notif-msg">{n.mensaje}</div>
+                    <div className="notif-hora">{tiempoDesde(n.created_at)}</div>
+                  </div>
+                  {!n.leida && <div style={{width: '10px', height: '10px', borderRadius: '50%', background: 'var(--primary)', flexShrink: 0, marginTop: '6px'}}></div>}
+                </div>
+              ))}
+            </div>
+            <button className="btn btn-secondary" style={{marginTop: '16px'}} onClick={() => setMostrarNotifs(false)}>Cerrar</button>
+          </div>
+        </div>
+      )}
+
+      {/* CONTENIDO PRINCIPAL */}
+      <div className="main-content">
+
+        {/* ===== INICIO ===== */}
+        {activeTab === "inicio" && (
+          <div>
+            <div className="card" style={{textAlign: 'center', borderColor: 'var(--warning)', padding: '20px'}}>
+              <p style={{fontSize: '30px', fontWeight: 'bold', color: 'var(--accent)', margin: 0}}>¡Solo por Hoy! 🌅</p>
+            </div>
+
+            {/* Próximo evento destacado */}
+            {eventosProximos.length > 0 && (
+              <div className="card" style={{borderColor: 'var(--primary)'}}>
+                <p style={{color: 'var(--primary)', fontWeight: 'bold', margin: '0 0 8px', fontSize: '16px'}}>📅 PRÓXIMO EVENTO</p>
+                <div className="evento-titulo">{eventosProximos[0].titulo}</div>
+                <div className="evento-meta">📆 {formatFecha(eventosProximos[0].fecha)} · ⏰ {formatHora(eventosProximos[0].hora)}</div>
+                <div className="evento-meta">📍 {eventosProximos[0].lugar}</div>
+                <button className="btn btn-sm" style={{marginTop: '8px'}} onClick={() => setActiveTab("eventos")}>Ver todos los eventos</button>
+              </div>
+            )}
+
+            <h3 className="section-title">Mis Indicadores</h3>
+            {Object.keys(misAdicciones).length === 0 && <p style={{color: 'var(--text-muted)'}}>No tienes padecimientos registrados.</p>}
+            {Object.keys(misAdicciones).map(ad => {
+              const dias = calcularDias(misAdicciones[ad]);
+              const porcentaje = Math.min((dias / 90) * 100, 100);
+              return (
+                <div key={ad} className="card">
+                  <div className="progress-container">
+                    <div className="progress-label"><span>{ad}</span><span style={{color: 'var(--accent)'}}>{dias} Días</span></div>
+                    <div className="progress-bar-bg"><div className="progress-bar-fill" style={{width: (porcentaje || 3) + "%"}}></div></div>
+                  </div>
+                  <button className="btn btn-danger" onClick={() => registrarRecaida(ad)}>🔄 Reiniciar Contador</button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ===== PASOS ===== */}
+        {activeTab === "pasos" && (
+          <div>
+            <h3 className="section-title">Los 12 Pasos de AA</h3>
+            {PASOS_AA.map((texto, i) => (
+              <div key={i} className={"paso-row" + (pasoActual === (i+1) ? " completado" : "")} onClick={() => cambiarPaso(i+1)}>
+                <div className="paso-numero">{i+1}</div>
+                <div style={{fontSize: '17px'}}>{texto}</div>
+                {pasoActual === (i+1) && <span style={{marginLeft: 'auto', fontSize: '24px'}}>⭐</span>}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ===== EVENTOS ===== */}
+        {activeTab === "eventos" && (
+          <div>
+            <h3 className="section-title">📅 Eventos</h3>
+
+            {/* Formulario solo para admin */}
+            {user.rol === 'admin' && (
+              <div className="card" style={{borderColor: 'var(--primary)'}}>
+                <h4 style={{color: 'var(--primary)', marginTop: 0}}>➕ Nuevo Evento</h4>
+
+                <label>Título del evento *</label>
+                <input type="text" className="input-field" placeholder="Ej: Reunión mensual de la sede" value={evTitulo} onChange={e => setEvTitulo(e.target.value)} />
+
+                <label>Descripción</label>
+                <textarea className="input-field" placeholder="Describe el evento..." rows={3} style={{resize: 'vertical'}} value={evDesc} onChange={e => setEvDesc(e.target.value)} />
+
+                <label>📆 Fecha *</label>
+                <input type="date" className="input-field" value={evFecha} onChange={e => setEvFecha(e.target.value)} min={hoy} />
+
+                <label>⏰ Hora *</label>
+                <div style={{display: 'flex', gap: '10px', marginBottom: '16px'}}>
+                  {/* Selector de hora amigable */}
+                  <select className="select-field" style={{marginBottom: 0, flex: 1}} value={evHora.split(':')[0] || ''} onChange={e => setEvHora(e.target.value + ':' + (evHora.split(':')[1] || '00'))}>
+                    <option value="">Hora</option>
+                    {Array.from({length: 24}, (_, i) => {
+                      const h = i.toString().padStart(2, '0');
+                      const ampm = i < 12 ? 'AM' : 'PM';
+                      const h12 = (i % 12 || 12).toString().padStart(2, '0');
+                      return <option key={i} value={h}>{h12}:00 {ampm}</option>;
+                    })}
+                  </select>
+                  <select className="select-field" style={{marginBottom: 0, flex: 1}} value={evHora.split(':')[1] || ''} onChange={e => setEvHora((evHora.split(':')[0] || '00') + ':' + e.target.value)}>
+                    <option value="00">:00 (en punto)</option>
+                    <option value="15">:15</option>
+                    <option value="30">:30</option>
+                    <option value="45">:45</option>
+                  </select>
+                </div>
+                {evHora && evHora.includes(':') && evHora.split(':')[0] !== '' && (
+                  <p style={{color: 'var(--accent)', fontSize: '16px', margin: '-8px 0 14px', textAlign: 'center'}}>
+                    ✅ Hora seleccionada: <strong>{formatHora(evHora)}</strong>
+                  </p>
+                )}
+
+                <label>📍 Lugar (dejar vacío usa el nombre de la sede)</label>
+                <input type="text" className="input-field" placeholder={user.grupoNombre} value={evLugar} onChange={e => setEvLugar(e.target.value)} />
+
+                <label>🗺️ Dirección (si es fuera de la sede)</label>
+                <input type="text" className="input-field" placeholder="Ej: Av. Principal 1234, Renca" value={evDireccion} onChange={e => setEvDireccion(e.target.value)} />
+
+                <label>🖼️ URL de imagen o foto del evento (opcional)</label>
+                <input type="url" className="input-field" placeholder="https://..." value={evImagenUrl} onChange={e => setEvImagenUrl(e.target.value)} />
+                {evImagenUrl && (
+                  <img src={evImagenUrl} alt="Vista previa" style={{width: '100%', borderRadius: '12px', marginBottom: '14px', maxHeight: '180px', objectFit: 'cover'}} onError={e => e.target.style.display='none'} />
+                )}
+
+                <button className="btn btn-success" onClick={crearEvento} disabled={guardandoEvento}>
+                  {guardandoEvento ? "Guardando..." : "📅 Publicar Evento y Notificar"}
+                </button>
+              </div>
+            )}
+
+            {/* Próximos eventos */}
+            {eventosProximos.length > 0 && (
+              <div>
+                <h4 style={{color: 'var(--accent)'}}>Próximos</h4>
+                {eventosProximos.map(ev => (
+                  <div key={ev.id} className="evento-card" style={{borderColor: 'var(--primary)'}}>
+                    <div className="evento-titulo">{ev.titulo}</div>
+                    <div className="evento-meta">📆 {formatFecha(ev.fecha)} · ⏰ {formatHora(ev.hora)}</div>
+                    <div className="evento-meta">📍 {ev.lugar}{ev.direccion && ` — ${ev.direccion}`}</div>
+                    {ev.descripcion && <div className="evento-desc">{ev.descripcion}</div>}
+                    <div className="evento-meta" style={{fontSize: '13px'}}>Organizado por: {ev.creado_por_nombre}</div>
+                    {ev.imagen_url && <img src={ev.imagen_url} alt="Evento" className="evento-imagen" onError={e => e.target.style.display='none'} />}
+                    {user.rol === 'admin' && (
+                      <button className="btn btn-danger btn-sm" style={{marginTop: '12px'}} onClick={() => eliminarEvento(ev.id)}>Eliminar</button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Eventos pasados */}
+            {eventosPasados.length > 0 && (
+              <div>
+                <h4 style={{color: 'var(--text-muted)'}}>Anteriores</h4>
+                {eventosPasados.slice().reverse().map(ev => (
+                  <div key={ev.id} className="evento-card" style={{opacity: 0.65}}>
+                    <div className="evento-titulo">{ev.titulo}</div>
+                    <div className="evento-meta">📆 {formatFecha(ev.fecha)} · ⏰ {formatHora(ev.hora)}</div>
+                    <div className="evento-meta">📍 {ev.lugar}</div>
+                    {ev.imagen_url && <img src={ev.imagen_url} alt="Evento" className="evento-imagen" onError={e => e.target.style.display='none'} />}
+                    {user.rol === 'admin' && (
+                      <button className="btn btn-danger btn-sm" style={{marginTop: '10px'}} onClick={() => eliminarEvento(ev.id)}>Eliminar</button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {eventos.length === 0 && <p style={{color: 'var(--text-muted)', textAlign: 'center', marginTop: '30px'}}>No hay eventos programados aún.</p>}
+          </div>
+        )}
+
+        {/* ===== DIRECTORIO ===== */}
+        {activeTab === "directorio" && (
+          <div>
+            <h3 className="section-title">📞 Directorio Telefónico</h3>
+            <p style={{color: 'var(--text-muted)', fontSize: '15px', marginBottom: '20px'}}>Contactos de miembros que compartieron su número. Los administradores aparecen primero.</p>
+            {GRUPOS.map(g => {
+              const grupo = gruposDir[g.id];
+              const todos = [...(grupo?.admins || []), ...(grupo?.miembros || [])];
+              if (todos.length === 0) return null;
+              return (
+                <div key={g.id} className="directorio-sede">
+                  <div className="directorio-sede-titulo">{g.nombre}</div>
+                  {todos.map((m, i) => (
+                    <div key={i} className={`directorio-item${m.rol === 'admin' ? ' es-admin' : ''}`}>
+                      <div>
+                        <div className="directorio-nombre">{m.nombre_real}{m.rol === 'admin' && <span className="tag-admin">ADMIN</span>}</div>
+                      </div>
+                      <a href={`tel:${m.telefono}`} className="directorio-tel">📞 {m.telefono}</a>
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+            {directorio.length === 0 && <p style={{color: 'var(--text-muted)', textAlign: 'center', marginTop: '30px'}}>Ningún miembro ha compartido su número aún.</p>}
+          </div>
+        )}
+
+        {/* ===== BIBLIOTECA ===== */}
+        {activeTab === "biblioteca" && (
+          <div>
+            <h3 className="section-title">📚 Biblioteca</h3>
+            {user.rol === 'admin' && (
+              <div className="card" style={{borderColor: 'var(--accent)'}}>
+                <h4 style={{color: 'var(--accent)', marginTop: 0}}>➕ Agregar Material</h4>
+                <label>Título</label>
+                <input type="text" className="input-field" placeholder="Nombre del material" value={nuevoTitulo} onChange={e => setNuevoTitulo(e.target.value)} />
+                <label>Tipo</label>
+                <select className="select-field" value={nuevoTipo} onChange={e => setNuevoTipo(e.target.value)}>
+                  <option>Documento</option>
+                  <option>Video</option>
+                  <option>Audio</option>
+                  <option>Enlace</option>
+                </select>
+                <label>Enlace (URL)</label>
+                <input type="url" className="input-field" placeholder="https://..." value={nuevoLink} onChange={e => setNuevoLink(e.target.value)} />
+                <button className="btn btn-success" onClick={subirMaterial}>Publicar</button>
+              </div>
+            )}
+            {biblioteca.length === 0 && <p style={{color: 'var(--text-muted)', textAlign: 'center', marginTop: '20px'}}>No hay material publicado aún.</p>}
+            {biblioteca.map(b => (
+              <div key={b.id} className="biblioteca-item">
+                <div>
+                  <div style={{fontWeight: 'bold', fontSize: '17px'}}>{b.titulo}</div>
+                  <div style={{fontSize: '13px', color: 'var(--text-muted)'}}>{b.tipo}</div>
+                </div>
+                <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
+                  <a href={b.link} target="_blank" rel="noreferrer" className="btn btn-sm">Abrir</a>
+                  {user.rol === 'admin' && <button className="btn btn-sm btn-danger" onClick={() => eliminarMaterial(b.id)}>🗑️</button>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ===== ADMIN ===== */}
+        {activeTab === "admin" && user.rol === 'admin' && (
+          <div>
+            <h3 className="section-title">👥 Administración de Sede</h3>
+
+            {/* PENDIENTES */}
+            <h4 style={{color: 'var(--warning)'}}>⏳ Solicitudes Pendientes ({solicitudesPendientes.length})</h4>
+            {solicitudesPendientes.length === 0 && <p style={{color: 'var(--text-muted)'}}>No hay solicitudes pendientes.</p>}
+            {solicitudesPendientes.map(sol => (
+              <div key={sol.username} className="solicitud-card">
+                <span className="badge badge-pendiente">PENDIENTE</span>
+                <div className="solicitud-nombre">{sol.nombre_real}</div>
+                <div className="solicitud-info">🆔 {sol.username}</div>
+                {sol.telefono && <div className="solicitud-info">📞 {sol.telefono}</div>}
+                <div className="solicitud-info">📅 Registrado: {sol.created_at ? new Date(sol.created_at).toLocaleDateString('es-CL') : '—'}</div>
+                <div className="solicitud-actions">
+                  <button className="btn btn-success btn-sm" onClick={() => aprobarUsuario(sol.username)}>✅ Aprobar</button>
+                  <button className="btn btn-danger btn-sm" onClick={() => rechazarUsuario(sol.username, sol.nombre_real)}>❌ Rechazar</button>
+                </div>
+              </div>
+            ))}
+
+            <hr className="divider" />
+
+            {/* RECHAZADOS */}
+            <h4 style={{color: 'var(--text-muted)', cursor: 'pointer'}} onClick={() => setMostrarRechazados(!mostrarRechazados)}>
+              🚫 Solicitudes Rechazadas ({solicitudesRechazadas.length}) {mostrarRechazados ? '▲' : '▼'}
+            </h4>
+            {mostrarRechazados && (
+              <div>
+                {solicitudesRechazadas.length === 0 && <p style={{color: 'var(--text-muted)'}}>No hay rechazados.</p>}
+                {solicitudesRechazadas.map(sol => (
+                  <div key={sol.username} className="solicitud-card rechazada">
+                    <span className="badge badge-rechazado">RECHAZADO</span>
+                    <div className="solicitud-nombre">{sol.nombre_real}</div>
+                    <div className="solicitud-info">🆔 {sol.username}</div>
+                    {sol.telefono && <div className="solicitud-info">📞 {sol.telefono}</div>}
+                    <div className="solicitud-actions">
+                      <button className="btn btn-success btn-sm" onClick={() => aprobarUsuario(sol.username)}>✅ Aprobar ahora</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+      </div>
+
+      {/* NAVBAR */}
+      <div className="navbar">
+        <div className={"nav-item" + (activeTab === "inicio" ? " active" : "")} onClick={() => setActiveTab("inicio")}>
+          <div className="nav-icon">🏠</div>Inicio
+        </div>
+        <div className={"nav-item" + (activeTab === "pasos" ? " active" : "")} onClick={() => setActiveTab("pasos")}>
+          <div className="nav-icon">✨</div>Pasos
+        </div>
+        <div className={"nav-item" + (activeTab === "eventos" ? " active" : "")} onClick={() => setActiveTab("eventos")}>
+          <div className="nav-icon">📅</div>Eventos
+        </div>
+        <div className={"nav-item" + (activeTab === "directorio" ? " active" : "")} onClick={() => setActiveTab("directorio")}>
+          <div className="nav-icon">📞</div>Directorio
+        </div>
+        <div className={"nav-item" + (activeTab === "biblioteca" ? " active" : "")} onClick={() => setActiveTab("biblioteca")}>
+          <div className="nav-icon">📚</div>Biblio
+        </div>
+        {user.rol === 'admin' && (
+          <div className={"nav-item" + (activeTab === "admin" ? " active" : "")} onClick={() => setActiveTab("admin")}>
+            <div className="nav-icon">⚙️</div>Admin
+          </div>
+        )}
+      </div>
+
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
 </script>
 </body>
 </html>
