@@ -3,870 +3,473 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nueva Vida AA</title>
+    <title>Nueva Vida AA - San José de Renca</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Nueva Vida AA">
-    <meta name="theme-color" content="#0f172a">
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <meta name="theme-color" content="#1d4ed8">
     <style>
+        /* --- VARIABLES DE COLOR (CORRECCIÓN DE CONTRASTE) --- */
         :root {
-            --bg-app:#0f172a; --bg-body:#020617; --card-bg:#1e293b;
-            --border:#334155; --input-bg:#0f172a; --input-border:#475569;
-            --text:#f8fafc; --muted:#cbd5e1;
-            --primary:#2563eb; --accent:#16a34a; --warn:#d97706; --danger:#dc2626;
+            --bg-principal: #f4f6f9;
+            --bg-tarjetas: #ffffff;
+            --borde: #d1d5db;
+            
+            /* Textos con grises oscuros fijos para que nunca se vuelvan invisibles */
+            --texto-principal: #1f2937; 
+            --texto-secundario: #4b5563; 
+            --texto-placeholder: #6b7280;
+            
+            --azul-botones: #1d4ed8;
+            --verde-exito: #16a34a;
+            --rojo-institucional: #dc2626;
+            --purpura-admin: #7c3aed;
         }
-        .light {
-            --bg-app:#f8fafc; --bg-body:#e2e8f0; --card-bg:#ffffff;
-            --border:#cbd5e1; --input-bg:#f1f5f9; --input-border:#94a3b8;
-            --text:#0f172a; --muted:#475569;
-            --primary:#1d4ed8; --accent:#15803d; --warn:#b45309; --danger:#b91c1c;
+
+        [data-theme="dark"] {
+            --bg-principal: #0f172a;
+            --bg-tarjetas: #1e293b;
+            --borde: #334155;
+            
+            --texto-principal: #f1f5f9;
+            --texto-secundario: #cbd5e1;
+            --texto-placeholder: #94a3b8;
         }
-        *{box-sizing:border-box;}
-        body{margin:0;padding:0;background:var(--bg-body);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:19px;transition:background .3s,color .3s;}
-        .app{max-width:500px;margin:0 auto;min-height:100vh;background:var(--bg-app);display:flex;flex-direction:column;position:relative;box-shadow:0 0 25px rgba(0,0,0,.3);padding-bottom:95px;}
-        .hdr{padding:14px 20px;background:var(--card-bg);border-bottom:2px solid var(--border);text-align:center;position:relative;}
-        .hdr h1{margin:2px 0 0;font-size:19px;color:var(--text);}
-        .hdr-logo{font-size:26px;font-weight:900;color:var(--primary);}
-        .hdr-sub{color:var(--accent);font-weight:bold;font-size:15px;}
-        .tema-btn{position:absolute;top:12px;right:12px;background:var(--input-bg);border:2px solid var(--border);color:var(--text);padding:6px 10px;border-radius:10px;cursor:pointer;font-size:14px;}
-        .content{flex:1;padding:18px;overflow-y:auto;}
-        .card{background:var(--card-bg);border-radius:18px;padding:20px;margin-bottom:18px;border:2px solid var(--border);}
-        .field{width:100%;padding:14px;background:var(--input-bg);border:2px solid var(--input-border);border-radius:12px;color:var(--text);font-size:17px;margin-top:6px;margin-bottom:16px;}
-        .field.err{border-color:var(--danger)!important;}
-        .errmsg{color:#ef4444;font-size:13px;margin-top:-12px;margin-bottom:12px;display:block;background:rgba(220,38,38,.1);padding:7px 11px;border-radius:8px;border-left:3px solid #dc2626;line-height:1.5;}
-        .btn{background:var(--primary);color:#fff;border:none;padding:16px;border-radius:14px;font-size:19px;font-weight:bold;cursor:pointer;width:100%;display:block;text-align:center;text-decoration:none;}
-        .btn-d{background:var(--danger);}
-        .btn-s{background:var(--accent);}
-        .btn-w{background:var(--warn);}
-        .btn-g{background:var(--input-border);color:var(--text);}
-        .btn-sm{padding:9px 14px;font-size:15px;width:auto;border-radius:10px;display:inline-block;}
-        .chk-g{background:var(--input-bg);padding:12px;border-radius:12px;margin-bottom:12px;border:2px solid var(--border);}
-        .chk-l{display:flex;align-items:center;font-size:20px;cursor:pointer;color:var(--text);}
-        .chk-c{width:26px;height:26px;margin-right:12px;}
-        .progress-bg{background:var(--bg-body);border-radius:14px;height:30px;width:100%;overflow:hidden;border:1px solid var(--input-border);}
-        .progress-fill{background:linear-gradient(90deg,#16a34a,#4ade80);height:100%;transition:width .5s ease;}
-        /* Pasos */
-        .paso-row{display:flex;align-items:center;padding:12px 10px;background:var(--input-bg);border-radius:12px;margin-bottom:9px;border:2px solid var(--border);gap:8px;}
-        .paso-row.p-actual{border-color:var(--warn);}
-        .paso-row.p-done{border-color:var(--accent);}
-        .paso-n{font-size:22px;font-weight:bold;min-width:30px;text-align:center;color:var(--muted);}
-        .paso-row.p-actual .paso-n{color:var(--warn);}
-        .paso-row.p-done .paso-n{color:var(--accent);}
-        .paso-txt{flex:1;font-size:15px;line-height:1.4;color:var(--text);}
-        .paso-btns{display:flex;flex-direction:column;gap:5px;align-items:center;}
-        .paso-ico{background:none;border:none;cursor:pointer;font-size:20px;padding:3px;line-height:1;opacity:.3;transition:opacity .2s;}
-        .paso-ico.on{opacity:1;}
-        /* Contraste forzado en tema claro */
-        .app.light .paso-row{background:#ffffff;border-color:#cbd5e1;}
-        .app.light .paso-txt{color:#1e293b !important;}
-        .app.light .paso-n{color:#64748b !important;}
-        .app.light .paso-row.p-actual{background:#fffbeb;border-color:#b45309;}
-        .app.light .paso-row.p-done{background:#f0fdf4;border-color:#15803d;}
-        .app.light .bib-item{background:#ffffff;}
-        .app.light .ev-card{background:#ffffff;}
-        .app.light .dir-contacto{background:#ffffff;}
-        .app.light .dir-sede-titulo{background:#e2e8f0;color:#1e293b;}
-        .app.light .miembro-row{background:#ffffff;}
-        .app.light .sol-box{background:#ffffff;}
-        .app.light .add-ad{background:#ffffff;}
-        .app.light .modo-btn{background:#ffffff;color:#475569;}
-        .app.light .modo-btn.on{background:#eff6ff;color:#1d4ed8;}
-        .paso-prog{font-size:13px;font-weight:bold;color:var(--accent);text-align:right;margin-bottom:10px;}
-        /* Popup */
-        .overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;padding:20px;z-index:999;overflow-y:auto;}
-        .popup{background:var(--card-bg);border-radius:22px;padding:26px;text-align:center;max-width:400px;width:100%;border:3px solid var(--warn);}
-        /* Biblioteca */
-        .bib-item{background:var(--input-bg);padding:16px;border-radius:12px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;border:2px solid var(--border);}
-        /* Eventos */
-        .ev-card{background:var(--input-bg);border:2px solid var(--primary);border-radius:14px;padding:16px;margin-bottom:12px;}
-        .ev-card .ev-title{font-weight:bold;font-size:19px;margin-bottom:5px;color:var(--text);}
-        /* Directorio */
-        .dir-sede{margin-top:18px;}
-        .dir-sede-titulo{background:var(--border);color:var(--text);padding:7px 14px;border-radius:9px;font-size:15px;font-weight:bold;text-transform:uppercase;margin-bottom:9px;}
-        .dir-contacto{background:var(--input-bg);border:1px solid var(--border);border-radius:11px;padding:12px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;}
-        .dir-contacto.admin-c{border:2px solid #7c3aed;background:var(--card-bg);}
-        .badge-admin{background:#7c3aed;color:#e9d5ff;font-size:11px;padding:2px 8px;border-radius:16px;margin-left:6px;font-weight:bold;}
-        /* Miembros admin */
-        .miembro-row{background:var(--input-bg);border:1px solid var(--border);border-radius:11px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
-        /* Toggle modo biblioteca */
-        .modo-toggle{display:flex;gap:8px;margin-bottom:14px;}
-        .modo-btn{flex:1;padding:10px;border-radius:10px;border:2px solid var(--input-border);background:var(--input-bg);color:var(--muted);font-size:15px;font-weight:bold;cursor:pointer;text-align:center;}
-        .modo-btn.on{border-color:var(--primary);color:var(--primary);background:var(--card-bg);}
-        /* Solicitudes */
-        .sol-box{background:var(--input-bg);border:2px solid var(--warn);padding:12px;border-radius:12px;margin-bottom:9px;}
-        .sol-acc{display:flex;gap:8px;margin-top:9px;}
-        .btn-xs{padding:9px 12px;font-size:14px;border-radius:9px;font-weight:bold;border:none;cursor:pointer;flex:1;text-align:center;color:white;}
-        /* Daily message */
-        .daily-card{background:linear-gradient(135deg,var(--primary),#7c3aed);border-radius:18px;padding:18px;margin-bottom:18px;border:none;}
-        .daily-card p{margin:8px 0 0;font-size:16px;line-height:1.5;color:#fff;}
-        .daily-day{font-size:12px;color:rgba(255,255,255,.7);margin-bottom:4px;}
-        /* Navbar */
-        .navbar{position:absolute;bottom:0;left:0;right:0;height:90px;background:var(--card-bg);border-top:2px solid var(--border);display:flex;justify-content:space-around;align-items:center;}
-        .nav-i{color:var(--muted);cursor:pointer;text-align:center;font-size:11px;font-weight:bold;flex:1;padding:4px 0;}
-        .nav-i.on{color:var(--primary);}
-        .nav-ico{font-size:20px;margin-bottom:2px;}
-        /* Upload */
-        .up-bar-bg{height:7px;background:var(--input-border);border-radius:4px;margin-bottom:14px;overflow:hidden;}
-        .up-bar-fill{height:100%;background:var(--primary);transition:width .3s;}
-        /* Add adiccion */
-        .add-ad{border:2px dashed var(--input-border);border-radius:14px;padding:16px;margin-bottom:18px;background:var(--input-bg);}
-        .admin-tgl{display:block;text-align:right;color:var(--muted);font-size:14px;text-decoration:underline;cursor:pointer;margin-top:-10px;margin-bottom:18px;}
-        /* Dot notif */
-        .dot{display:inline-block;width:8px;height:8px;background:#dc2626;border-radius:50%;margin-left:3px;vertical-align:middle;}
+
+        /* --- ESTILOS GENERALES --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-principal);
+            color: var(--texto-principal);
+            margin: 0;
+            padding: 15px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .contenedor-app {
+            max-width: 500px;
+            margin: 0 auto;
+            padding-bottom: 80px; /* Espacio para que el menú no tape el contenido */
+        }
+
+        /* --- CABECERA CON TU LOGO OFICIAL --- */
+        .header-sede {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--bg-tarjetas);
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 1px solid var(--borde);
+        }
+
+        .header-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-aa-img {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            border-radius: 6px;
+        }
+
+        .titulo-sede h1 {
+            font-size: 15px;
+            margin: 0;
+            color: var(--texto-principal);
+        }
+
+        .titulo-sede h2 {
+            font-size: 13px;
+            margin: 0;
+            color: var(--rojo-institucional);
+            font-weight: bold;
+        }
+
+        .titulo-sede span {
+            font-size: 11px;
+            color: var(--texto-secundario);
+        }
+
+        .btn-tema {
+            background: none;
+            border: 1px solid var(--borde);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px 8px;
+            border-radius: 8px;
+            background-color: var(--bg-principal);
+        }
+
+        /* --- SISTEMA DE PESTAÑAS (NAVEGACIÓN) --- */
+        .pestaña-contenido {
+            display: none; 
+        }
+
+        .pestaña-contenido.activa {
+            display: block; 
+        }
+
+        /* --- TARJETAS --- */
+        .tarjeta-modulo {
+            background-color: var(--bg-tarjetas);
+            border-radius: 12px;
+            border: 1px solid var(--borde);
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .titulo-modulo {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: var(--texto-principal);
+        }
+
+        .grupo-input {
+            margin-bottom: 12px;
+        }
+
+        .grupo-input label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--texto-secundario);
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid var(--borde);
+            border-radius: 8px;
+            background-color: var(--bg-principal);
+            color: var(--texto-principal);
+            font-size: 14px;
+        }
+
+        input::placeholder {
+            color: var(--texto-placeholder);
+        }
+
+        .btn-principal {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            color: white;
+            background-color: var(--verde-exito);
+        }
+
+        /* --- BIBLIOTECA Y BUSCADOR INTELIGENTE --- */
+        .buscador-biblioteca {
+            margin-bottom: 15px;
+        }
+
+        .categoria-bloque {
+            margin-top: 15px;
+        }
+
+        .categoria-titulo {
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: var(--purpura-admin);
+            border-bottom: 1px solid var(--borde);
+            padding-bottom: 4px;
+            margin-bottom: 8px;
+        }
+
+        .lista-archivos {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .archivo-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: var(--bg-principal);
+            border-radius: 8px;
+            margin-bottom: 6px;
+            border: 1px solid var(--borde);
+        }
+
+        .archivo-nombre {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .archivo-meta {
+            font-size: 11px;
+            color: var(--texto-secundario);
+            display: block;
+        }
+
+        .btn-descargar {
+            background: none;
+            border: 1px solid var(--azul-botones);
+            color: var(--azul-botones);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* --- NAVBAR INFERIOR --- */
+        .nav-inferior {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background-color: var(--bg-tarjetas);
+            border-top: 1px solid var(--borde);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 10px;
+            color: var(--texto-secundario);
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 5px;
+            width: 14%;
+        }
+
+        .nav-item.activo {
+            color: var(--azul-botones);
+            font-weight: bold;
+        }
+
+        .nav-icon {
+            font-size: 18px;
+            margin-bottom: 2px;
+        }
     </style>
 </head>
 <body>
-<div id="root"></div>
-<script type="text/babel">
-const SUPABASE_URL = "https://xzkuywsitdwikzksiesf.supabase.co";
-const SUPABASE_KEY = "sb_publishable_8NSIOBCEbc4_mM9KWMKJvA_MPWW5Cv3";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const CLAVE_ADMIN = "felices24";
-const GRUPOS = [
-    {id:"san-jose-renca", nombre:"SAN JOSE DE RENCA"},
-    {id:"grupo-esperanza", nombre:"GRUPO ESPERANZA"}
-];
-const ADICCIONES = ["Alcohol","Marihuana","Cocaina","Tabaco","Juego Compulsivo"];
-const PASOS_AA = [
-    "Admitimos que eramos impotentes ante el alcohol y nuestras vidas se habian vuelto ingobernables.",
-    "Llegamos a creer que un Poder superior a nosotros mismos podria devolvernos el sano juicio.",
-    "Decidimos poner nuestra voluntad y nuestras vidas al cuidado de Dios, tal como nosotros lo entendiamos.",
-    "Sin miedo, hicimos un minucioso examen de conciencia de nosotros mismos.",
-    "Admitimos ante Dios, ante nosotros mismos y ante otro ser humano la naturaleza exacta de nuestros defectos.",
-    "Estuvimos enteramente dispuestos a dejar que Dios nos liberase de todos estos defectos de caracter.",
-    "Humildemente le pedimos que nos librase de nuestros defectos.",
-    "Hicimos una lista de todas aquellas personas a quienes habiamos ofendido y estuvimos dispuestos a reparar el dano.",
-    "Reparamos directamente a cuantos nos fue posible el dano causado, excepto cuando el hacerlo implicaba perjuicio.",
-    "Continuamos con nuestro examen de conciencia, admitiendo inmediatamente nuestros errores cuando los descubriamos.",
-    "Buscamos a traves de la oracion y la meditacion mejorar nuestro contacto con Dios.",
-    "Habiendo experimentado un despertar espiritual, tratamos de llevar este mensaje a otros alcoholicos."
-];
-const LECTURAS = [
-    "Libro Grande de AA - Capitulo 5: Como funciona",
-    "Viviendo Sobrio - Evitar el primer trago",
-    "Folleto: El miembro de mas edad en AA",
-    "Reflexiones Diarias - Un dia a la vez"
-];
-const MENSAJES_DIARIOS = [
-    "La recuperacion comienza con una decision. Hoy tomaste la correcta.",
-    "No estas solo en este camino. Tu grupo camina contigo cada dia.",
-    "Cada amanecer es una nueva oportunidad de elegir la sobriedad.",
-    "La fortaleza no es no caer, es levantarse cada vez que cae.",
-    "Hoy es el unico dia que necesitas afrontar. Solo por hoy.",
-    "Tu decision de estar aqui hoy ya es una victoria.",
-    "El pasado no define tu futuro. Lo que haces hoy si lo hace.",
-    "La serenidad viene de aceptar lo que no puedes cambiar y cambiar lo que si puedes.",
-    "Cada dia sobrio es un tesoro que nadie te puede quitar.",
-    "Pedir ayuda es valentia, no debilidad.",
-    "Los 12 pasos son una escalera hacia una vida mejor. Sube uno a la vez.",
-    "Tu historia no ha terminado. El mejor capitulo aun esta por escribirse.",
-    "La gratitud transforma lo que tenemos en suficiente.",
-    "Hoy elige la paz sobre la angustia. Un momento a la vez.",
-    "El amor de tu grupo es un ancla en los momentos dificiles.",
-    "Recuperarse no es perfecto. Es simplemente seguir intentando cada dia.",
-    "La esperanza es la luz que guia incluso en los dias mas oscuros.",
-    "Tu presencia en esta comunidad importa mas de lo que imaginas.",
-    "No renuncies justo antes del milagro. El cambio toma tiempo.",
-    "Cada 'no' al alcohol es un 'si' a una vida mejor.",
-    "La paz que buscas esta dentro de ti, no en una botella.",
-    "Compartir tu historia puede ser el salvavidas de otra persona.",
-    "Un dia sobrio es un dia ganado. Celebralo con orgullo.",
-    "La disciplina de hoy es la libertad de manana.",
-    "Rodeate de quienes te impulsan hacia adelante.",
-    "El arrepentimiento mira hacia atras. La recuperacion mira hacia adelante.",
-    "Cada reunion a la que asistes es una inversion en ti mismo.",
-    "La vida sobria no es una pérdida. Es un descubrimiento de quien eres.",
-    "Tienes mas fuerza de la que crees. Tu historia lo demuestra.",
-    "Hoy se amable contigo mismo. La recuperacion requiere compasion.",
-    "Mantenerse sobrio un dia mas es el logro mas importante del dia."
-];
+<div class="contenedor-app">
 
-function App() {
-    const [user, setUser] = React.useState(null);
-    const [tab, setTab] = React.useState("inicio");
-    const [dark, setDark] = React.useState(true);
-    const [misAds, setMisAds] = React.useState({});
-    const [pasoActual, setPasoActual] = React.useState(0);
-    const [pasosComp, setPasosComp] = React.useState([]);
-    const [biblioteca, setBiblioteca] = React.useState([]);
-    const [eventos, setEventos] = React.useState([]);
-    const [solicitudes, setSolicitudes] = React.useState([]);
-    const [directorio, setDirectorio] = React.useState([]);
-    const [miembrosSede, setMiembrosSede] = React.useState([]);
-    const [aliento, setAliento] = React.useState(false);
-    const [lectura, setLectura] = React.useState("");
+    <header class="header-sede">
+        <div class="header-info">
+            <img src="1-192.png" alt="Logo 24 Horas" class="logo-aa-img">
+            <div class="titulo-sede">
+                <h1>Nueva Vida AA</h1>
+                <h2>24 HORAS RENCA</h2>
+                <span>Usuario: Henry</span>
+            </div>
+        </div>
+        <button class="btn-tema" onclick="alternarTema()">🌙</button>
+    </header>
 
-    // Phone
-    const [miTel, setMiTel] = React.useState("");
-    const [errTel, setErrTel] = React.useState("");
+    <div id="pes-inicio" class="pestaña-contenido">
+        <div class="tarjeta-modulo">
+            <div class="titulo-modulo">🏠 Bienvenidos</div>
+            <p>Sede Administrativa Virtual de Renca. Selecciona una sección en el menú inferior.</p>
+        </div>
+    </div>
 
-    // Registro
-    const [nombre, setNombre] = React.useState("");
-    const [sede, setSede] = React.useState("");
-    const [telReg, setTelReg] = React.useState("+569");
-    const [errTelReg, setErrTelReg] = React.useState("");
-    const [showAdmin, setShowAdmin] = React.useState(false);
-    const [claveAdm, setClaveAdm] = React.useState("");
-    const [checks, setChecks] = React.useState({});
-    const [fechas, setFechas] = React.useState({});
-    const [loginId, setLoginId] = React.useState("");
+    <div id="pes-pasos" class="pestaña-contenido">
+        <div class="tarjeta-modulo">
+            <div class="titulo-modulo">📋 Los 12 Pasos</div>
+            <p>Módulo de lectura interactiva de los pasos y tradiciones de recuperación.</p>
+        </div>
+    </div>
 
-    // Biblioteca
-    const [modoLib, setModoLib] = React.useState("url");
-    const [libTit, setLibTit] = React.useState("");
-    const [libTipo, setLibTipo] = React.useState("Documento");
-    const [libUrl, setLibUrl] = React.useState("");
-    const [libFile, setLibFile] = React.useState(null);
-    const [upPct, setUpPct] = React.useState(0);
-    const [subiendo, setSubiendo] = React.useState(false);
+    <div id="pes-recursos" class="pestaña-contenido activa">
+        <section class="tarjeta-modulo">
+            <div class="titulo-modulo">📚 Publicar Recurso (Sólo Admin)</div>
+            
+            <div class="grupo-input">
+                <label>Título del archivo o lectura</label>
+                <input type="text" id="tituloRecurso" placeholder="Ej: Balance Mensual, Literatura...">
+            </div>
 
-    // Eventos
-    const [evTit, setEvTit] = React.useState("");
-    const [evFecha, setEvFecha] = React.useState("");
-    const [evHora, setEvHora] = React.useState("");
-    const [evLugar, setEvLugar] = React.useState("");
-    const [evNota, setEvNota] = React.useState("");
-    const [errHora, setErrHora] = React.useState("");
+            <div class="grupo-input">
+                <label>Categoría / Tipo de Documento</label>
+                <select id="categoriaRecurso">
+                    <option value="PASOS Y LITERATURA">Pasos y Literatura</option>
+                    <option value="INFORMES FINANCIEROS">Informes Financieros</option>
+                    <option value="FORMATOS Y PLANTILLAS">Formatos y Plantillas</option>
+                    <option value="REGLAMENTOS INTERNOS">Reglamentos Internos</option>
+                </select>
+            </div>
 
-    // Agregar adiccion
-    const [nuevaAd, setNuevaAd] = React.useState("");
+            <div class="grupo-input">
+                <label>Enlace URL del Documento (Drive, Dropbox, etc.)</label>
+                <input type="text" id="urlRecurso" placeholder="https://drive.google.com/...">
+            </div>
 
-    // Mensaje del dia
-    const msgDia = MENSAJES_DIARIOS[(new Date().getDate() - 1) % MENSAJES_DIARIOS.length];
-    const diasSemana = ["Domingo","Lunes","Martes","Miercoles","Jueves","Viernes","Sabado"];
-    const hoyStr = diasSemana[new Date().getDay()] + " " + new Date().getDate();
+            <button type="button" class="btn-principal" onclick="procesarPublicacionRecurso()">Publicar en la Sede</button>
+        </section>
 
-    React.useEffect(() => {
-        const t = localStorage.getItem("tema_nv");
-        if (t === "light") setDark(false);
-        const s = localStorage.getItem("sesion_nv");
-        if (s) { try { setUser(JSON.parse(s)); } catch(e) { localStorage.removeItem("sesion_nv"); } }
-    }, []);
+        <section class="tarjeta-modulo">
+            <div class="titulo-modulo">🔍 Biblioteca de Recursos</div>
+            <div class="buscador-biblioteca">
+                <input type="text" id="inputBuscarBiblioteca" placeholder="Escribe parte del nombre para filtrar..." oninput="actualizarVistaBiblioteca()">
+            </div>
+            <div id="listaCategoriasBiblioteca"></div>
+        </section>
+    </div>
 
-    React.useEffect(() => {
-        if (!user) return;
-        cargar();
-        const iv = setInterval(cargar, 20000);
-        return () => clearInterval(iv);
-    }, [user]);
+    <div id="pes-eventos" class="pestaña-contenido">
+        <div class="tarjeta-modulo"><div class="titulo-modulo">📅 Cronograma de Eventos</div><p>No hay eventos programados hoy.</p></div>
+    </div>
+    <div id="pes-contactos" class="pestaña-contenido">
+        <div class="tarjeta-modulo"><div class="titulo-modulo">👥 Directorio Inter-Sedes</div><p>Lista de contactos autorizados.</p></div>
+    </div>
+    <div id="pes-admin" class="pestaña-contenido">
+        <div class="tarjeta-modulo"><div class="titulo-modulo">⚙️ Panel de Control</div><p>Gestión de solicitudes de afiliación y registros.</p></div>
+    </div>
+    <div id="pes-perfil" class="pestaña-contenido">
+        <div class="tarjeta-modulo"><div class="titulo-modulo">👤 Mi Perfil</div><p>Configuración personal de la cuenta.</p></div>
+    </div>
 
-    async function cargar() {
-        try {
-            const { data: u } = await supabase.from('usuarios').select('*').eq('username', user.username).single();
-            if (u) {
-                setMisAds(u.adicciones || {});
-                setPasoActual(u.paso_actual || 0);
-                setPasosComp(u.pasos_completados || []);
-                const tel = (u.telefonos && u.telefonos.length > 0) ? u.telefonos[0] : "";
-                setMiTel(tel);
-                setUser(prev => { const a = {...prev, estado: u.estado}; localStorage.setItem("sesion_nv", JSON.stringify(a)); return a; });
-            }
-            const { data: b } = await supabase.from('biblioteca').select('*').eq('grupo_id', user.grupoId).order('id', {ascending:false});
-            if (b) setBiblioteca(b);
-            const { data: e } = await supabase.from('eventos').select('*').eq('grupo_id', user.grupoId).order('fecha', {ascending:true});
-            if (e) setEventos(e);
-            const { data: d } = await supabase.from('usuarios').select('nombre_real,grupo_id,grupo_nombre,telefonos,rol').eq('estado','autorizado').order('grupo_nombre', {ascending:true});
-            if (d) setDirectorio(d);
-            if (user.rol === 'admin') {
-                const { data: p } = await supabase.from('usuarios').select('*').eq('grupo_id', user.grupoId).eq('estado','pendiente');
-                if (p) setSolicitudes(p);
-                const { data: m } = await supabase.from('usuarios').select('*').eq('grupo_id', user.grupoId).neq('estado','pendiente').order('nombre_real', {ascending:true});
-                if (m) setMiembrosSede(m);
-            }
-        } catch(e) {}
+    <nav class="nav-inferior">
+        <button class="nav-item" onclick="navegarA('inicio', this)"><span class="nav-icon">🏠</span>Inicio</button>
+        <button class="nav-item" onclick="navegarA('pasos', this)"><span class="nav-icon">📋</span>Pasos</button>
+        <button class="nav-item activo" onclick="navegarA('recursos', this)"><span class="nav-icon">📚</span>Recursos</button>
+        <button class="nav-item" onclick="navegarA('eventos', this)"><span class="nav-icon">📅</span>Eventos</button>
+        <button class="nav-item" onclick="navegarA('contactos', this)"><span class="nav-icon">👥</span>Contac.</button>
+        <button class="nav-item" onclick="navegarA('admin', this)"><span class="nav-icon">⚙️</span>Admin</button>
+        <button class="nav-item" onclick="navegarA('perfil', this)"><span class="nav-icon">👤</span>Perfil</button>
+    </nav>
+
+</div>
+
+<script>
+    // CONTROLADOR DE NAVEGACIÓN ENTRE PESTAÑAS
+    function navegarA(idPestaña, botonPresionado) {
+        const contenidos = document.querySelectorAll('.pestaña-contenido');
+        contenidos.forEach(c => c.classList.remove('activa'));
+
+        const botones = document.querySelectorAll('.nav-item');
+        botones.forEach(b => b.classList.remove('activo'));
+
+        document.getElementById('pes-' + idPestaña).classList.add('activa');
+        botonPresionado.classList.add('activo');
     }
 
-    const toggleTema = () => setDark(p => { localStorage.setItem("tema_nv", !p?"dark":"light"); return !p; });
-
-    const validTel = (v, setter, errSetter) => {
-        setter(v);
-        if (!v || v === "+569" || v.trim() === "") { errSetter(""); return; }
-        const l = v.replace(/\s/g,"");
-        if (!l.startsWith("+")) errSetter("Debe comenzar con codigo de pais.\n📌 Chile: +56912345678 · EEUU: +1234567890 · Argentina: +5491123456");
-        else if (!/^\+[0-9]{8,14}$/.test(l)) errSetter("Solo numeros despues del '+'. Entre 8 y 14 digitos.\n📌 Ejemplo: +56912345678");
-        else errSetter("");
-    };
-
-    const validHora = (v) => {
-        setEvHora(v);
-        if (!v) { setErrHora(""); return; }
-        if (!/^([01]\d|2[0-3]):([0-5]\d)$/.test(v)) setErrHora("Hora invalida. Usa el selector (00:00 a 23:59).");
-        else setErrHora("");
-    };
-
-    const toggleComp = async (num) => {
-        const nuevos = pasosComp.includes(num) ? pasosComp.filter(p => p !== num) : [...pasosComp, num];
-        const { error } = await supabase.from('usuarios').update({pasos_completados: nuevos}).eq('username', user.username);
-        if (!error) setPasosComp(nuevos);
-    };
-
-    const setActual = async (num) => {
-        const nuevo = pasoActual === num ? 0 : num;
-        const { error } = await supabase.from('usuarios').update({paso_actual: nuevo}).eq('username', user.username);
-        if (!error) setPasoActual(nuevo);
-    };
-
-    const guardarTel = async (e) => {
-        e.preventDefault();
-        if (errTel) return alert("Corrige el telefono antes de guardar.");
-        const tels = miTel.trim() ? [miTel.trim()] : [];
-        const { error } = await supabase.from('usuarios').update({telefonos: tels}).eq('username', user.username);
-        if (!error) alert("Telefono actualizado correctamente.");
-        else alert("Error: " + error.message);
-    };
-
-    const reinciar = async (ad) => {
-        const hoy = new Date().toISOString().split('T')[0];
-        const nuevas = {...misAds, [ad]: hoy};
-        const { error } = await supabase.from('usuarios').update({adicciones: nuevas}).eq('username', user.username);
-        if (!error) { setMisAds(nuevas); setLectura(LECTURAS[Math.floor(Math.random()*LECTURAS.length)]); setAliento(true); }
-    };
-
-    const agregarAd = async () => {
-        if (!nuevaAd) return;
-        const hoy = new Date().toISOString().split('T')[0];
-        const nuevas = {...misAds, [nuevaAd]: hoy};
-        const { error } = await supabase.from('usuarios').update({adicciones: nuevas}).eq('username', user.username);
-        if (!error) { setMisAds(nuevas); setNuevaAd(""); alert("Padecimiento agregado. Contador parte desde hoy."); }
-    };
-
-    const registrar = async (e) => {
-        e.preventDefault();
-        if (!nombre || !sede) return alert("Completa nombre y sede.");
-        if (errTelReg) return alert("Corrige el telefono.");
-        let rol = "basico", estado = "pendiente";
-        if (showAdmin) {
-            if (claveAdm !== CLAVE_ADMIN) return alert("Clave de administrador incorrecta.");
-            rol = "admin"; estado = "autorizado";
-        }
-        const g = GRUPOS.find(x => x.id === sede);
-        const uid = nombre.replace(/\s+/g,"") + "_" + g.id;
-        try {
-            const { data: ex } = await supabase.from('usuarios').select('username').eq('username', uid).maybeSingle();
-            if (ex) return alert("El nombre \"" + nombre + "\" ya existe en esta sede.");
-            const ads = {};
-            ADICCIONES.forEach(a => { if (checks[a]) ads[a] = fechas[a] || new Date().toISOString().split('T')[0]; });
-            const tel = telReg.trim();
-            const tels = (tel && tel !== "+569") ? [tel] : [];
-            const { error } = await supabase.from('usuarios').insert([{username:uid, nombre_real:nombre, grupo_id:sede, grupo_nombre:g.nombre, rol, estado, adicciones:ads, telefonos:tels, paso_actual:0, pasos_completados:[]}]);
-            if (error) { alert("Error: " + error.message); return; }
-            const s = {username:uid, nombreReal:nombre, grupoId:sede, grupoNombre:g.nombre, rol, estado};
-            localStorage.setItem("sesion_nv", JSON.stringify(s));
-            setUser(s); setMisAds(ads);
-        } catch(err) { alert("Error: " + err.message); }
-    };
-
-    const entrar = async (e) => {
-        e.preventDefault();
-        if (!loginId) return;
-        const { data } = await supabase.from('usuarios').select('*').eq('username', loginId).maybeSingle();
-        if (data) {
-            const s = {username:data.username, nombreReal:data.nombre_real, grupoId:data.grupo_id, grupoNombre:data.grupo_nombre, rol:data.rol, estado:data.estado};
-            localStorage.setItem("sesion_nv", JSON.stringify(s));
-            setUser(s); setMisAds(data.adicciones||{}); setPasoActual(data.paso_actual||0); setPasosComp(data.pasos_completados||[]);
-            const tel = (data.telefonos && data.telefonos.length > 0) ? data.telefonos[0] : "";
-            setMiTel(tel);
-        } else alert("Identificador no encontrado.");
-    };
-
-    const salir = () => { localStorage.removeItem("sesion_nv"); setUser(null); };
-
-    const subirBib = async (e) => {
-        e.preventDefault();
-        if (!libTit) return alert("Escribe un titulo para el recurso.");
-        let url = "";
-        if (modoLib === "url") {
-            if (!libUrl) return alert("Pega el enlace URL del recurso.");
-            url = libUrl.trim();
+    // CONTROLADOR DE TEMA INTERNO
+    function alternarTema() {
+        const html = document.documentElement;
+        const boton = document.querySelector('.btn-tema');
+        if (html.getAttribute('data-theme') === 'dark') {
+            html.removeAttribute('data-theme');
+            boton.innerText = '🌙';
         } else {
-            if (!libFile) return alert("Selecciona un archivo primero.");
-            const maxMB = 10;
-            if (libFile.size > maxMB * 1024 * 1024) return alert("El archivo supera los 10MB. Usa un enlace URL para archivos grandes.");
-            setSubiendo(true); setUpPct(15);
-            try {
-                const ext = libFile.name.split('.').pop();
-                const fn = Date.now() + "_" + libFile.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-                setUpPct(40);
-                const { data: upData, error: upErr } = await supabase.storage
-                    .from('archivos')
-                    .upload(fn, libFile, { upsert: true, contentType: libFile.type });
-                if (upErr) {
-                    setSubiendo(false);
-                    if (upErr.message.includes('Bucket not found')) {
-                        return alert("Error: El bucket de archivos no existe.\nVe a Supabase → Storage → New Bucket → 'archivos' → Public ON");
-                    }
-                    return alert("Error al subir archivo: " + upErr.message);
-                }
-                setUpPct(85);
-                const { data: pub } = supabase.storage.from('archivos').getPublicUrl(fn);
-                if (!pub || !pub.publicUrl) { setSubiendo(false); return alert("Error: No se pudo obtener la URL publica del archivo."); }
-                url = pub.publicUrl;
-                setUpPct(100);
-            } catch(err) {
-                setSubiendo(false);
-                return alert("Error inesperado: " + err.message);
+            html.setAttribute('data-theme', 'dark');
+            boton.innerText = '☀️';
+        }
+    }
+
+    // BASE DE DATOS LOCAL INICIAL
+    let bibliotecaDatos = [
+        { nombre: "Guía de los 12 Pasos Tradicionales", tipo: "PASOS Y LITERATURA", origen: "Enlace Web" },
+        { nombre: "Balance de Caja Abril - Renca", tipo: "INFORMES FINANCIEROS", origen: "Archivo Local" },
+        { nombre: "Reglamento de Sede Nueva Vida v2", tipo: "REGLAMENTOS INTERNOS", origen: "Archivo Local" },
+        { nombre: "Formato de Ficha para Nuevos Miembros", tipo: "FORMATOS Y PLANTILLAS", origen: "Enlace Web" }
+    ];
+
+    // ACCIÓN DE SUBIDA
+    function procesarPublicacionRecurso() {
+        const titulo = document.getElementById('tituloRecurso').value.trim();
+        const category = document.getElementById('categoriaRecurso').value;
+        const urlInput = document.getElementById('urlRecurso').value.trim();
+
+        if (!titulo) { 
+            alert("Por favor, introduce un título descriptivo."); 
+            return; 
+        }
+
+        bibliotecaDatos.push({ 
+            nombre: titulo, 
+            tipo: category, 
+            origen: urlInput ? "Enlace Web" : "Carga Local" 
+        });
+
+        // Limpiar inputs
+        document.getElementById('tituloRecurso').value = '';
+        document.getElementById('urlRecurso').value = '';
+        
+        // Refrescar lista y avisar
+        actualizarVistaBiblioteca();
+        alert("¡Recurso clasificado y publicado!");
+    }
+
+    // ORDENACIÓN DOBLE (CATEGORÍA -> ALFABÉTICO) Y FILTRADO PARCIAL
+    function actualizarVistaBiblioteca() {
+        const contenedor = document.getElementById('listaCategoriasBiblioteca');
+        const busqueda = document.getElementById('inputBuscarBiblioteca').value.toLowerCase().trim();
+        contenedor.innerHTML = '';
+
+        // 1. Filtrar por coincidencia parcial de texto
+        const datosFiltrados = bibliotecaDatos.filter(item => item.nombre.toLowerCase().includes(busqueda));
+        
+        if (datosFiltrados.length === 0) {
+            contenedor.innerHTML = '<div style="text-align:center; padding:15px; font-style:italic; color:var(--texto-secundario);">Sin coincidencias de búsqueda.</div>';
+            return;
+        }
+
+        // 2. Ordenar Alfabéticamente por Nombre
+        datosFiltrados.sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+        // 3. Agrupar rígidamente por Categoría
+        const categorias = {};
+        datosFiltrados.forEach(item => {
+            if (!categorias[item.tipo]) {
+                categorias[item.tipo] = [];
             }
-            setSubiendo(false); setUpPct(0);
+            categorias[item.tipo].push(item);
+        });
+
+        // 4. Renderizar bloques ordenados en pantalla
+        for (const cat in categorias) {
+            const bloque = document.createElement('div');
+            bloque.className = 'categoria-bloque';
+            bloque.innerHTML = `<div class="categoria-titulo">${cat}</div>`;
+            
+            const ul = document.createElement('ul');
+            ul.className = 'lista-archivos';
+
+            categorias[cat].forEach(archivo => {
+                ul.innerHTML += `
+                    <li class="archivo-item">
+                        <div>
+                            <span class="archivo-nombre" style="color: var(--texto-principal);">${archivo.nombre}</span>
+                            <span class="archivo-meta">Origen: ${archivo.origen}</span>
+                        </div>
+                        <button class="btn-descargar">Ver</button>
+                    </li>`;
+            });
+            bloque.appendChild(ul);
+            contenedor.appendChild(bloque);
         }
-        const { error } = await supabase.from('biblioteca').insert([{grupo_id:user.grupoId, titulo:libTit, tipo:libTipo, link:url}]);
-        if (!error) {
-            setLibTit(""); setLibUrl(""); setLibFile(null);
-            cargar();
-            alert("Publicado con exito.");
-        } else {
-            alert("Error al guardar en biblioteca: " + error.message);
-        }
-    };
+    }
 
-    const crearEv = async (e) => {
-        e.preventDefault();
-        if (!evTit || !evFecha || !evHora || !evLugar) return alert("Completa titulo, fecha, hora y direccion.");
-        if (errHora) return alert("Corrige la hora.");
-        const { error } = await supabase.from('eventos').insert([{grupo_id:user.grupoId, titulo:evTit, fecha:evFecha, hora:evHora, lugar:evLugar, nota:evNota}]);
-        if (!error) { alert("Evento publicado."); setEvTit(""); setEvFecha(""); setEvHora(""); setEvLugar(""); setEvNota(""); cargar(); }
-        else alert("Error: " + error.message);
-    };
-
-    const elimEv = async (id) => { if (!confirm("Eliminar evento?")) return; await supabase.from('eventos').delete().eq('id',id); cargar(); };
-
-    const gestionarSol = async (username, aprobar) => {
-        if (aprobar) {
-            const { error } = await supabase.from('usuarios').update({estado:'autorizado'}).eq('username',username);
-            if (!error) { alert("Usuario autorizado."); cargar(); }
-        } else {
-            if (!confirm("Rechazar y eliminar a " + username + "?")) return;
-            await supabase.from('usuarios').delete().eq('username',username);
-            alert("Solicitud eliminada."); cargar();
-        }
-    };
-
-    const elimMiembro = async (username, nombreReal) => {
-        if (!confirm("ATENCION: Esto eliminara permanentemente el registro de \"" + nombreReal + "\".\n\n¿Confirmas que esta persona ya no pertenece a la sede?")) return;
-        const { error } = await supabase.from('usuarios').delete().eq('username',username);
-        if (!error) { alert("Registro eliminado."); cargar(); }
-        else alert("Error: " + error.message);
-    };
-
-    const dias = f => { if (!f) return 0; const d = Math.floor((new Date()-new Date(f))/86400000); return d<0?0:d; };
-    const mapsUrl = dir => "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(dir);
-
-    const dirAgrupado = GRUPOS.map(g => {
-        const todos = directorio.filter(u => u.grupo_id === g.id);
-        return {...g, admins: todos.filter(u => u.rol==='admin'), miembros: todos.filter(u => u.rol!=='admin')};
+    // Carga inicial
+    document.addEventListener('DOMContentLoaded', () => {
+        actualizarVistaBiblioteca();
     });
-
-    const adsPendientes = ADICCIONES.filter(a => !misAds[a]);
-    const cls = "app" + (!dark?" light":"");
-
-    // LOGIN
-    if (!user) return (
-        <div className={cls} style={{padding:'18px', justifyContent:'center'}}>
-            <div className="card">
-                <button className="tema-btn" onClick={toggleTema}>{dark?"☀️":"🌙"}</button>
-                <div className="hdr-logo" style={{textAlign:'center', marginTop:'8px'}}>AA</div>
-                <h2 style={{color:'var(--primary)', fontSize:'24px', textAlign:'center', margin:'0 0 18px'}}>Nueva Vida</h2>
-                <form onSubmit={registrar}>
-                    <h4 style={{color:'var(--accent)', marginBottom:'5px'}}>1. Registrarse</h4>
-                    <input type="text" className="field" placeholder="Nombre o Alias (Obligatorio)" value={nombre} onChange={e=>setNombre(e.target.value)} />
-                    <select className="field" value={sede} onChange={e=>setSede(e.target.value)}>
-                        <option value="">-- Seleccionar Sede --</option>
-                        {GRUPOS.map(g=><option key={g.id} value={g.id}>{g.nombre}</option>)}
-                    </select>
-                    <label style={{fontSize:'14px', fontWeight:'bold', color:'var(--muted)'}}>WhatsApp (Opcional):</label>
-                    <input type="tel" className={"field"+(errTelReg?" err":"")} placeholder="+56912345678" value={telReg} onChange={e=>validTel(e.target.value, setTelReg, setErrTelReg)} />
-                    {errTelReg && <span className="errmsg">⚠️ {errTelReg}</span>}
-                    <span className="admin-tgl" onClick={()=>{setShowAdmin(!showAdmin); setClaveAdm("");}}>¿Soy administrador autorizado?</span>
-                    {showAdmin && (
-                        <div style={{background:'var(--input-bg)', padding:'14px', borderRadius:'12px', marginBottom:'16px', border:'2px solid #7c3aed'}}>
-                            <label style={{fontSize:'14px', color:'#a78bfa', fontWeight:'bold'}}>Clave de Administrador:</label>
-                            <input type="password" className="field" style={{marginBottom:'4px'}} placeholder="Codigo secreto" value={claveAdm} onChange={e=>setClaveAdm(e.target.value)} />
-                        </div>
-                    )}
-                    <h4 style={{color:'var(--warn)', fontSize:'17px', marginBottom:'10px'}}>Padecimientos iniciales:</h4>
-                    {ADICCIONES.map(a=>(
-                        <div key={a} className="chk-g">
-                            <label className="chk-l">
-                                <input type="checkbox" className="chk-c" checked={!!checks[a]} onChange={e=>setChecks({...checks,[a]:e.target.checked})} />{a}
-                            </label>
-                            {checks[a] && <input type="date" className="field" style={{marginBottom:0, marginTop:'7px'}} value={fechas[a]||""} onChange={e=>setFechas({...fechas,[a]:e.target.value})} />}
-                        </div>
-                    ))}
-                    <button type="submit" className="btn btn-s" style={{marginTop:'14px'}}>Registrar e Ingresar</button>
-                </form>
-                <hr style={{borderColor:'var(--border)', margin:'26px 0'}} />
-                <form onSubmit={entrar}>
-                    <h4 style={{marginBottom:'5px', color:'var(--text)'}}>2. Ya tengo cuenta</h4>
-                    <input type="text" className="field" placeholder="Ej: Pedro_san-jose-renca" value={loginId} onChange={e=>setLoginId(e.target.value)} />
-                    <button type="submit" className="btn btn-g">Entrar</button>
-                </form>
-            </div>
-        </div>
-    );
-
-    if (user.estado === 'pendiente') return (
-        <div className={cls} style={{padding:'18px', justifyContent:'center', textAlign:'center'}}>
-            <div className="card">
-                <div style={{fontSize:'52px'}}>⏳</div>
-                <h2 style={{color:'var(--text)'}}>Cuenta en Revision</h2>
-                <p style={{color:'var(--muted)'}}>Tu identificador:</p>
-                <p style={{background:'var(--bg-body)', padding:'12px', borderRadius:'9px', color:'var(--primary)', fontFamily:'monospace', fontWeight:'bold', fontSize:'16px'}}>{user.username}</p>
-                <p style={{color:'var(--warn)', fontSize:'15px'}}>El administrador de tu sede debe aprobar tu solicitud.</p>
-                <button className="btn btn-g" style={{marginTop:'14pxWorkflow'}} onClick={salir}>Volver</button>
-            </div>
-        </div>
-    );
-
-    return (
-        <div className={cls}>
-            <div className="hdr">
-                <button className="tema-btn" onClick={toggleTema}>{dark?"☀️":"🌙"}</button>
-                <div className="hdr-logo">AA</div>
-                <h1>Nueva Vida</h1>
-                <div className="hdr-sub">{user.grupoNombre}</div>
-            </div>
-
-            <div className="content">
-                {/* INICIO */}
-                {tab === "inicio" && (
-                    <div>
-                        <div className="daily-card">
-                            <div className="daily-day">✨ {hoyStr}</div>
-                            <p>"{msgDia}"</p>
-                        </div>
-
-                        <div className="card">
-                            <h3 style={{margin:'0 0 14px', color:'var(--text)'}}>Mis Contadores (Días Limpio)</h3>
-                            {Object.keys(misAds).length === 0 ? (
-                                <p style={{color:'var(--muted)', fontSize:'15px'}}>No has seleccionado padecimientos aún.</p>
-                            ) : (
-                                Object.keys(misAds).map(ad => (
-                                    <div key={ad} style={{display:'flex', justifyContent:'space-between', alignItems:'center', padding:'10px 0', borderBottom:'1px solid var(--border)'}}>
-                                        <div>
-                                            <span style={{fontWeight:'bold', color:'var(--text)'}}>{ad}</span>
-                                            <div style={{fontSize:'12px', color:'var(--muted)'}}>Desde: {misAds[ad]}</div>
-                                        </div>
-                                        <div style={{textAlign:'right'}}>
-                                            <span style={{fontSize:'22px', fontWeight:'bold', color:'var(--accent)'}}>{dias(misAds[ad])} d</span>
-                                            <button className="btn btn-sm btn-d" style={{marginLeft:'10px', padding:'5px 10px', fontSize:'12px'}} onClick={()=>reinciar(ad)}>Reiniciar</button>
-                                        </div>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-
-                        {adsPendientes.length > 0 && (
-                            <div className="add-ad">
-                                <h4 style={{margin:'0 0 10px', color:'var(--muted)', fontSize:'15px'}}>¿Agregar otro padecimiento?</h4>
-                                <div style={{display:'flex', gap:'8px'}}>
-                                    <select className="field" style={{margin:0, padding:'10px'}} value={nuevaAd} onChange={e=>setNuevaAd(e.target.value)}>
-                                        <option value="">-- Seleccionar --</option>
-                                        {adsPendientes.map(a=><option key={a} value={a}>{a}</option>)}
-                                    </select>
-                                    <button className="btn btn-s btn-sm" onClick={agregarAd}>Agregar</button>
-                                </div>
-                            </div>
-                        )}
-
-                        <div className="card">
-                            <h3 style={{margin:'0 0 10px', color:'var(--text)'}}>Mi Teléfono WhatsApp</h3>
-                            <form onSubmit={guardarTel} style={{display:'flex', flexDirection:'column'}}>
-                                <input type="tel" className={"field"+(errTel?" err":"")} style={{marginBottom:'6px'}} placeholder="+56912345678" value={miTel} onChange={e=>validTel(e.target.value, setMiTel, setErrTel)} />
-                                {errTel && <span className="errmsg">⚠️ {errTel}</span>}
-                                <button type="submit" className="btn btn-g btn-sm" style={{alignSelf:'flex-end'}}>Actualizar</button>
-                            </form>
-                        </div>
-
-                        <div className="card" style={{textAlign:'center'}}>
-                            <h3 style={{color:'var(--text)'}}>Mi Informacion</h3>
-                            <p style={{color:'var(--muted)', fontSize:'14px'}}>Tu identificador de acceso:</p>
-                            <p style={{background:'var(--bg-body)', padding:'12px', borderRadius:'9px', color:'var(--primary)', fontFamily:'monospace', fontWeight:'bold', fontSize:'15px'}}>{user.username}</p>
-                            <button className="btn btn-g btn-sm" style={{marginBottom:'12px', fontSize:'15px'}}
-                                onClick={()=>{
-                                    navigator.clipboard.writeText(user.username)
-                                        .then(()=>alert("Identificador copiado al portapapeles."))
-                                        .catch(()=>alert("Tu identificador es: " + user.username));
-                                }}>
-                                📋 Copiar Identificador
-                            </button>
-                            <p style={{fontSize:'13px', color:'var(--muted)'}}>Guarda este codigo para entrar desde cualquier dispositivo.</p>
-                            <button className="btn btn-d" style={{marginTop:'14px'}}
-                                onClick={()=>{ if(confirm("¿Seguro que deseas cerrar sesion?")) salir(); }}>
-                                Cerrar Sesion
-                            </button>
-                        </div>
-                    </div>
-                )}
-
-                {/* PASOS */}
-                {tab === "pasos" && (
-                    <div>
-                        <h3 style={{color:'var(--text)'}}>Los 12 Pasos</h3>
-                        <div className="paso-prog">Progreso: {pasosComp.length} / 12</div>
-                        <div className="progress-bg" style={{marginBottom:'18px'}}>
-                            <div className="progress-fill" style={{width: `${(pasosComp.length/12)*100}%`}}></div>
-                        </div>
-
-                        {PASOS_AA.map((txt, i) => {
-                            const num = i + 1;
-                            const esComp = pasosComp.includes(num);
-                            const esAct = pasoActual === num;
-                            let rCls = "paso-row";
-                            if (esComp) rCls += " p-done";
-                            else if (esAct) rCls += " p-actual";
-
-                            return (
-                                <div key={num} className={rCls}>
-                                    <div className="paso-n">{num}</div>
-                                    <div className="paso-txt">{txt}</div>
-                                    <div className="paso-btns">
-                                        <button className={"paso-ico " + (esComp?"on":"")} title="Completado" onClick={()=>toggleComp(num)}>✅</button>
-                                        <button className={"paso-ico " + (esAct?"on":"")} title="Trabajando actual" onClick={()=>setActual(num)}>📌</button>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                )}
-
-                {/* BIBLIOTECA */}
-                {tab === "biblioteca" && (
-                    <div>
-                        <h3 style={{color:'var(--text)'}}>Biblioteca de Recursos</h3>
-                        
-                        <div className="card">
-                            <h4 style={{margin:'0 0 12px', color:'var(--primary)'}}>Subir Nuevo Recurso</h4>
-                            <form onSubmit={subirBib}>
-                                <input type="text" className="field" placeholder="Título del documento / folleto" value={libTit} onChange={e=>setLibTit(e.target.value)} />
-                                <select className="field" value={libTipo} onChange={e=>setLibTipo(e.target.value)}>
-                                    <option value="Documento">📄 Documento / PDF</option>
-                                    <option value="Audio">🎵 Audio / Grabación</option>
-                                    <option value="Libro">📘 Libro completo</option>
-                                </select>
-
-                                <div className="modo-toggle">
-                                    <div className={"modo-btn " + (modoLib==="url"?"on":"")} onClick={()=>setModoLib("url")}>Enlace URL</div>
-                                    <div className={"modo-btn " + (modoLib==="archivo"?"on":"")} onClick={()=>setModoLib("archivo")}>Subir Archivo</div>
-                                </div>
-
-                                {modoLib === "url" ? (
-                                    <input type="url" className="field" placeholder="https://enlace-al-recurso.com/archivo.pdf" value={libUrl} onChange={e=>setLibUrl(e.target.value)} />
-                                ) : (
-                                    <div style={{marginBottom:'16px'}}>
-                                        <input type="file" accept="*/*" onChange={e=>setLibFile(e.target.files[0])} style={{color:'var(--text)', fontSize:'15px'}} />
-                                        <p style={{fontSize:'12px', color:'var(--muted)', margin:'6px 0 0'}}>Máximo 10MB. Archivos más grandes súbelos a Google Drive o Dropbox y pega el enlace URL.</p>
-                                    </div>
-                                )}
-
-                                {subiendo && (
-                                    <div>
-                                        <div className="up-bar-bg"><div className="up-bar-fill" style={{width:`${upPct}%`}}></div></div>
-                                        <span style={{fontSize:'13px', color:'var(--warn)', display:'block', marginBottom:'10px'}}>Subiendo recurso... {upPct}%</span>
-                                    </div>
-                                )}
-
-                                <button type="submit" className="btn btn-s" disabled={subiendo}>{subiendo ? "Subiendo..." : "Publicar Recurso"}</button>
-                            </form>
-                        </div>
-
-                        {biblioteca.length === 0 ? (
-                            <p style={{color:'var(--muted)', textAlign:'center'}}>No hay lecturas disponibles todavía.</p>
-                        ) : (
-                            biblioteca.map(b => (
-                                <div key={b.id} className="bib-item">
-                                    <div>
-                                        <span style={{fontSize:'13px', color:'var(--accent)', fontWeight:'bold', display:'block'}}>{b.tipo.toUpperCase()}</span>
-                                        <span style={{fontWeight:'bold', color:'var(--text)'}}>{b.titulo}</span>
-                                    </div>
-                                    <a href={b.link} target="_blank" rel="noreferrer" className="btn btn-sm" style={{textDecoration:'none'}}>Leer / Ver</a>
-                                </div>
-                            ))
-                        )}
-                    </div>
-                )}
-
-                {/* EVENTOS */}
-                {tab === "eventos" && (
-                    <div>
-                        <h3 style={{color:'var(--text)'}}>Próximos Eventos y Reuniones</h3>
-                        
-                        <div className="card">
-                            <h4 style={{margin:'0 0 12px', color:'var(--primary)'}}>Publicar Evento</h4>
-                            <form onSubmit={crearEv}>
-                                <input type="text" className="field" placeholder="Nombre de la Reunión / Instancia" value={evTit} onChange={e=>setEvTit(e.target.value)} />
-                                <div style={{display:'flex', gap:'10px'}}>
-                                    <input type="date" className="field" value={evFecha} onChange={e=>setEvFecha(e.target.value)} />
-                                    <input type="time" className={"field"+(errHora?" err":"")} value={evHora} onChange={e=>validHora(e.target.value)} />
-                                </div>
-                                {errHora && <span className="errmsg">⚠️ {errHora}</span>}
-                                <input type="text" className="field" placeholder="Dirección física o enlace virtual" value={evLugar} onChange={e=>setEvLugar(e.target.value)} />
-                                <input type="text" className="field" placeholder="Nota adicional (Ej: Traer colación, aniversario, etc.)" value={evNota} onChange={e=>setEvNota(e.target.value)} />
-                                <button type="submit" className="btn btn-s">Publicar Evento</button>
-                            </form>
-                        </div>
-
-                        {eventos.length === 0 ? (
-                            <p style={{color:'var(--muted)', textAlign:'center'}}>No hay eventos programados en esta sede.</p>
-                        ) : (
-                            eventos.map(ev => (
-                                <div key={ev.id} className="ev-card">
-                                    <div className="ev-title">{ev.titulo}</div>
-                                    <div style={{fontSize:'15px', color:'var(--muted)', marginBottom:'6px'}}>
-                                        📅 {ev.fecha}  |  ⏰ {ev.hora} hrs
-                                    </div>
-                                    <div style={{fontSize:'15px', color:'var(--text)', marginBottom:'8px'}}>
-                                        📍 <a href={mapsUrl(ev.lugar)} target="_blank" rel="noreferrer" style={{color:'var(--primary)', fontWeight:'bold'}}>{ev.lugar}</a>
-                                    </div>
-                                    {ev.nota && <div style={{fontSize:'14px', background:'var(--bg-body)', padding:'8px 12px', borderRadius:'8px', color:'var(--warn)'}}>💡 {ev.nota}</div>}
-                                    <button className="btn btn-d btn-sm" style={{marginTop:'10px', padding:'5px 10px', fontSize:'12px'}} onClick={()=>elimEv(ev.id)}>Eliminar</button>
-                                </div>
-                            ))
-                        )}
-                    </div>
-                )}
-
-                {/* DIRECTORIO */}
-                {tab === "directorio" && (
-                    <div>
-                        <h3 style={{color:'var(--text)'}}>Directorio Inter-Sedes</h3>
-                        <p style={{fontSize:'14px', color:'var(--muted)', marginBottom:'16px'}}>
-                            Toca 💬 Chat para abrir WhatsApp directamente. Los administradores aparecen primero con fondo morado.
-                        </p>
-                        {dirAgrupado.map(g=>{
-                            const conTel = [...g.admins, ...g.miembros].filter(m => m.telefonos && m.telefonos.length > 0 && m.telefonos[0].trim() !== "");
-                            return (
-                                <div key={g.id} className="dir-sede">
-                                    <div className="dir-sede-titulo">📍 {g.nombre} <span style={{fontWeight:'normal', fontSize:'13px'}}>({conTel.length} contacto{conTel.length!==1?'s':''})</span></div>
-                                    {conTel.length === 0
-                                        ? <p style={{color:'var(--muted)', fontSize:'14px', paddingLeft:'10px', paddingBottom:'8px'}}>Ningún miembro ha registrado su telefono aún.</p>
-                                        : conTel.map((m, idx) => {
-                                            const esAdm = m.rol === 'admin';
-                                            const tel = m.telefonos[0];
-                                            const waLink = "https://wa.me/" + tel.replace(/[^0-9]/g, "");
-                                            return (
-                                                <div key={idx} className={"dir-contacto" + (esAdm ? " admin-c" : "")}>
-                                                    <div>
-                                                        <div style={{display:'flex', alignItems:'center', flexWrap:'wrap', gap:'4px'}}>
-                                                            <span style={{fontWeight:'bold', fontSize:'17px', color:'var(--text)'}}>{m.nombre_real}</span>
-                                                            {esAdm && <span className="badge-admin">⭐ Administrador</span>}
-                                                        </div>
-                                                        <div style={{fontSize:'13px', color: esAdm ? '#c4b5fd' : 'var(--accent)', marginTop:'3px'}}>
-                                                            📞 {tel}
-                                                        </div>
-                                                    </div>
-                                                    <a href={waLink} target="_blank" rel="noreferrer"
-                                                        className={"btn btn-sm " + (esAdm ? "btn-w" : "btn-s")}
-                                                        style={{textDecoration:'none', display:'inline-flex', alignItems:'center', gap:'4px'}}>
-                                                        💬 Chat
-                                                    </a>
-                                                </div>
-                                            );
-                                        })
-                                    }
-                                </div>
-                            );
-                        })}
-                    </div>
-                )}
-
-                {/* PANEL ADMIN */}
-                {tab === "admin" && user.rol === "admin" && (
-                    <div>
-                        <h3 style={{color:'var(--text)'}}>Panel de Administración Sede</h3>
-                        
-                        <div className="card" style={{borderColor:'var(--warn)'}}>
-                            <h4 style={{margin:'0 0 10px', color:'var(--warn)'}}>Solicitudes Pendientes de Acceso ({solicitudes.length})</h4>
-                            {solicitudes.length === 0 ? (
-                                <p style={{color:'var(--muted)', fontSize:'15px', margin:0}}>No hay solicitudes esperando aprobación por ahora.</p>
-                            ) : (
-                                solicitudes.map(s => (
-                                    <div key={s.username} className="sol-box">
-                                        <div style={{textAlign:'left', fontSize:'15px'}}>
-                                            <strong>Alias:</strong> {s.nombre_real}<br/>
-                                            <strong>ID Cuenta:</strong> <span style={{fontFamily:'monospace'}}>{s.username}</span><br/>
-                                            <strong>Teléfono:</strong> {(s.telefonos&&s.telefonos[0])||"No ingresado"}
-                                        </div>
-                                        <div className="sol-acc">
-                                            <button className="btn-xs btn-s" onClick={()=>gestionarSol(s.username, true)}>Autorizar Acceso</button>
-                                            <button className="btn-xs btn-d" onClick={()=>gestionarSol(s.username, false)}>Rechazar</button>
-                                        </div>
-                                    </div>
-                                ))
-                            )}
-                        </div>
-
-                        <div className="card">
-                            <h4 style={{margin:'0 0 12px', color:'var(--text)'}}>Miembros Registrados en mi Sede</h4>
-                            {miembrosSede.length === 0 ? (
-                                <p style={{color:'var(--muted)', fontSize:'15px'}}>No hay más miembros en esta sede.</p>
-                            ) : (
-                                miembrosSede.map(m => (
-                                    <div key={m.username} className="miembro-row">
-                                        <div>
-                                            <div style={{fontWeight:'bold', color:'var(--text)', fontSize:'16px'}}>
-                                                {m.nombre_real} {m.rol==='admin' && <span style={{color:'#a78bfa', fontSize:'12px'}}>(Admin)</span>}
-                                            </div>
-                                            <div style={{fontSize:'12px', color:'var(--muted)'}}>ID: {m.username}</div>
-                                        </div>
-                                        {m.username !== user.username && (
-                                            <button className="btn btn-d btn-sm" style={{padding:'4px 8px', fontSize:'12px'}} onClick={()=>elimMiembro(m.username, m.nombre_real)}>Eliminar</button>
-                                        )}
-                                    </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            <div className="navbar">
-                <div className={"nav-i "+(tab==="inicio"?"on":"")} onClick={()=>setTab("inicio")}>
-                    <div className="nav-ico">🏠</div>Inicio
-                </div>
-                <div className={"nav-i "+(tab==="pasos"?"on":"")} onClick={()=>setTab("pasos")}>
-                    <div className="nav-ico">📋</div>Pasos
-                </div>
-                <div className={"nav-i "+(tab==="biblioteca"?"on":"")} onClick={()=>setTab("biblioteca")}>
-                    <div className="nav-ico">📚</div>Biblioteca
-                </div>
-                <div className={"nav-i "+(tab==="eventos"?"on":"")} onClick={()=>setTab("eventos")}>
-                    <div className="nav-ico">📅</div>Eventos
-                </div>
-                <div className={"nav-i "+(tab==="directorio"?"on":"")} onClick={()=>setTab("directorio")}>
-                    <div className="nav-ico">📇</div>Directorio
-                </div>
-                {user.rol === "admin" && (
-                    <div className={"nav-i "+(tab==="admin"?"on":"")} onClick={()=>setTab("admin")}>
-                        <div className="nav-ico">⚙️</div>Admin
-                        {solicitudes.length > 0 && <span className="dot"></span>}
-                    </div>
-                )}
-            </div>
-
-            {aliento && (
-                <div className="overlay">
-                    <div className="popup">
-                        <div style={{fontSize:'52px'}}>❤️</div>
-                        <h2 style={{color:'var(--text)'}}>Un paso a la vez</h2>
-                        <p style={{color:'var(--muted)', fontSize:'16px', lineHeight:'1.4'}}>{msgDia}</p>
-                        {lectura && (
-                            <div style={{marginTop:'14px', padding:'10px', background:'var(--bg-body)', borderRadius:'10px', border:'1px dashed var(--accent)'}}>
-                                <span style={{fontSize:'12px', color:'var(--accent)', fontWeight:'bold', display:'block'}}>LECTURA RECOMENDADA:</span>
-                                <span style={{fontSize:'14px', color:'var(--text)', fontWeight:'bold'}}>{lectura}</span>
-                            </div>
-                        )}
-                        <button className="btn btn-s btn-sm" style={{marginTop:'18px', width:'100%'}} onClick={()=>{setAliento(false); setLectura("");}}>Entendido</button>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-}
 </script>
 </body>
 </html>
