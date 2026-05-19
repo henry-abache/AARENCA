@@ -1,3 +1,4 @@
+javascript
 const CACHE_NAME = 'nueva-vida-aa-v2';
 const urlsToCache = [
   './',
