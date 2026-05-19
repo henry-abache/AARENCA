@@ -110,6 +110,7 @@
       width: 100%; display: block; text-align: center;
       text-decoration: none; transition: opacity 0.2s;
     }
+    .btn:disable { opacity: 0.5; cursor: not-allowed; }
     .btn:active { opacity: 0.8; }
     .btn-danger { background-color: var(--danger); }
     .btn-success { background-color: var(--accent); }
@@ -126,15 +127,23 @@
     .progress-label { display: flex; justify-content: space-between; font-weight: bold; font-size: 19px; margin-bottom: 8px; }
     .progress-bar-bg { background-color: var(--bg-main); border-radius: 15px; height: 30px; width: 100%; overflow: hidden; border: 1px solid var(--border); }
     .progress-bar-fill { background: linear-gradient(90deg, #16a34a, #4ade80); height: 100%; transition: width 0.5s ease; }
+    
+    /* Mejoras visuales para los Pasos de AA */
     .paso-row {
-      display: flex; align-items: center; padding: 15px;
+      display: flex; flex-direction: column; padding: 16px;
       background: var(--input-bg); border-radius: 14px;
-      margin-bottom: 10px; cursor: pointer;
+      margin-bottom: 12px; cursor: pointer;
       border: 2px solid var(--border);
+      transition: all 0.3s ease;
     }
-    .paso-row.completado { border-color: var(--warning); background: var(--card); }
-    .paso-numero { font-size: 24px; font-weight: bold; margin-right: 14px; min-width: 32px; color: var(--text-muted); }
-    .paso-row.completado .paso-numero { color: var(--warning); }
+    .paso-row.completado { border-color: var(--accent); background: var(--card); opacity: 0.9; }
+    .paso-row.trabajando { border-color: var(--warning); background: var(--card); box-shadow: 0 0 10px rgba(217,119,6,0.3); }
+    .paso-header { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 4px;}
+    .paso-numero { font-size: 24px; font-weight: bold; margin-right: 14px; color: var(--text-muted); }
+    .paso-row.completado .paso-numero { color: var(--accent); }
+    .paso-row.trabajando .paso-numero { color: var(--warning); }
+    .badge-trabajando { font-size: 11px; background: var(--warning); color: white; padding: 2px 8px; border-radius: 10px; font-weight: bold; }
+    
     .popup-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
       background: var(--overlay);
@@ -143,7 +152,7 @@
     }
     .popup-card {
       background: var(--card); border-radius: 24px; padding: 28px;
-      text-align: center; max-width: 420px; width: 100%;
+      max-width: 420px; width: 100%;
       border: 3px solid var(--popup-border);
     }
     .biblioteca-item {
@@ -224,17 +233,10 @@
       font-size: 15px; font-weight: bold;
       text-decoration: none;
     }
-    .alert-banner-admin {
-      background: #78350f; border: 2px solid var(--warning);
-      border-radius: 16px; padding: 16px; margin-bottom: 16px;
-      color: white; text-align: left;
+    .motivacion-banner {
+      background: linear-gradient(135deg, #1e3a8a, #0f172a);
+      border: 2px solid var(--primary); text-align: center;
     }
-    .chip {
-      display: inline-flex; align-items: center; background: var(--input-bg);
-      border: 1px solid var(--border); padding: 6px 12px; border-radius: 20px;
-      font-size: 15px; margin: 4px; gap: 8px;
-    }
-    .chip-remove { cursor: pointer; color: var(--danger); font-weight: bold; font-size: 18px; }
   </style>
 </head>
 <body>
@@ -250,7 +252,17 @@ const GRUPOS = [
   { id: "grupo-esperanza", nombre: "GRUPO ESPERANZA" }
 ];
 
-const ADICCIONES_DISPONIBLES_DEFAULT = ["Alcohol", "Marihuana", "Cocaína", "Tabaco", "Juego Compulsivo"];
+const ADICCIONES_DISPONIBLES = ["Alcohol", "Marihuana", "Cocaína", "Tabaco", "Juego Compulsivo", "Fármacos"];
+
+const FRASES_MOTIVACIONALES = [
+  "Solo por hoy mantendré mi mente clara y mi espíritu fuerte.",
+  "La recuperación no es una carrera, es un día a la vez.",
+  "El primer paso para cambiar tu futuro es aceptar tu presente.",
+  "Tu pasado no define tu destino. Cada amanecer es una nueva oportunidad.",
+  "No estás solo en esta batalla. Juntos somos más fuertes.",
+  "Valiente no es el que no cae, sino el que se levanta con más fuerza.",
+  "El cambio empieza cuando decides que el dolor de seguir igual es mayor que el miedo a cambiar."
+];
 
 const PASOS_AA = [
   "Admitimos que éramos impotentes ante el alcohol y nuestras vidas se habían vuelto ingobernables.",
@@ -317,6 +329,13 @@ function App() {
 
   const [mostrarAliento, setMostrarAliento] = React.useState(false);
   const [lecturaRecomendada, setLecturaRecomendada] = React.useState("");
+  const [fraseDiaria, setFraseDiaria] = React.useState("");
+
+  // Modales y Edición
+  const [mostrarEditarPerfil, setMostrarEditarPerfil] = React.useState(false);
+  const [nuevoTelefonoEdit, setNuevoTelefonoEdit] = React.useState("");
+  const [checksEdit, setChecksEdit] = React.useState({});
+  const [fechasEdit, setFechasEdit] = React.useState({});
 
   const [nombre, setNombre] = React.useState("");
   const [sede, setSede] = React.useState("");
@@ -340,9 +359,9 @@ function App() {
   const [solicitudesPendientes, setSolicitudesPendientes] = React.useState([]);
   const [solicitudesRechazadas, setSolicitudesRechazadas] = React.useState([]);
   const [mostrarRechazados, setMostrarRechazados] = React.useState(false);
+  const [listaMiembrosSede, setListaMiembrosSede] = React.useState([]);
 
   const [directorio, setDirectorio] = React.useState([]);
-  const [usuariosDeMiSede, setUsuariosDeMiSede] = React.useState([]);
 
   const [eventos, setEventos] = React.useState([]);
   const [evTitulo, setEvTitulo] = React.useState("");
@@ -358,19 +377,15 @@ function App() {
   const [mostrarNotifs, setMostrarNotifs] = React.useState(false);
   const [notifNuevas, setNotifNuevas] = React.useState(0);
 
-  // Nuevos estados para Adicciones Dinámicas y Gestión de Perfil
-  const [adiccionesLista, setAdiccionesLista] = React.useState(ADICCIONES_DISPONIBLES_DEFAULT);
-  const [nuevoTelefonoPerfil, setNuevoTelefonoPerfil] = React.useState("");
-  const [nuevaAdiccionSugerida, setNuevaAdiccionSugerida] = React.useState("");
-  const [adiccionesSugeridasPendientes, setAdiccionesSugeridasPendientes] = React.useState([]);
-  const [seleccionAñadirAdiccion, setSeleccionAñadirAdiccion] = React.useState("");
-
   React.useEffect(() => {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js')
         .then(() => console.log("SW activo"))
         .catch(e => console.error("SW error", e));
     }
+    // Seleccionar una frase diaria basada en el día actual
+    const index = new Date().getDate() % FRASES_MOTIVACIONALES.length;
+    setFraseDiaria(FRASES_MOTIVACIONALES[index]);
   }, []);
 
   React.useEffect(() => {
@@ -391,7 +406,7 @@ function App() {
       setMisAdicciones(data.adicciones || {});
       setPasoActual(data.paso_actual || 0);
       setPasosCompletados(data.pasos_completados || []);
-      setNuevoTelefonoPerfil(data.telefono || "");
+      setNuevoTelefonoEdit(data.telefono || "");
     } else {
       localStorage.removeItem("nuevavida_session");
     }
@@ -405,8 +420,7 @@ function App() {
       grupoNombre: data.grupo_nombre,
       rol: data.rol,
       estado: data.estado,
-      telefono: data.telefono || "",
-      estado_admin: data.estado_admin || "ninguno"
+      telefono: data.telefono || ""
     };
   }
 
@@ -425,17 +439,7 @@ function App() {
         setMisAdicciones(uData.adicciones || {});
         setPasoActual(uData.paso_actual || 0);
         setPasosCompletados(uData.pasos_completados || []);
-        setUser(prev => ({ ...prev, estado: uData.estado, rol: uData.rol, estado_admin: uData.estado_admin || "ninguno" }));
-      }
-
-      // Cargar Catálogo de Adicciones Aprobadas
-      const { data: aData } = await supabase.from('adicciones').select('nombre').eq('aprobado', true);
-      if (aData && aData.length > 0) {
-        const nombresCargados = aData.map(a => a.nombre);
-        const unificadas = Array.from(new Set([...ADICCIONES_DISPONIBLES_DEFAULT, ...nombresCargados]));
-        setAdiccionesLista(unificadas);
-      } else {
-        setAdiccionesLista(ADICCIONES_DISPONIBLES_DEFAULT);
+        setUser(prev => ({ ...prev, estado: uData.estado, rol: uData.rol }));
       }
 
       const { data: bData } = await supabase.from('biblioteca').select('*').eq('grupo_id', user.grupoId).order('id', { ascending: false });
@@ -455,7 +459,7 @@ function App() {
       }
 
       const { data: dData } = await supabase.from('usuarios')
-        .select('username, nombre_real, rol, telefono, grupo_id, grupo_nombre, estado_admin')
+        .select('nombre_real, rol, telefono, grupo_id, grupo_nombre')
         .eq('estado', 'aprobado')
         .neq('telefono', '')
         .order('nombre_real', { ascending: true });
@@ -470,31 +474,11 @@ function App() {
           .eq('grupo_id', user.grupoId).eq('estado', 'rechazado').order('nombre_real');
         if (rech) setSolicitudesRechazadas(rech);
 
-        // Listar todos los usuarios aprobados de la misma sede para poder promoverlos
-        const { data: sMiembros } = await supabase.from('usuarios').select('*')
+        const { data: miembros } = await supabase.from('usuarios').select('*')
           .eq('grupo_id', user.grupoId).eq('estado', 'aprobado').order('nombre_real');
-        if (sMiembros) setUsuariosDeMiSede(sMiembros);
-
-        // Listar adicciones sugeridas pendientes de aprobación para esta sede
-        const { data: adPend } = await supabase.from('adicciones').select('*')
-          .eq('aprobado', false).eq('sede_id', user.grupoId).order('nombre');
-        if (adPend) setAdiccionesSugeridasPendientes(adPend);
+        if (miembros) setListaMiembrosSede(miembros);
       }
     } catch(e) { console.error("Error cargando datos", e); }
-  }
-
-  // Función Nativa y alternativa para Compartir Aplicación
-  function compartirAplicacion() {
-    if (navigator.share) {
-      navigator.share({
-        title: 'Nueva Vida AA',
-        text: 'Te comparto la aplicación de apoyo y seguimiento de Alcohólicos Anónimos.',
-        url: window.location.origin + window.location.pathname
-      }).catch(err => console.log("Error al compartir", err));
-    } else {
-      navigator.clipboard.writeText(window.location.origin + window.location.pathname);
-      alert("🔗 ¡Enlace de la aplicación copiado al portapapeles! Ya puedes enviárselo a quien quieras por WhatsApp u otra vía.");
-    }
   }
 
   async function registrarCuenta(e) {
@@ -506,7 +490,7 @@ function App() {
     const grupoSel = GRUPOS.find(g => g.id === sede);
     const uid = nombre.trim().replace(/\s+/g, "_") + "_" + grupoSel.id;
     const adiccionesConfig = {};
-    adiccionesLista.forEach(ad => {
+    ADICCIONES_DISPONIBLES.forEach(ad => {
       if (checks[ad]) adiccionesConfig[ad] = fechas[ad] || new Date().toISOString().split('T')[0];
     });
     try {
@@ -517,7 +501,6 @@ function App() {
         setMisAdicciones(existente.adicciones || {});
         setPasoActual(existente.paso_actual || 0);
         setPasosCompletados(existente.pasos_completados || []);
-        setNuevoTelefonoPerfil(existente.telefono || "");
         localStorage.setItem("nuevavida_session", JSON.stringify(u));
         return;
       }
@@ -531,17 +514,15 @@ function App() {
         telefono: telefono.trim(),
         adicciones: adiccionesConfig,
         paso_actual: 0,
-        pasos_completados: [],
-        estado_admin: 'ninguno'
+        pasos_completados: []
       };
       const { error } = await supabase.from('usuarios').insert([nuevoUsr]);
       if (error) {
         alert("Error al registrar: " + error.message);
       } else {
-        const u = { username: uid, nombreReal: nombre.trim(), grupoId: sede, grupoNombre: grupoSel.nombre, rol, estado: nuevoUsr.estado, telefono: telefono.trim(), estado_admin: 'ninguno' };
+        const u = { username: uid, nombreReal: nombre.trim(), grupoId: sede, grupoNombre: grupoSel.nombre, rol, estado: nuevoUsr.estado, telefono: telefono.trim() };
         setUser(u);
         setMisAdicciones(adiccionesConfig);
-        setNuevoTelefonoPerfil(telefono.trim());
         localStorage.setItem("nuevavida_session", JSON.stringify(u));
       }
     } catch(err) { alert("Error de conexión: " + err.message); }
@@ -557,10 +538,49 @@ function App() {
       setMisAdicciones(data.adicciones || {});
       setPasoActual(data.paso_actual || 0);
       setPasosCompletados(data.pasos_completados || []);
-      setNuevoTelefonoPerfil(data.telefono || "");
       localStorage.setItem("nuevavida_session", JSON.stringify(u));
     } else {
       alert("Identificador no encontrado. Verifique que esté escrito exactamente igual.");
+    }
+  }
+
+  function abrirEditarPerfil() {
+    // Inicializar el estado de edición con los datos actuales
+    setNuevoTelefonoEdit(user.telefono || "");
+    const initChecks = {};
+    const initFechas = {};
+    ADICCIONES_DISPONIBLES.forEach(ad => {
+      if (misAdicciones[ad]) {
+        initChecks[ad] = true;
+        initFechas[ad] = misAdicciones[ad];
+      }
+    });
+    setChecksEdit(initChecks);
+    setFechasEdit(initFechas);
+    setMostrarEditarPerfil(true);
+  }
+
+  async function guardarPerfil() {
+    const adiccionesConfig = {};
+    ADICCIONES_DISPONIBLES.forEach(ad => {
+      if (checksEdit[ad]) {
+        adiccionesConfig[ad] = fechasEdit[ad] || new Date().toISOString().split('T')[0];
+      }
+    });
+
+    const { error } = await supabase.from('usuarios').update({
+      telefono: nuevoTelefonoEdit.trim(),
+      adicciones: adiccionesConfig
+    }).eq('username', user.username);
+
+    if (!error) {
+      setUser(prev => ({ ...prev, telefono: nuevoTelefonoEdit.trim() }));
+      setMisAdicciones(adiccionesConfig);
+      setMostrarEditarPerfil(false);
+      alert("✅ Perfil actualizado exitosamente.");
+      cargarDatos();
+    } else {
+      alert("Error al actualizar perfil: " + error.message);
     }
   }
 
@@ -570,113 +590,20 @@ function App() {
     setActiveTab("inicio");
   }
 
-  // Funciones de actualización de perfil de usuario común
-  async function actualizarTelefonoPerfil() {
-    if (!nuevoTelefonoPerfil.trim()) return alert("Por favor ingresa un número válido.");
-    const { error } = await supabase.from('usuarios').update({ telefono: nuevoTelefonoPerfil.trim() }).eq('username', user.username);
-    if (!error) {
-      setUser(prev => ({ ...prev, telefono: nuevoTelefonoPerfil.trim() }));
-      alert("✅ Teléfono actualizado correctamente.");
-      cargarDatos();
-    } else {
-      alert("Error al guardar teléfono: " + error.message);
-    }
-  }
-
-  async function añadirAdiccionPerfil() {
-    if (!seleccionAñadirAdiccion) return;
-    if (misAdicciones[seleccionAñadirAdiccion]) return alert("Ya estás haciendo seguimiento a esta adicción.");
-    const hoyFecha = new Date().toISOString().split('T')[0];
-    const nuevasAdicciones = { ...misAdicciones, [seleccionAñadirAdiccion]: hoyFecha };
-    const { error } = await supabase.from('usuarios').update({ adicciones: nuevasAdicciones }).eq('username', user.username);
-    if (!error) {
-      setMisAdicciones(nuevasAdicciones);
-      setSeleccionAñadirAdiccion("");
-      alert(`✅ Se agregó "${seleccionAñadirAdiccion}" a tu panel.`);
-      cargarDatos();
-    } else {
-      alert("Error: " + error.message);
-    }
-  }
-
-  async function quitarAdiccionPerfil(adiccionKey) {
-    if (!confirm(`¿Dejar de hacer seguimiento a "${adiccionKey}"?`)) return;
-    const nuevasAdicciones = { ...misAdicciones };
-    delete nuevasAdicciones[adiccionKey];
-    const { error } = await supabase.from('usuarios').update({ adicciones: nuevasAdicciones }).eq('username', user.username);
-    if (!error) {
-      setMisAdicciones(nuevasAdicciones);
-      cargarDatos();
-    } else {
-      alert("Error: " + error.message);
-    }
-  }
-
-  async function sugerirNuevaAdiccion() {
-    if (!nuevaAdiccionSugerida.trim()) return alert("Escribe el nombre de la adicción.");
-    const nombreNormalizado = nuevaAdiccionSugerida.trim();
-    const { error } = await supabase.from('adicciones').insert([{
-      nombre: nombreNormalizado,
-      aprobado: false,
-      sede_id: user.grupoId,
-      sugerido_por: user.username
-    }]);
-    if (!error) {
-      setNuevaAdiccionSugerida("");
-      alert("📩 Tu sugerencia fue enviada al administrador de tu sede. Aparecerá en la app una vez sea aprobada.");
-      cargarDatos();
-    } else {
-      alert("Error al enviar sugerencia: " + error.message);
-    }
-  }
-
-  // Funciones de Invitación y Aceptación de Cargos de Administración
-  async function proponerAdministrador(usernameDest) {
-    if (!confirm("¿Deseas proponer a este usuario como Administrador de la sede? Deberá aceptar la invitación en su sesión.")) return;
-    const { error } = await supabase.from('usuarios').update({ estado_admin: 'invitado' }).eq('username', usernameDest);
-    if (!error) {
-      alert("✉️ Invitación enviada al usuario.");
-      cargarDatos();
-    } else {
-      alert("Error al invitar: " + error.message);
-    }
-  }
-
-  async function responderInvitacionAdmin(aceptar) {
-    const nuevoRol = aceptar ? 'admin' : user.rol;
-    const nuevoEstadoAdmin = aceptar ? 'activo' : 'ninguno';
-    const { error } = await supabase.from('usuarios').update({
-      rol: nuevoRol,
-      estado_admin: nuevoEstadoAdmin
-    }).eq('username', user.username);
-
-    if (!error) {
-      setUser(prev => ({ ...prev, rol: nuevoRol, estado_admin: nuevoEstadoAdmin }));
-      alert(aceptar ? "🎉 ¡Felicidades! Ahora eres Administrador de la sede." : "Invitación rechazada.");
-      cargarDatos();
-    } else {
-      alert("Error: " + error.message);
-    }
-  }
-
-  // Funciones de administración de adicciones
-  async function aprobarAdiccionSugerida(id, nombreAd) {
-    const { error } = await supabase.from('adicciones').update({ aprobado: true }).eq('id', id);
-    if (!error) {
-      alert(`✅ Adicción "${nombreAd}" aprobada globalmente.`);
-      cargarDatos();
-    } else {
-      alert("Error: " + error.message);
-    }
-  }
-
   async function aprobarUsuario(username) {
     const { error } = await supabase.from('usuarios').update({ estado: 'aprobado' }).eq('username', username);
     if (!error) { alert("✅ Usuario aprobado."); cargarDatos(); }
     else alert("Error: " + error.message);
   }
 
-  async function  rechazarUsuario(username, nombre_real) {
+  async function promoverAAdmin(username, nombreReal) {
+    if (!confirm(`¿Estás seguro de que deseas promover a ${nombreReal} como administrador de esta sede?`)) return;
+    const { error } = await supabase.from('usuarios').update({ rol: 'admin' }).eq('username', username);
+    if (!error) { alert(`✅ ${nombreReal} ahora es Administrador.`); cargarDatos(); }
+    else alert("Error: " + error.message);
+  }
+
+  async function FuelRechazarUsuario(username, nombre_real) {
     if (!confirm(`¿Rechazar la solicitud de ${nombre_real}?`)) return;
     const { error } = await supabase.from('usuarios').update({ estado: 'rechazado' }).eq('username', username);
     if (!error) { alert("❌ Solicitud rechazada."); cargarDatos(); }
@@ -696,21 +623,23 @@ function App() {
   }
 
   async function cambiarPaso(n) {
-    const yaCompletado = pasosCompletados.includes(n);
-    let nuevosPasos;
-    if (yaCompletado) {
-      nuevosPasos = pasosCompletados.filter(p => p < n);
-    } else {
-      nuevosPasos = Array.from({length: n}, (_, i) => i + 1);
+    // Si se hace click en el paso n, significa que se está "Trabajando" en el paso n
+    // Por ende, los pasos del 1 al n-1 están Completados.
+    let nuevosPasos = [];
+    for (let i = 1; i < n; i++) {
+      nuevosPasos.push(i);
     }
-    const nuevoActual = nuevosPasos.length > 0 ? Math.max(...nuevosPasos) : 0;
+    
     const { error } = await supabase.from('usuarios').update({
-      paso_actual: nuevoActual,
+      paso_actual: n,
       pasos_completados: nuevosPasos
     }).eq('username', user.username);
+
     if (!error) {
-      setPasoActual(nuevoActual);
+      setPasoActual(n);
       setPasosCompletados(nuevosPasos);
+    } else {
+      alert("Error al actualizar paso: " + error.message);
     }
   }
 
@@ -813,7 +742,7 @@ function App() {
     GRUPOS.forEach(g => { grupos[g.id] = { nombre: g.nombre, admins: [], miembros: [] }; });
     directorio.forEach(d => {
       if (!grupos[d.grupo_id]) return;
-      if (d.rol === 'admin' || d.estado_admin === 'activo') grupos[d.grupo_id].admins.push(d);
+      if (d.rol === 'admin') grupos[d.grupo_id].admins.push(d);
       else grupos[d.grupo_id].miembros.push(d);
     });
     return grupos;
@@ -856,7 +785,7 @@ function App() {
             </div>
           )}
           <p style={{color: 'var(--warning)', fontWeight: 'bold', marginBottom: '10px', fontSize: '17px'}}>Padecimientos y último consumo:</p>
-          {adiccionesLista.map(ad => (
+          {ADICCIONES_DISPONIBLES.map(ad => (
             <div key={ad} className="checkbox-group">
               <label className="checkbox-label">
                 <input type="checkbox" className="checkbox-custom" checked={!!checks[ad]} onChange={e => setChecks({...checks, [ad]: e.target.checked})} />
@@ -920,6 +849,9 @@ function App() {
   const eventosProximos = eventos.filter(ev => ev.fecha >= hoy);
   const eventosPasados = eventos.filter(ev => ev.fecha < hoy);
 
+  // Progreso gráfico matemático para los 12 pasos
+  const porcentajePasos = pasoActual > 0 ? Math.min(Math.round((pasoActual / 12) * 100), 100) : 0;
+
   return (
     <div className="app-container">
 
@@ -934,32 +866,58 @@ function App() {
         </div>
       )}
 
+      {/* POPUP: EDITAR PERFIL (MODIFICAR TLF Y SELECCIONAR NUEVAS ADICCIONES) */}
+      {mostrarEditarPerfil && (
+        <div className="popup-overlay" onClick={() => setMostrarEditarPerfil(false)}>
+          <div className="popup-card" style={{textAlign: 'left', maxHeight: '85vh', overflowY: 'auto'}} onClick={e => e.stopPropagation()}>
+            <h3 style={{color: 'var(--primary)', marginTop: 0}}>⚙️ Editar Mi Perfil</h3>
+            
+            <label>Número de teléfono</label>
+            <input type="tel" className="input-field" placeholder="Ej: +56912345678" value={nuevoTelefonoEdit} onChange={e => setNuevoTelefonoEdit(e.target.value)} />
+            
+            <p style={{color: 'var(--warning)', fontWeight: 'bold', marginBottom: '10px', fontSize: '16px'}}>Modificar padecimientos / adicciones activos:</p>
+            {ADICCIONES_DISPONIBLES.map(ad => (
+              <div key={ad} className="checkbox-group">
+                <label className="checkbox-label">
+                  <input type="checkbox" className="checkbox-custom" checked={!!checksEdit[ad]} onChange={e => setChecksEdit({...checksEdit, [ad]: e.target.checked})} />
+                  {ad}
+                </label>
+                {checksEdit[ad] && (
+                  <div style={{marginTop: '8px'}}>
+                    <label style={{fontSize: '13px'}}>Fecha de inicio sobriedad (Último consumo):</label>
+                    <input type="date" className="input-field" style={{marginBottom: 0, marginTop: '4px', padding: '10px'}} value={fechasEdit[ad] || ""} onChange={e => setFechasEdit({...fechasEdit, [ad]: e.target.value})} />
+                  </div>
+                )}
+              </div>
+            ))}
+            
+            <div style={{display: 'flex', gap: '10px', marginTop: '18px'}}>
+              <button className="btn btn-success" style={{flex: 1}} onClick={guardarPerfil}>Guardar</button>
+              <button className="btn btn-secondary" style={{flex: 1}} onClick={() => setMostrarEditarPerfil(false)}>Cancelar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* HEADER */}
       <div className="header">
-        <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px'}}>
-          {/* Nombre y sede — izquierda */}
-          <div style={{textAlign: 'left', flex: 1.2}}>
-            <div style={{color: 'var(--accent)', fontWeight: 'bold', fontSize: '16px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{user.nombreReal}</div>
-            <div style={{color: 'var(--text-muted)', fontSize: '13px'}}>{user.grupoNombre}{user.rol === 'admin' && <span className="tag-admin">ADMIN</span>}</div>
+        <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+          <div style={{textAlign: 'left', flex: 1}}>
+            <div style={{color: 'var(--accent)', fontWeight: 'bold', fontSize: '17px'}}>{user.nombreReal}</div>
+            <div style={{color: 'var(--text-muted)', fontSize: '14px'}}>{user.grupoNombre}{user.rol === 'admin' && <span className="tag-admin">ADMIN</span>}</div>
           </div>
-          {/* Botón Compartir App */}
-          <button onClick={compartirAplicacion} className="btn btn-sm btn-success" style={{padding: '8px 12px', fontSize: '14px', borderRadius: '10px'}}>
-            🔗 Compartir
-          </button>
-          {/* Campana — centro */}
-          <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+          <div style={{flex: 1, display: 'flex', justifyContent: 'center'}}>
             <div style={{position: 'relative', cursor: 'pointer'}} onClick={() => setMostrarNotifs(true)}>
-              <span style={{fontSize: '28px'}}>🔔</span>
+              <span style={{fontSize: '32px'}}>🔔</span>
               {notifNuevas > 0 && (
-                <span style={{position: 'absolute', top: '-4px', right: '-4px', background: 'var(--danger)', color: 'white', borderRadius: '50%', width: '18px', height: '18px', fontSize: '11px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                <span style={{position: 'absolute', top: '-4px', right: '-4px', background: 'var(--danger)', color: 'white', borderRadius: '50%', width: '20px', height: '20px', fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
                   {notifNuevas > 9 ? '9+' : notifNuevas}
                 </span>
               )}
             </div>
           </div>
-          {/* Salir — derecha */}
-          <div style={{display: 'flex', justifyContent: 'flex-end'}}>
-            <button onClick={cerrarSesion} style={{background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '14px', textDecoration: 'underline', padding: '6px 2px'}}>Salir</button>
+          <div style={{flex: 1, display: 'flex', justifyContent: 'flex-end'}}>
+            <button onClick={cerrarSesion} style={{background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '15px', textDecoration: 'underline', padding: '8px 4px'}}>Salir</button>
           </div>
         </div>
       </div>
@@ -967,9 +925,9 @@ function App() {
       {/* PANEL NOTIFICACIONES */}
       {mostrarNotifs && (
         <div className="popup-overlay" onClick={() => setMostrarNotifs(false)}>
-          <div className="popup-card" style={{maxWidth: '460px', textAlign: 'left', maxHeight: '80vh', overflow: 'hidden', display: 'flex', flexDirection: 'column'}}
+          <div className="popup-card" style={{maxWidth: '460px', textAlign: 'left', maxHeight: '80vh', overflow: 'hidden', display: 'flex', flexDirection: 'column'} }
             onClick={e => e.stopPropagation()}>
-            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
+            <div style={{display: 'flex', justifycontent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
               <h3 style={{margin: 0}}>🔔 Notificaciones</h3>
               <button className="btn btn-sm btn-secondary" onClick={marcarTodasLeidas} style={{fontSize: '13px', padding: '8px 12px'}}>Marcar todas leídas</button>
             </div>
@@ -994,84 +952,43 @@ function App() {
 
       <div className="main-content">
 
-        {/* BANNER DE INVITACIÓN PARA ASCENSO A ADMINISTRADOR */}
-        {user.estado_admin === 'invitado' && (
-          <div className="alert-banner-admin">
-            <h4 style={{margin: '0 0 6px 0', color: 'var(--badge-pending-text)'}}>✉️ Invitación de Sede</h4>
-            <p style={{fontSize: '16px', margin: '0 0 12px 0'}}>Has sido propuesto para ser nombrado administrador de la sede <strong>{user.grupoNombre}</strong>. ¿Aceptas el cargo?</p>
-            <div style={{display: 'flex', gap: '10px'}}>
-              <button className="btn btn-sm btn-success" onClick={() => responderInvitacionAdmin(true)}>Aceptar</button>
-              <button className="btn btn-sm btn-danger" onClick={() => responderInvitacionAdmin(false)}>Rechazar</button>
-            </div>
-          </div>
-        )}
-
         {/* ===== INICIO ===== */}
         {activeTab === "inicio" && (
           <div>
-            <div className="card" style={{textAlign: 'center', borderColor: 'var(--warning)', padding: '20px'}}>
-              <p style={{fontSize: '30px', fontWeight: 'bold', color: 'var(--accent)', margin: 0}}>¡Solo por Hoy! 🌅</p>
+            {/* Banner Dinámico Frase Diaria */}
+            <div className="card motivacion-banner" style={{padding: '20px', marginBottom: '18px'}}>
+              <p style={{fontSize: '22px', fontWeight: 'bold', color: '#60a5fa', margin: '0 0 6px 0'}}>¡Solo por Hoy! 🌅</p>
+              <p style={{fontSize: '17px', fontStyle: 'italic', margin: 0, color: 'var(--text-main)'}}>"{fraseDiaria}"</p>
             </div>
+
+            {/* Acceso Directo a Edición de Datos */}
+            <div style={{marginBottom: '20px'}}>
+              <button className="btn btn-warning" onClick={abrirEditarPerfil} style={{fontSize: '16px', padding: '12px'}}>
+                ⚙️ Editar Perfil (Modificar Teléfono / Agregar Adicciones)
+              </button>
+            </div>
+
             {eventosProximos.length > 0 && (
               <div className="card" style={{borderColor: 'var(--primary)'}}>
                 <p style={{color: 'var(--primary)', fontWeight: 'bold', margin: '0 0 8px', fontSize: '16px'}}>📅 PRÓXIMO EVENTO</p>
                 <div className="evento-titulo">{eventosProximos[0].titulo}</div>
-                <div className="evento-meta">📆 {formatFecha(eventosProximos[0].fecha)} · ⏰ {formatHora(eventosProximos[0].hora)}</div>
+                <div className="evento-meta">自动 {formatFecha(eventosProximos[0].fecha)} · ⏰ {formatHora(eventosProximos[0].hora)}</div>
                 <div className="evento-meta">📍 {eventosProximos[0].lugar}</div>
                 <button className="btn btn-sm" style={{marginTop: '8px'}} onClick={() => setActiveTab("eventos")}>Ver todos los eventos</button>
               </div>
             )}
             
-            {/* PANEL DE GESTIÓN DE PERFIL PROPIO */}
-            <div className="card" style={{borderColor: 'var(--border)'}}>
-              <h3 style={{margin: '0 0 12px 0', fontSize: '20px', color: 'var(--primary)'}}>⚙️ Mi Perfil</h3>
-              
-              <label>Modificar mi Teléfono</label>
-              <div style={{display: 'flex', gap: '8px', marginBottom: '16px'}}>
-                <input type="tel" className="input-field" style={{margin: 0, flex: 1}} placeholder="Ej: +56912345678" value={nuevoTelefonoPerfil} onChange={e => setNuevoTelefonoPerfil(e.target.value)} />
-                <button className="btn btn-success btn-sm" style={{padding: '0 16px', borderRadius: '14px'}} onClick={actualizarTelefonoPerfil}>Guardar</button>
-              </div>
-
-              <label>Mis adicciones actuales:</label>
-              <div style={{margin: '8px 0 16px'}}>
-                {Object.keys(misAdicciones).length === 0 && <p style={{color: 'var(--text-muted)', fontSize: '15px'}}>Ninguna seleccionada.</p>}
-                {Object.keys(misAdicciones).map(ad => (
-                  <span key={ad} className="chip">
-                    {ad} <span className="chip-remove" onClick={() => quitarAdiccionPerfil(ad)}>×</span>
-                  </span>
-                ))}
-              </div>
-
-              <label>Añadir adicción de la lista oficial</label>
-              <div style={{display: 'flex', gap: '8px', marginBottom: '14px'}}>
-                <select className="select-field" style={{margin: 0, flex: 1}} value={seleccionAñadirAdiccion} onChange={e => setSeleccionAñadirAdiccion(e.target.value)}>
-                  <option value="">— Seleccionar —</option>
-                  {adiccionesLista.filter(a => !misAdicciones[a]).map(a => (
-                    <option key={a} value={a}>{a}</option>
-                  ))}
-                </select>
-                <button className="btn btn-sm" style={{padding: '0 16px', borderRadius: '14px'}} onClick={añadirAdiccionPerfil}>Añadir</button>
-              </div>
-
-              <div style={{background: 'var(--bg-main)', padding: '12px', borderRadius: '14px', marginTop: '14px', border: '1px solid var(--border)'}}>
-                <label style={{fontSize: '14px', fontWeight: 'bold'}}>¿No encuentras tu adicción en la lista?</label>
-                <p style={{fontSize: '13px', color: 'var(--text-muted)', marginBottom: '8px'}}>Sugiérela al administrador para que la apruebe en la sede:</p>
-                <div style={{display: 'flex', gap: '8px'}}>
-                  <input type="text" className="input-field" style={{margin: 0, flex: 1, padding: '10px'}} placeholder="Ej: Redes Sociales" value={nuevaAdiccionSugerida} onChange={e => setNuevaAdiccionSugerida(e.target.value)} />
-                  <button className="btn btn-sm btn-secondary" style={{borderRadius: '12px'}} onClick={sugerirNuevaAdiccion}>Pedir</button>
-                </div>
-              </div>
-            </div>
-
-            <h3 className="section-title">Mis Indicadores</h3>
-            {Object.keys(misAdicciones).length === 0 && <p style={{color: 'var(--text-muted)'}}>No tienes padecimientos registrados en seguimiento activos.</p>}
+            <h3 className="section-title">Mis Indicadores de Sobriedad</h3>
+            {Object.keys(misAdicciones).length === 0 && (
+              <p style={{color: 'var(--text-muted)'}}>No tienes padecimientos registrados. Presiona el botón de arriba "Editar Perfil" para agregar.</p>
+            )}
             {Object.keys(misAdicciones).map(ad => {
               const dias = calcularDias(misAdicciones[ad]);
               const porcentaje = Math.min((dias / 90) * 100, 100);
               return (
                 <div key={ad} className="card">
                   <div className="progress-container">
-                    <div className="progress-label"><span>{ad}</span><span style={{color: 'var(--accent)'}}>{dias} Días</span></div>
+                    <div className="progress-label"><span>{ad}</span><span style={{color: 'var(--accent)'}}>{dias} Días Sobrio</span></div>
                     <div className="progress-bar-bg"><div className="progress-bar-fill" style={{width: (porcentaje || 3) + "%"}}></div></div>
                   </div>
                   <button className="btn btn-danger" onClick={() => registrarRecaida(ad)}>🔄 Reiniciar Contador</button>
@@ -1086,28 +1003,45 @@ function App() {
           <div>
             <h3 className="section-title">Los 12 Pasos de AA</h3>
             <p style={{color: 'var(--text-muted)', fontSize: '15px', marginBottom: '16px'}}>
-              Toca un paso para marcarlo. Los pasos anteriores se marcan automáticamente.
+              Selecciona el paso en el que te encuentras trabajando actualmente. Los pasos anteriores se considerarán completados de forma automática.
             </p>
-            <div style={{background: 'var(--card)', borderRadius: '14px', padding: '14px', marginBottom: '18px', border: '2px solid var(--border)'}}>
-              <div style={{display: 'flex', justifycontent: 'space-between', marginBottom: '8px'}}>
-                <span style={{fontWeight: 'bold'}}>Mi progreso</span>
-                <span style={{color: 'var(--accent)', fontWeight: 'bold'}}>{pasosCompletados.length} / 12</span>
+            
+            {/* Gráfico de Evolución */}
+            <div style={{background: 'var(--card)', borderRadius: '14px', padding: '16px', marginBottom: '22px', border: '2px solid var(--border)'}}>
+              <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '8px'}}>
+                <span style={{fontWeight: 'bold'}}>Evolución del Programa</span>
+                <span style={{color: 'var(--warning)', fontWeight: 'bold'}}>{porcentajePasos}% Completado</span>
               </div>
-              <div className="progress-bar-bg">
-                <div className="progress-bar-fill" style={{width: ((pasosCompletados.length / 12) * 100) + "%"}}></div>
+              <div className="progress-bar-bg" style={{height: '24px'}}>
+                <div className="progress-bar-fill" style={{width: porcentajePasos + "%", background: 'linear-gradient(90deg, #d97706, #f59e0b)'}}></div>
+              </div>
+              <div style={{fontSize: '13px', color: 'var(--text-muted)', marginTop: '6px', textAlign: 'center'}}>
+                {pasoActual === 0 ? "Aún no has comenzado el trabajo de pasos." : `Te encuentras enfocado en el Paso ${pasoActual} de 12.`}
               </div>
             </div>
+
+            {/* Lista Adaptativa de Pasos */}
             {PASOS_AA.map((texto, i) => {
               const num = i + 1;
-              const completado = pasosCompletados.includes(num);
+              const esPasoTrabajando = pasoActual === num;
+              const esPasoCompletado = num < pasoActual;
+              
+              let claseFila = "paso-row";
+              if (esPasoCompletado) claseFila += " completado";
+              if (esPasoTrabajando) claseFila += " trabajando";
+
               return (
                 <div key={i}
-                  className={"paso-row" + (completado ? " completado" : "")}
+                  className={claseFila}
                   onClick={() => cambiarPaso(num)}
-                  style={{opacity: completado ? 1 : 0.7}}>
-                  <div className="paso-numero" style={{color: completado ? 'var(--warning)' : 'var(--text-muted)'}}>{num}</div>
-                  <div style={{fontSize: '17px', flex: 1}}>{texto}</div>
-                  <span style={{marginLeft: '10px', fontSize: '22px'}}>{completado ? '⭐' : '○'}</span>
+                  style={{opacity: (esPasoCompletado || esPasoTrabajando) ? 1 : 0.65}}>
+                  <div className="paso-header">
+                    <span className="paso-numero">Paso {num}</span>
+                    {esPasoCompletado && <span style={{fontSize: '20px'}}>⭐ <span style={{fontSize: '12px', color:'var(--accent)', fontWeight:'bold'}}>COMPLETADO</span></span>}
+                    {esPasoTrabajando && <span className="badge-trabajando">⚡ TRABAJANDO EN ESTE PASO</span>}
+                    {!esPasoCompletado && !esPasoTrabajando && <span style={{fontSize: '20px', color: 'var(--border)'}}>○</span>}
+                  </div>
+                  <div style={{fontSize: '16px', marginTop: '4px', color: esPasoCompletado ? 'var(--text-secondary)' : 'var(--text-main)'}}>{texto}</div>
                 </div>
               );
             })}
@@ -1143,7 +1077,7 @@ function App() {
                   <select className="select-field" style={{marginBottom: 0, flex: 1}}
                     value={evHora.split(':')[1] || ''}
                     onChange={e => setEvHora((evHora.split(':')[0] || '00') + ':' + e.target.value)}>
-                    <option value="00">:00 (en punto)</option>
+                    <option value="00">:00</option>
                     <option value="15">:15</option>
                     <option value="30">:30</option>
                     <option value="45">:45</option>
@@ -1221,11 +1155,11 @@ function App() {
                 <div key={g.id} className="directorio-sede">
                   <div className="directorio-sede-titulo">{g.nombre}</div>
                   {todos.map((m, i) => (
-                    <div key={i} className={`directorio-item${m.rol === 'admin' || m.estado_admin === 'activo' ? ' es-admin' : ''}`}>
+                    <div key={i} className={`directorio-item${m.rol === 'admin' ? ' es-admin' : ''}`}>
                       <div>
                         <div className="directorio-nombre">
                           {m.nombre_real}
-                          {(m.rol === 'admin' || m.estado_admin === 'activo') && <span className="tag-admin">ADMIN</span>}
+                          {m.rol === 'admin' && <span className="tag-admin">ADMIN</span>}
                         </div>
                         <div style={{fontSize: '14px', color: 'var(--text-muted)'}}>{limpiarTelefono(m.telefono)}</div>
                       </div>
@@ -1262,6 +1196,8 @@ function App() {
                   <option>Audio</option>
                   <option>Enlace</option>
                 </select>
+                
+                {/* Selector de subida o enlace */}
                 <div style={{display: 'flex', gap: '10px', marginBottom: '14px'}}>
                   <button type="button"
                     className={"btn btn-sm" + (modoSubida === 'enlace' ? '' : ' btn-secondary')}
@@ -1274,6 +1210,7 @@ function App() {
                     📁 Subir archivo
                   </button>
                 </div>
+
                 {modoSubida === 'enlace' && (
                   <div>
                     <label>Enlace (URL)</label>
@@ -1316,63 +1253,47 @@ function App() {
           <div>
             <h3 className="section-title">👥 Administración de Sede</h3>
             
-            {/* Gestión de solicitudes de registro */}
             <h4 style={{color: 'var(--warning)'}}>⏳ Solicitudes Pendientes ({solicitudesPendientes.length})</h4>
-            {solicitudesPendientes.length === 0 && <p style={{color: 'var(--text-muted)', fontSize: '15px', marginBottom: '14px'}}>No hay solicitudes pendientes.</p>}
+            {solicitudesPendientes.length === 0 && <p style={{color: 'var(--text-muted)'}}>No hay solicitudes pendientes.</p>}
             {solicitudesPendientes.map(sol => (
               <div key={sol.username} className="solicitud-card">
                 <span className="badge badge-pendiente">PENDIENTE</span>
                 <div className="solicitud-nombre">{sol.nombre_real}</div>
                 <div className="solicitud-info">🆔 {sol.username}</div>
                 {sol.telefono && <div className="solicitud-info">📞 {sol.telefono}</div>}
-                <div className="solicitud-info">📅 {sol.created_at ? new Date(sol.created_at).toLocaleDateString('es-CL') : '—'}</div>
                 <div className="solicitud-actions">
                   <button className="btn btn-success btn-sm" onClick={() => aprobarUsuario(sol.username)}>✅ Aprobar</button>
-                  <button className="btn btn-danger btn-sm" onClick={() => rechazarUsuario(sol.username, sol.nombre_real)}>❌ Rechazar</button>
+                  <button className="btn btn-danger btn-sm" onClick={() => FuelRechazarUsuario(sol.username, sol.nombre_real)}>❌ Rechazar</button>
                 </div>
               </div>
             ))}
 
-            {/* Aprobación de nuevas adicciones sugeridas */}
-            <h4 style={{color: 'var(--primary)', marginTop: '20px'}}>✨ Adicciones Sugeridas por Usuarios ({adiccionesSugeridasPendientes.length})</h4>
-            {adiccionesSugeridasPendientes.length === 0 && <p style={{color: 'var(--text-muted)', fontSize: '15px', marginBottom: '14px'}}>No hay sugerencias por revisar.</p>}
-            {adiccionesSugeridasPendientes.map(adS => (
-              <div key={adS.id} className="solicitud-card" style={{borderColor: 'var(--primary)'}}>
-                <div className="solicitud-nombre">{adS.nombre}</div>
-                <div className="solicitud-info">Sugerido por: {adS.sugerido_por}</div>
-                <div className="solicitud-actions">
-                  <button className="btn btn-success btn-sm" onClick={() => aprobarAdiccionSugerida(adS.id, adS.nombre)}>✅ Aprobar e Incluir en la App</button>
-                </div>
-              </div>
-            ))}
-
-            {/* Promoción y nombramiento de nuevos administradores */}
-            <h4 style={{color: 'var(--accent)', marginTop: '20px'}}>👑 Nombrar Administradores en mi Sede</h4>
-            <p style={{color: 'var(--text-muted)', fontSize: '14px', marginBottom: '10px'}}>Envía una invitación para dar privilegios de administrador (sin límites) a los miembros activos:</p>
-            <div style={{background: 'var(--card)', borderRadius: '16px', border: '2px solid var(--border)', padding: '10px'}}>
-              {usuariosDeMiSede.filter(u => u.username !== user.username).length === 0 && <p style={{color: 'var(--text-muted)', fontSize: '14px'}}>No hay otros usuarios registrados en esta sede.</p>}
-              {usuariosDeMiSede.filter(u => u.username !== user.username).map(miembro => (
-                <div key={miembro.username} style={{display: 'flex', alignItems: 'center', justifycontent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border)'}}>
+            <hr className="divider" />
+            
+            {/* NUEVA SECCIÓN: MIEMBROS DE LA SEDE Y ASCENSO A ADMIN */}
+            <h4 style={{color: 'var(--primary)'}}>📋 Miembros de esta Sede ({listaMiembrosSede.length})</h4>
+            {listaMiembrosSede.length === 0 && <p style={{color: 'var(--text-muted)'}}>No hay miembros registrados.</p>}
+            <div style={{display: 'flex', flexDirection: 'column', gap: '10px'}}>
+              {listaMiembrosSede.map(m => (
+                <div key={m.username} style={{background: 'var(--card)', padding: '14px', borderRadius: '14px', border: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                   <div>
-                    <div style={{fontWeight: 'bold', fontSize: '16px'}}>{miembro.nombre_real}</div>
-                    <div style={{fontSize: '13px', color: 'var(--text-muted)'}}>{miembro.username}</div>
+                    <div style={{fontWeight: 'bold', fontSize: '17px'}}>
+                      {m.nombre_real}
+                      {m.rol === 'admin' && <span className="tag-admin">ADMIN</span>}
+                    </div>
+                    <div style={{fontSize: '13px', color: 'var(--text-muted)'}}>ID: {m.username}</div>
                   </div>
-                  <div>
-                    {miembro.rol === 'admin' || miembro.estado_admin === 'activo' ? (
-                      <span className="tag-admin" style={{margin: 0}}>YA ES ADMIN</span>
-                    ) : miembro.estado_admin === 'invitado' ? (
-                      <span style={{fontSize: '13px', color: 'var(--warning)', fontStyle: 'italic'}}>Invitado...</span>
-                    ) : (
-                      <button className="btn btn-sm btn-secondary" style={{padding: '6px 12px', fontSize: '13px'}} onClick={() => proponerAdministrador(miembro.username)}>
-                        Hacer Admin
-                      </button>
-                    )}
-                  </div>
+                  {m.rol !== 'admin' && (
+                    <button className="btn btn-sm btn-warning" onClick={() => promoverAAdmin(m.username, m.nombre_real)}>
+                      Promover a Admin
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
 
             <hr className="divider" />
+            
             <h4 style={{color: 'var(--text-muted)', cursor: 'pointer'}} onClick={() => setMostrarRechazados(!mostrarRechazados)}>
               🚫 Rechazados ({solicitudesRechazadas.length}) {mostrarRechazados ? '▲' : '▼'}
             </h4>
@@ -1384,7 +1305,6 @@ function App() {
                     <span className="badge badge-rechazado">RECHAZADO</span>
                     <div className="solicitud-nombre">{sol.nombre_real}</div>
                     <div className="solicitud-info">🆔 {sol.username}</div>
-                    {sol.telefono && <div className="solicitud-info">📞 {sol.telefono}</div>}
                     <div className="solicitud-actions">
                       <button className="btn btn-success btn-sm" onClick={() => aprobarUsuario(sol.username)}>✅ Aprobar ahora</button>
                     </div>
@@ -1414,7 +1334,7 @@ function App() {
         <div className={"nav-item" + (activeTab === "biblioteca" ? " active" : "")} onClick={() => setActiveTab("biblioteca")}>
           <div className="nav-icon">📚</div>Biblio
         </div>
-        {(user.rol === 'admin' || user.estado_admin === 'activo') && (
+        {user.rol === 'admin' && (
           <div className={"nav-item" + (activeTab === "admin" ? " active" : "")} onClick={() => setActiveTab("admin")}>
             <div className="nav-icon">⚙️</div>Admin
           </div>
