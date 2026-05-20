@@ -2467,7 +2467,13 @@ document.querySelectorAll('.modal-overlay').forEach(o => {
 // ============================================================
 function buildSedeOptions(selId, selected=null) {
   const sel = document.getElementById(selId);
-  sel.innerHTML = sedes.map(s => `<option value="${s.id}" ${selected==s.id?'selected':''}>${s.nombre}</option>`).join('');
+  // Si no se pasó una sede específica, buscar "San José de Renca" como default
+  let defaultSede = selected;
+  if (defaultSede === null) {
+    const renca = sedes.find(s => s.nombre && s.nombre.toLowerCase().includes('renca'));
+    if (renca) defaultSede = renca.id;
+  }
+  sel.innerHTML = sedes.map(s => `<option value="${s.id}" ${defaultSede==s.id?'selected':''}>${s.nombre}</option>`).join('');
 }
 
 function buildPrefijoOptions(selId, defaultPref='+56') {
