@@ -2510,14 +2510,15 @@ function toggleRegAdmin() {
 
 async function handleLogin() {
   const nombre = document.getElementById('login-nombre').value.trim();
-  const sedeId = parseInt(document.getElementById('login-sede').value);
+  const sedeIdRaw = document.getElementById('login-sede').value;
+  const sedeId = isNaN(parseInt(sedeIdRaw)) ? sedeIdRaw : parseInt(sedeIdRaw);
   const secret = document.getElementById('login-secret').value.trim();
   const errEl = document.getElementById('login-error');
   errEl.textContent = '';
 
   if (!nombre) { errEl.textContent = 'Ingresa tu nombre'; return; }
 
-  const userId = makeId(nombre, sedes.find(s=>s.id===sedeId)?.nombre || '');
+  const userId = makeId(nombre, sedes.find(s=>s.id===sedeId)?.nombre || 'San José de Renca');
 
   const { data, error } = await sb.from('usuarios').select('*').eq('id', userId).single();
   if (error || !data) { errEl.textContent = 'Usuario no encontrado en esa sede.'; return; }
@@ -2551,7 +2552,8 @@ async function handleLogin() {
 
 async function handleRegister() {
   const nombre = document.getElementById('reg-nombre').value.trim();
-  const sedeId = parseInt(document.getElementById('reg-sede').value);
+  const sedeIdRaw = document.getElementById('reg-sede').value;
+  const sedeId = isNaN(parseInt(sedeIdRaw)) ? sedeIdRaw : parseInt(sedeIdRaw);
   const prefijo = document.getElementById('reg-prefijo').value;
   const tel = document.getElementById('reg-telefono').value.trim();
   const secret = document.getElementById('reg-secret').value.trim();
@@ -2560,7 +2562,18 @@ async function handleRegister() {
   errEl.textContent = '';
 
   if (!nombre) { errEl.textContent = 'Ingresa tu nombre'; return; }
-  const sede = sedes.find(s=>s.id===sedeId);
+  let sede = sedes.find(s=>s.id===sedeId);
+  // Si se seleccionó la sede por defecto, crearla en Supabase primero
+  if (!sede && sedeId === '__renca__') {
+    const { data: newSede, error: sedeErr } = await sb.from('sedes').insert({ nombre: 'San José de Renca' }).select().single();
+    if (newSede) {
+      sedes = [newSede];
+      localStorage.setItem('nvaa_sedes_cache', JSON.stringify(sedes));
+      sede = newSede;
+    } else {
+      errEl.textContent = 'Error al crear la sede: ' + (sedeErr?.message || 'intenta de nuevo'); return;
+    }
+  }
   if (!sede) { errEl.textContent = 'Selecciona una sede'; return; }
 
   const userId = makeId(nombre, sede.nombre);
@@ -3489,26 +3502,27 @@ function dismissPWA() {
 async function init() {
   applyTheme(currentTheme);
 
-  // Cargar sedes — con caché localStorage como respaldo offline
-  const sedesCache = JSON.parse(localStorage.getItem('nvaa_sedes_cache') || '[]');
-  if (sedesCache.length > 0) {
-    sedes = sedesCache;
-    buildSedeOptions('login-sede');
-    buildSedeOptions('reg-sede');
-  }
+  // SEDE POR DEFECTO — siempre presente antes de cargar Supabase
+  const SEDE_DEFAULT = [{ id: '__renca__', nombre: 'San José de Renca' }];
+  sedes = SEDE_DEFAULT;
+  buildSedeOptions('login-sede');
+  buildSedeOptions('reg-sede');
 
+  // Intentar cargar sedes reales de Supabase
   try {
     const { data: sedesData } = await sb.from('sedes').select('*').order('nombre');
     if (sedesData && sedesData.length > 0) {
       sedes = sedesData;
       localStorage.setItem('nvaa_sedes_cache', JSON.stringify(sedes));
-    } else if (sedes.length === 0) {
-      sedes = [{ id: 1, nombre: 'San José de Renca' }];
+    } else {
+      // Supabase no tiene sedes aún — usar caché o default
+      const sedesCache = JSON.parse(localStorage.getItem('nvaa_sedes_cache') || '[]');
+      sedes = sedesCache.length > 0 ? sedesCache : SEDE_DEFAULT;
     }
   } catch(e) {
-    if (sedes.length === 0) {
-      sedes = [{ id: 1, nombre: 'San José de Renca' }];
-    }
+    // Sin conexión — usar caché o default
+    const sedesCache = JSON.parse(localStorage.getItem('nvaa_sedes_cache') || '[]');
+    sedes = sedesCache.length > 0 ? sedesCache : SEDE_DEFAULT;
   }
 
   // Cargar catálogo adicciones (globales + de esta sede, se actualiza tras login)
