@@ -2467,13 +2467,22 @@ document.querySelectorAll('.modal-overlay').forEach(o => {
 // ============================================================
 function buildSedeOptions(selId, selected=null) {
   const sel = document.getElementById(selId);
-  // Si no se pasó una sede específica, buscar "San José de Renca" como default
+
+  // Si no se pasó una sede específica, buscar "San José de Renca" por nombre
   let defaultSede = selected;
   if (defaultSede === null) {
     const renca = sedes.find(s => s.nombre && s.nombre.toLowerCase().includes('renca'));
     if (renca) defaultSede = renca.id;
   }
-  sel.innerHTML = sedes.map(s => `<option value="${s.id}" ${defaultSede==s.id?'selected':''}>${s.nombre}</option>`).join('');
+
+  if (sedes.length === 0) {
+    sel.innerHTML = '<option value="" selected>San José de Renca</option>';
+    return;
+  }
+
+  sel.innerHTML = sedes.map(s =>
+    `<option value="${s.id}" ${defaultSede == s.id ? 'selected' : ''}>${s.nombre}</option>`
+  ).join('');
 }
 
 function buildPrefijoOptions(selId, defaultPref='+56') {
@@ -3480,9 +3489,27 @@ function dismissPWA() {
 async function init() {
   applyTheme(currentTheme);
 
-  // Cargar sedes
-  const { data: sedesData } = await sb.from('sedes').select('*').order('nombre');
-  sedes = sedesData || [];
+  // Cargar sedes — con caché localStorage como respaldo offline
+  const sedesCache = JSON.parse(localStorage.getItem('nvaa_sedes_cache') || '[]');
+  if (sedesCache.length > 0) {
+    sedes = sedesCache;
+    buildSedeOptions('login-sede');
+    buildSedeOptions('reg-sede');
+  }
+
+  try {
+    const { data: sedesData } = await sb.from('sedes').select('*').order('nombre');
+    if (sedesData && sedesData.length > 0) {
+      sedes = sedesData;
+      localStorage.setItem('nvaa_sedes_cache', JSON.stringify(sedes));
+    } else if (sedes.length === 0) {
+      sedes = [{ id: 1, nombre: 'San José de Renca' }];
+    }
+  } catch(e) {
+    if (sedes.length === 0) {
+      sedes = [{ id: 1, nombre: 'San José de Renca' }];
+    }
+  }
 
   // Cargar catálogo adicciones (globales + de esta sede, se actualiza tras login)
   const { data: addData } = await sb.from('adicciones_catalogo')
