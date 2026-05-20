@@ -1521,6 +1521,54 @@
       color: #94a3b8;
       font-weight: 600;
     }
+
+    /* ===== SOS / CRISIS ===== */
+    .sos-screen { display:flex; flex-direction:column; align-items:center; padding:24px 20px; gap:16px; }
+    .sos-big-btn { width:100%; padding:24px; background:linear-gradient(135deg,#dc2626,#b91c1c); border:none; border-radius:var(--radius-lg); cursor:pointer; animation:sosPulse 2s infinite; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 8px 32px rgba(220,38,38,0.4); -webkit-tap-highlight-color:transparent; }
+    .sos-big-btn:active { transform:scale(0.97); }
+    @keyframes sosPulse { 0%,100%{box-shadow:0 8px 32px rgba(220,38,38,0.4);}50%{box-shadow:0 8px 48px rgba(220,38,38,0.7);} }
+    .sos-big-label { font-size:32px; font-weight:900; color:white; letter-spacing:2px; }
+    .sos-big-sub { font-size:14px; color:rgba(255,255,255,0.85); }
+    .sos-message { background:var(--surface); border:2px solid var(--accent); border-radius:var(--radius); padding:20px; text-align:center; width:100%; }
+    .sos-message-text { font-size:17px; font-weight:600; color:var(--text); line-height:1.6; }
+    .sos-contacts { width:100%; }
+    .sos-contact-item { display:flex; align-items:center; justify-content:space-between; padding:16px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:10px; }
+    .sos-contact-name { font-size:15px; font-weight:700; color:var(--text); }
+    .sos-contact-num { font-size:13px; color:var(--text3); margin-top:2px; }
+    .sos-call-btn { padding:12px 20px; background:var(--success); color:white; border:none; border-radius:var(--radius-sm); font-size:15px; font-weight:700; cursor:pointer; text-decoration:none; display:flex; align-items:center; gap:6px; }
+
+    /* ===== ACHIEVEMENTS / MEDALS ===== */
+    .achievements-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; padding:8px 0; }
+    .medal-card { background:var(--surface); border:2px solid var(--border); border-radius:var(--radius); padding:16px 8px; display:flex; flex-direction:column; align-items:center; gap:8px; position:relative; transition:transform var(--transition); }
+    .medal-card.earned { border-color:var(--accent); background:linear-gradient(135deg,var(--surface) 0%,rgba(251,191,36,0.08) 100%); animation:medalGlow 3s infinite; }
+    @keyframes medalGlow { 0%,100%{box-shadow:0 0 0 rgba(251,191,36,0);}50%{box-shadow:0 0 16px rgba(251,191,36,0.25);} }
+    .medal-icon { font-size:36px; filter:grayscale(1) opacity(0.3); transition:filter 0.4s; }
+    .medal-card.earned .medal-icon { filter:none; }
+    .medal-label { font-size:12px; font-weight:700; color:var(--text3); text-align:center; line-height:1.3; }
+    .medal-card.earned .medal-label { color:var(--accent); }
+    .medal-days { font-size:11px; color:var(--text3); }
+    .medal-earned-badge { position:absolute; top:-6px; right:-6px; width:20px; height:20px; background:var(--success); border-radius:50%; font-size:11px; display:flex; align-items:center; justify-content:center; color:white; font-weight:700; border:2px solid var(--bg); }
+    .new-achievement-popup { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.5); background:var(--surface); border:3px solid var(--accent); border-radius:var(--radius-lg); padding:32px 24px; text-align:center; z-index:300; opacity:0; transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1); pointer-events:none; min-width:240px; }
+    .new-achievement-popup.show { opacity:1; transform:translate(-50%,-50%) scale(1); }
+    .achievement-popup-icon { font-size:64px; }
+    .achievement-popup-title { font-size:22px; font-weight:800; color:var(--accent); margin:8px 0 4px; }
+    .achievement-popup-sub { font-size:15px; color:var(--text2); }
+
+    /* ===== MEETINGS / REUNIONES ===== */
+    .meeting-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:10px; }
+    .meeting-time { font-size:12px; font-weight:700; color:var(--accent); margin-bottom:4px; }
+    .meeting-title { font-size:15px; font-weight:700; color:var(--text); margin-bottom:4px; }
+    .meeting-lang { display:inline-block; font-size:11px; padding:2px 8px; border-radius:20px; background:var(--bg3); color:var(--text3); margin-bottom:10px; }
+    .meeting-join-btn { display:flex; align-items:center; justify-content:center; gap:8px; padding:10px 16px; background:#2563eb; color:white; border:none; border-radius:var(--radius-sm); font-size:14px; font-weight:700; cursor:pointer; text-decoration:none; width:100%; }
+
+    /* ===== ANONYMOUS MODE ===== */
+    .anon-banner { background:linear-gradient(135deg,#6366f1,#8b5cf6); border-radius:var(--radius); padding:12px 16px; margin-bottom:12px; display:flex; align-items:center; gap:10px; }
+    .anon-banner-text { flex:1; font-size:13px; color:white; font-weight:500; }
+    .anon-badge { font-size:10px; padding:2px 8px; border-radius:20px; background:rgba(255,255,255,0.2); color:white; font-weight:700; white-space:nowrap; }
+
+    /* ===== OFFLINE BANNER ===== */
+    #offline-banner { display:none; position:fixed; top:0; left:0; right:0; background:#dc2626; color:white; text-align:center; padding:8px 16px; font-size:13px; font-weight:600; z-index:500; padding-top:calc(env(safe-area-inset-top,0px) + 8px); }
+    #offline-banner.show { display:block; }
   </style>
 </head>
 <body>
@@ -1528,6 +1576,16 @@
 
   <!-- ===== TOAST ===== -->
   <div class="toast" id="toast"></div>
+
+  <!-- ===== OFFLINE BANNER ===== -->
+  <div id="offline-banner">📵 Sin conexión — la app funciona en modo offline</div>
+
+  <!-- ===== ACHIEVEMENT POPUP ===== -->
+  <div class="new-achievement-popup" id="achievement-popup">
+    <div class="achievement-popup-icon" id="achievement-popup-icon">🏅</div>
+    <div class="achievement-popup-title" id="achievement-popup-title">¡Logro desbloqueado!</div>
+    <div class="achievement-popup-sub" id="achievement-popup-sub">7 días de recuperación</div>
+  </div>
 
   <!-- ===== AUTH SCREEN ===== -->
   <div class="screen active" id="screen-auth">
@@ -1560,6 +1618,11 @@
         <div id="login-error" class="error-msg"></div>
         <button class="btn btn-primary mt-16" onclick="handleLogin()">Entrar</button>
         <p class="admin-hint">¿Eres administrador? <a onclick="toggleAdminSecret()">Haz clic aquí</a></p>
+        <div class="divider" style="margin:20px 0 12px"></div>
+        <button class="btn btn-secondary" onclick="enterAnonymousMode()" style="font-size:14px">
+          🎭 Continuar como anónimo
+        </button>
+        <p class="admin-hint" style="margin-top:8px">Acceso limitado sin nombre ni sede. Solo tú.</p>
       </div>
 
       <!-- REGISTRO -->
@@ -1774,6 +1837,21 @@
       <div id="admin-panel-body"></div>
     </div>
 
+    <!-- SOS / CRISIS -->
+    <div class="scroll-content" id="tab-sos" style="display:none">
+      <div class="sos-screen" id="sos-screen-content"></div>
+    </div>
+
+    <!-- LOGROS / ACHIEVEMENTS -->
+    <div class="scroll-content" id="tab-logros" style="display:none">
+      <div id="logros-content"></div>
+    </div>
+
+    <!-- REUNIONES VIRTUALES -->
+    <div class="scroll-content" id="tab-reuniones" style="display:none">
+      <div id="reuniones-content"></div>
+    </div>
+
     <!-- BOTTOM NAV -->
     <nav class="bottom-nav">
       <button class="nav-item active" onclick="switchTab('home',this)">
@@ -1799,6 +1877,18 @@
       <button class="nav-item" onclick="switchTab('diario',this);diaryOpen()">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
         <span class="nav-label">Diario</span>
+      </button>
+      <button class="nav-item" onclick="switchTab('sos',this);loadSOS()" style="color:var(--danger)">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        <span class="nav-label">SOS</span>
+      </button>
+      <button class="nav-item" onclick="switchTab('logros',this);loadLogros()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+        <span class="nav-label">Logros</span>
+      </button>
+      <button class="nav-item" onclick="switchTab('reuniones',this);loadReuniones()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>
+        <span class="nav-label">Reuniones</span>
       </button>
       <button class="nav-item" id="nav-admin" style="display:none" onclick="switchTab('admin',this)">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -2398,6 +2488,11 @@ function loginUser(user) {
 async function autoLogin() {
   const savedId = localStorage.getItem('nvaa_user_id');
   if (!savedId) return false;
+  // Handle anonymous mode
+  if (savedId === '__anon__') {
+    enterAnonymousMode();
+    return true;
+  }
   const { data } = await sb.from('usuarios').select('*').eq('id', savedId).single();
   if (data && (data.activo || data.estado === 'aprobado')) {
     currentUser = data;
@@ -2443,16 +2538,19 @@ function showMainApp() {
   loadHomeTab();
   loadNotifBadge();
   if (isAdmin) loadAdminBadge();
+  // New features init
+  if (typeof initNewFeatures === 'function') initNewFeatures();
 }
 
 // ============================================================
 // TABS
 // ============================================================
-const TABS = ['home','pasos','biblioteca','eventos','telefonos','admin'];
+const TABS = ['home','pasos','biblioteca','eventos','telefonos','diario','sos','logros','reuniones','admin'];
 function switchTab(tab, navEl) {
   currentTab = tab;
   TABS.forEach(t => {
-    document.getElementById('tab-'+t).style.display = (t===tab) ? 'block' : 'none';
+    const el = document.getElementById('tab-'+t);
+    if (el) el.style.display = (t===tab) ? (t==='diario'?'flex':'block') : 'none';
   });
   document.querySelectorAll('.nav-item').forEach((el,i) => {
     el.classList.remove('active');
@@ -3744,6 +3842,412 @@ function diaryRenderEntries() {
       <button class="diary-entry-del" onclick="diaryDeleteEntry(${e.id})">🗑 Eliminar</button>
     </div>
   `).join('');
+}
+
+// ============================================================
+// OFFLINE MODE
+// ============================================================
+function updateOnlineStatus() {
+  const banner = document.getElementById('offline-banner');
+  if (!navigator.onLine) {
+    banner.classList.add('show');
+  } else {
+    banner.classList.remove('show');
+  }
+}
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+
+// Offline-safe Supabase wrapper: returns cached data if offline
+const _offlineCache = {};
+async function sbFetch(key, queryFn, fallback = []) {
+  if (navigator.onLine) {
+    try {
+      const result = await queryFn();
+      if (result.data) {
+        localStorage.setItem('nvaa_cache_' + key, JSON.stringify(result.data));
+        _offlineCache[key] = result.data;
+      }
+      return result;
+    } catch(e) {
+      console.warn('[Offline] sbFetch error for', key, e);
+    }
+  }
+  // Offline: return cached
+  const cached = _offlineCache[key] || JSON.parse(localStorage.getItem('nvaa_cache_' + key) || 'null');
+  return { data: cached || fallback, error: null };
+}
+
+// ============================================================
+// OFFLINE-SAFE loadDailyMessage override
+// ============================================================
+const AA_MESSAGES_OFFLINE = [
+  { mensaje: "Solo por hoy no voy a consumir. Solo por hoy voy a ser feliz.", autor: "Justo por Hoy — AA" },
+  { mensaje: "La serenidad no es libertad de la tormenta, sino paz dentro de la tormenta.", autor: "Reflexión AA" },
+  { mensaje: "Un día a la vez. Un paso a la vez.", autor: "Tradición AA" },
+  { mensaje: "El coraje para cambiar lo que puedo cambiar.", autor: "Oración de la Serenidad" },
+  { mensaje: "Entregamos nuestra voluntad y nuestra vida al cuidado de Dios como nosotros lo concebimos.", autor: "Paso 3 — AA" },
+  { mensaje: "Somos personas que normalmente no hubieran podido volver al modo de vida normal.", autor: "Libro Grande — AA" },
+  { mensaje: "La recuperación es posible. Millones lo han logrado antes que tú.", autor: "AA Mundial" },
+];
+async function loadDailyMessage() {
+  let msgs = AA_MESSAGES_OFFLINE;
+  if (navigator.onLine) {
+    const { data } = await sb.from('mensajes_diarios').select('*').eq('activo', true).catch(() => ({ data: null }));
+    if (data && data.length) msgs = data;
+  }
+  const today = new Date().getDay();
+  const msg = msgs[today % msgs.length];
+  document.getElementById('msg-card-wrap').innerHTML = `
+    <div class="msg-card">
+      <div class="msg-card-text">${msg.mensaje}</div>
+      <div class="msg-card-author">— ${msg.autor}</div>
+    </div>`;
+}
+
+// ============================================================
+// MULTILANGUAGE SUPPORT
+// ============================================================
+const LANGS = {
+  es: { code: 'es', label: '🇪🇸 Español', sos_title: '¡Necesito ayuda ahora!', sos_msg: 'No estás solo/a. Este momento va a pasar.\nLlama a alguien ahora mismo.', logros_title: 'Mis Logros', meetings_title: 'Reuniones Virtuales' },
+  en: { code: 'en', label: '🇺🇸 English', sos_title: 'I need help now!', sos_msg: "You're not alone. This moment will pass.\nCall someone right now.", logros_title: 'My Achievements', meetings_title: 'Virtual Meetings' },
+  pt: { code: 'pt', label: '🇧🇷 Português', sos_title: 'Preciso de ajuda agora!', sos_msg: 'Você não está sozinho/a. Este momento vai passar.\nLigue para alguém agora.', logros_title: 'Minhas Conquistas', meetings_title: 'Reuniões Virtuais' },
+  fr: { code: 'fr', label: '🇫🇷 Français', sos_title: "J'ai besoin d'aide maintenant!", sos_msg: "Vous n'êtes pas seul(e). Ce moment va passer.\nAppellez quelqu'un maintenant.", logros_title: 'Mes Réalisations', meetings_title: 'Réunions Virtuelles' },
+};
+let currentLang = localStorage.getItem('nvaa_lang') || 'es';
+function setLang(code) {
+  currentLang = code;
+  localStorage.setItem('nvaa_lang', code);
+}
+function t(key) {
+  return (LANGS[currentLang] || LANGS.es)[key] || (LANGS.es)[key] || key;
+}
+
+// ============================================================
+// SOS / CRISIS BUTTON
+// ============================================================
+const EMERGENCY_NUMBERS = [
+  { name: 'AA - Línea Nacional (Chile)', num: '+56227814147', country: 'CL' },
+  { name: 'AA - Argentina', num: '+541148161685', country: 'AR' },
+  { name: 'CONACE / Crisis', num: '+5613800001', country: 'CL' },
+  { name: 'Línea de Crisis (MX)', num: '+525554596666', country: 'MX' },
+];
+
+function loadSOS() {
+  const container = document.getElementById('sos-screen-content');
+  const lang = LANGS[currentLang] || LANGS.es;
+
+  // Get padrino from current user data
+  let padrino = null;
+  if (currentUser && currentUser.padrino_tel) {
+    padrino = { name: currentUser.padrino_nombre || 'Mi Padrino', num: (currentUser.padrino_prefijo||'+56')+currentUser.padrino_tel };
+  }
+
+  const contacts = [...EMERGENCY_NUMBERS];
+  if (padrino) contacts.unshift({ name: padrino.name, num: padrino.num, country: '⭐' });
+
+  container.innerHTML = `
+    <button class="sos-big-btn" onclick="window.navigator.vibrate&&navigator.vibrate([200,100,200,100,200])">
+      <div class="sos-big-label">🆘 SOS</div>
+      <div class="sos-big-sub">${lang.sos_title}</div>
+    </button>
+    <div class="sos-message">
+      <div class="sos-message-text">${lang.sos_msg.replace(/\n/g,'<br>')}</div>
+    </div>
+    <div class="sos-contacts">
+      <div class="section-label" style="text-align:center;margin-bottom:12px">📞 Llama ahora</div>
+      ${contacts.map(c => `
+        <div class="sos-contact-item">
+          <div>
+            <div class="sos-contact-name">${c.name}</div>
+            <div class="sos-contact-num">${c.num}</div>
+          </div>
+          <a href="tel:${c.num}" class="sos-call-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="18" height="18"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1-9.4 0-17-7.6-17-17 0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>
+            Llamar
+          </a>
+        </div>`).join('')}
+      <div class="card" style="margin-top:16px;text-align:center">
+        <div style="font-size:13px;color:var(--text3);margin-bottom:8px">¿Tienes un padrino?</div>
+        <button class="btn btn-secondary btn-sm" onclick="openSosPadrinoModal()" style="margin:auto">Guardar contacto de padrino</button>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:8px">
+      <div class="lang-selector" style="justify-content:center">
+        ${Object.values(LANGS).map(l=>`<button class="lang-btn ${l.code===currentLang?'active':''}" onclick="setLang('${l.code}');loadSOS()">${l.label}</button>`).join('')}
+      </div>
+    </div>`;
+}
+
+// ============================================================
+// ACHIEVEMENTS / LOGROS
+// ============================================================
+const MEDALS = [
+  { days: 1,   icon: '🌱', label: '1 día',     desc: '¡Primer paso!' },
+  { days: 7,   icon: '⭐', label: '1 semana',  desc: '7 días sólidos' },
+  { days: 14,  icon: '🌟', label: '2 semanas', desc: 'Forjando hábitos' },
+  { days: 30,  icon: '🥉', label: '1 mes',     desc: 'Un mes limpio' },
+  { days: 60,  icon: '🥈', label: '2 meses',   desc: 'Momentum real' },
+  { days: 90,  icon: '🥇', label: '3 meses',   desc: 'Trimestre libre' },
+  { days: 180, icon: '💎', label: '6 meses',   desc: 'Medio año fuerte' },
+  { days: 270, icon: '🏆', label: '9 meses',   desc: 'Casi un año' },
+  { days: 365, icon: '👑', label: '1 año',     desc: 'Un año completo' },
+  { days: 730, icon: '🌠', label: '2 años',    desc: 'Dos años de vida nueva' },
+  { days: 1095,icon: '🎖️', label: '3 años',    desc: 'Tres años de fortaleza' },
+  { days: 1825,icon: '🔱', label: '5 años',    desc: 'Cinco años de libertad' },
+];
+
+const _shownAchievements = new Set(JSON.parse(localStorage.getItem('nvaa_shown_achievements') || '[]'));
+
+function checkAchievements() {
+  if (!currentUser) return;
+  const addictions = currentUser.adicciones || [];
+  addictions.forEach(a => {
+    const start = new Date(a.fecha_inicio);
+    const days = Math.max(0, Math.floor((new Date() - start) / 86400000));
+    MEDALS.forEach(m => {
+      const key = `${a.tipo}_${m.days}`;
+      if (days >= m.days && !_shownAchievements.has(key)) {
+        _shownAchievements.add(key);
+        localStorage.setItem('nvaa_shown_achievements', JSON.stringify([..._shownAchievements]));
+        setTimeout(() => showAchievementPopup(m, a.tipo), 800);
+      }
+    });
+  });
+}
+
+function showAchievementPopup(medal, tipo) {
+  const popup = document.getElementById('achievement-popup');
+  document.getElementById('achievement-popup-icon').textContent = medal.icon;
+  document.getElementById('achievement-popup-title').textContent = '¡' + medal.label + ' sin ' + tipo + '!';
+  document.getElementById('achievement-popup-sub').textContent = medal.desc;
+  popup.classList.add('show');
+  setTimeout(() => popup.classList.remove('show'), 4000);
+}
+
+function loadLogros() {
+  const container = document.getElementById('logros-content');
+  if (!currentUser) return;
+  const addictions = currentUser.adicciones || [];
+  if (!addictions.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">🏅</div><div class="empty-title">Agrega una adicción primero</div><div class="empty-sub">Los logros aparecerán aquí conforme avances</div></div>';
+    return;
+  }
+
+  let html = '';
+  addictions.forEach(a => {
+    const days = Math.max(0, Math.floor((new Date() - new Date(a.fecha_inicio)) / 86400000));
+    html += `<div class="section-label" style="margin-top:16px">${a.tipo} — ${days} días</div>
+      <div class="achievements-grid">
+        ${MEDALS.map(m => {
+          const earned = days >= m.days;
+          return `<div class="medal-card ${earned?'earned':''}">
+            ${earned ? '<div class="medal-earned-badge">✓</div>' : ''}
+            <div class="medal-icon">${m.icon}</div>
+            <div class="medal-label">${m.label}</div>
+            <div class="medal-days">${m.days} días</div>
+          </div>`;
+        }).join('')}
+      </div>`;
+  });
+  container.innerHTML = html;
+}
+
+// ============================================================
+// VIRTUAL MEETINGS
+// ============================================================
+const VIRTUAL_MEETINGS = [
+  { title: 'AA Online España', lang: '🇪🇸 Español', time: 'Lun-Vie 20:00 CET', url: 'https://aa.org/zoom-meetings', type: 'Zoom' },
+  { title: 'AA Online México', lang: '🇲🇽 Español', time: 'Diario 18:00 CDMX', url: 'https://aa.org/zoom-meetings', type: 'Zoom' },
+  { title: 'AA Online Chile', lang: '🇨🇱 Español', time: 'Lun-Dom 19:00 CLT', url: 'https://aachile.org', type: 'Online' },
+  { title: 'AA Argentina Online', lang: '🇦🇷 Español', time: 'Diario 20:30 ART', url: 'https://aa.org/zoom-meetings', type: 'Zoom' },
+  { title: 'AA Online Meetings (EN)', lang: '🇺🇸 English', time: 'Daily 24/7', url: 'https://aa-intergroup.org/meetings/', type: 'Online' },
+  { title: 'AA Brazil Online', lang: '🇧🇷 Português', time: 'Diário 19:00 BRT', url: 'https://aa.org/zoom-meetings', type: 'Zoom' },
+  { title: 'AA France en Ligne', lang: '🇫🇷 Français', time: 'Quotidien 20:00 CET', url: 'https://aa.org/zoom-meetings', type: 'Zoom' },
+  { title: 'AA International Directory', lang: '🌎 Todos', time: 'Directorio completo', url: 'https://aa-intergroup.org/meetings/', type: 'Directorio' },
+];
+
+function loadReuniones() {
+  const container = document.getElementById('reuniones-content');
+  container.innerHTML = `
+    <div class="section-label">Reuniones Virtuales AA</div>
+    <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,var(--accent),var(--accent2))">
+      <div style="font-size:14px;font-weight:600;color:var(--accent-text);margin-bottom:4px">📡 Reuniones en tiempo real</div>
+      <div style="font-size:12px;color:rgba(15,23,42,0.7)">Conéctate con compañeros AA de todo el mundo desde tu teléfono</div>
+    </div>
+    ${VIRTUAL_MEETINGS.map(m => `
+      <div class="meeting-card">
+        <div class="meeting-time">${m.time}</div>
+        <div class="meeting-title">${m.title}</div>
+        <div class="meeting-lang">${m.lang} · ${m.type}</div>
+        <a href="${m.url}" target="_blank" rel="noopener" class="meeting-join-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>
+          Unirse a la reunión
+        </a>
+      </div>`).join('')}
+    <div class="card" style="margin-top:8px;text-align:center">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:8px">Directorio completo de AA</div>
+      <a href="https://aa.org" target="_blank" rel="noopener" style="color:var(--accent);font-size:14px;font-weight:600">aa.org →</a>
+    </div>`;
+}
+
+// ============================================================
+// ANONYMOUS MODE
+// ============================================================
+const ANON_USER_ID_KEY = 'nvaa_anon_id';
+function enterAnonymousMode() {
+  let anonId = localStorage.getItem(ANON_USER_ID_KEY);
+  if (!anonId) {
+    anonId = 'anon_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem(ANON_USER_ID_KEY, anonId);
+  }
+  currentUser = {
+    id: anonId,
+    nombre: '👤 Anónimo',
+    sede_id: null,
+    rol: 'usuario',
+    estado: 'aprobado',
+    activo: true,
+    adicciones: JSON.parse(localStorage.getItem('nvaa_anon_addictions') || '[]'),
+    pasos_completados: JSON.parse(localStorage.getItem('nvaa_anon_steps') || '[]'),
+    paso_actual: parseInt(localStorage.getItem('nvaa_anon_step_current') || '1'),
+    tema: currentTheme,
+    isAnonymous: true,
+  };
+  localStorage.setItem('nvaa_user_id', '__anon__');
+  showMainAppAnon();
+}
+
+function showMainAppAnon() {
+  document.getElementById('screen-auth').classList.remove('active');
+  document.getElementById('screen-main').classList.add('active');
+  document.getElementById('header-username').textContent = '👤 Modo Anónimo';
+  document.getElementById('header-sede').textContent = 'Sin sede';
+  document.getElementById('fab-add').classList.add('hidden');
+  document.getElementById('nav-admin').style.display = 'none';
+
+  // Show anon banner on home
+  const anonBanner = `<div class="anon-banner">
+    <span style="font-size:20px">🎭</span>
+    <div class="anon-banner-text">Modo anónimo — Tus datos solo en este dispositivo</div>
+    <div class="anon-badge">ANON</div>
+  </div>`;
+  document.getElementById('msg-card-wrap').insertAdjacentHTML('beforebegin', anonBanner);
+
+  loadDailyMessage();
+  renderCounters();
+  loadNotifBadgeAnon();
+  if (typeof initNewFeatures === 'function') initNewFeatures();
+}
+
+function loadNotifBadgeAnon() {
+  document.getElementById('notif-badge').style.display = 'none';
+}
+
+// ============================================================
+// PUSH NOTIFICATIONS (daily reminder)
+// ============================================================
+async function setupDailyReminder() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'default') {
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') return;
+  }
+  if (Notification.permission !== 'granted') return;
+
+  // Schedule via Service Worker if available, else use timeout
+  const now = new Date();
+  const target = new Date();
+  target.setHours(8, 0, 0, 0);
+  if (target <= now) target.setDate(target.getDate() + 1);
+
+  const msUntil = target - now;
+  const saved = localStorage.getItem('nvaa_reminder_set');
+  if (saved) return; // Already set this session
+  localStorage.setItem('nvaa_reminder_set', '1');
+
+  setTimeout(() => {
+    if (Notification.permission === 'granted') {
+      try {
+        new Notification('Nueva Vida AA 🌅', {
+          body: '¿Cómo vas hoy? Abre la app y registra tu día.',
+          icon: './1-192.png',
+          badge: './1-192.png',
+          tag: 'daily-reminder',
+        });
+      } catch(e) {}
+    }
+    localStorage.removeItem('nvaa_reminder_set');
+  }, msUntil);
+}
+
+// ============================================================
+// SOS PADRINO MODAL (injected dynamically)
+// ============================================================
+function openSosPadrinoModal() {
+  const existing = document.getElementById('modal-sos-padrino');
+  if (!existing) {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay open';
+    overlay.id = 'modal-sos-padrino';
+    overlay.innerHTML = `<div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <div class="modal-title">Contacto de Padrino/Madrina</div>
+        <button class="modal-close" onclick="closeModal('modal-sos-padrino')">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="input-group">
+          <label class="input-label">Nombre del padrino/madrina</label>
+          <input type="text" id="padrino-nombre" placeholder="Ej: Roberto" autocapitalize="words" value="${currentUser?.padrino_nombre||''}" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Teléfono</label>
+          <div class="tel-row">
+            <select id="padrino-prefijo">${PAISES.map(p=>`<option value="${p.code}" ${(currentUser?.padrino_prefijo||'+56')===p.code?'selected':''}>${p.code} ${p.name}</option>`).join('')}</select>
+            <input type="tel" id="padrino-tel" placeholder="912345678" value="${currentUser?.padrino_tel||''}" />
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="savePadrinoContact()">Guardar padrino</button>
+      </div>
+    </div>`;
+    overlay.addEventListener('click', e => { if(e.target===overlay) closeModal('modal-sos-padrino'); });
+    document.getElementById('app').appendChild(overlay);
+  } else {
+    openModal('modal-sos-padrino');
+  }
+}
+
+async function savePadrinoContact() {
+  const nombre = document.getElementById('padrino-nombre').value.trim();
+  const prefijo = document.getElementById('padrino-prefijo').value;
+  const tel = document.getElementById('padrino-tel').value.trim();
+  if (!tel) { showToast('Ingresa el teléfono'); return; }
+  if (currentUser.isAnonymous) {
+    currentUser.padrino_nombre = nombre;
+    currentUser.padrino_prefijo = prefijo;
+    currentUser.padrino_tel = tel;
+    localStorage.setItem('nvaa_anon_padrino', JSON.stringify({nombre,prefijo,tel}));
+  } else {
+    await sb.from('usuarios').update({ padrino_nombre: nombre, padrino_prefijo: prefijo, padrino_tel: tel }).eq('id', currentUser.id).catch(()=>{});
+    currentUser.padrino_nombre = nombre;
+    currentUser.padrino_prefijo = prefijo;
+    currentUser.padrino_tel = tel;
+  }
+  closeModal('modal-sos-padrino');
+  showToast('✓ Padrino guardado');
+  loadSOS(); // refresh SOS screen
+}
+
+// ============================================================
+// INIT NEW FEATURES (called from init())
+// ============================================================
+function initNewFeatures() {
+  setTimeout(checkAchievements, 2000);
+  setupDailyReminder();
+  updateOnlineStatus();
 }
 
 init();
