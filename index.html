@@ -2518,11 +2518,32 @@ async function handleLogin() {
 
   if (!nombre) { errEl.textContent = 'Ingresa tu nombre'; return; }
 
+  // Estrategia 1: buscar con el nombre de sede que tenemos
   const sedeName = sedes.find(s => String(s.id) === String(sedeId))?.nombre || 'San José de Renca';
   const userId = makeId(nombre, sedeName);
 
-  const { data, error } = await sb.from('usuarios').select('*').eq('id', userId).single();
-  if (error || !data) { errEl.textContent = 'Usuario no encontrado en esa sede.'; return; }
+  let data = null, error = null;
+  ({ data, error } = await sb.from('usuarios').select('*').eq('id', userId).single().catch(e=>({data:null,error:e})));
+
+  // Estrategia 2: si no encontró, buscar por nombre de usuario en TODAS las sedes
+  // (útil si el nombre de sede en DB difiere del hardcodeado)
+  if (!data) {
+    const nombreId = nombre.trim().toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_áéíóúñü]/g,'');
+    const { data: rows } = await sb.from('usuarios').select('*')
+      .like('id', `${nombreId}_%`).limit(5).catch(()=>({data:null}));
+    if (rows && rows.length === 1) {
+      data = rows[0];
+    } else if (rows && rows.length > 1) {
+      // Más de uno: filtrar por sede
+      const match = rows.find(r => {
+        const s = sedes.find(x => x.id === r.sede_id);
+        return s && s.nombre.toLowerCase().includes('renca');
+      });
+      data = match || rows[0];
+    }
+  }
+
+  if (!data) { errEl.textContent = 'Usuario no encontrado. Verifica tu nombre exactamente como te registraste.'; return; }
 
   // Verificar si está pendiente de aprobación
   if (data.estado === 'pendiente' || data.estado === 'rechazado') {
