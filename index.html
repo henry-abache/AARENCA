@@ -1173,6 +1173,65 @@
       display: flex; align-items: center; justify-content: center;
     }
     .nav-item { position: relative; }
+
+    /* ===== PWA INSTALL BANNER ===== */
+    #pwa-banner {
+      display: none;
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 72px);
+      left: 12px;
+      right: 12px;
+      background: var(--surface);
+      border: 1.5px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      z-index: 90;
+      flex-direction: row;
+      align-items: center;
+      gap: 12px;
+      animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #pwa-banner.show { display: flex; }
+    #pwa-banner-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    #pwa-banner-icon img { width: 28px; height: 28px; object-fit: contain; }
+    #pwa-banner-text { flex: 1; }
+    #pwa-banner-text strong { font-size: 14px; font-weight: 700; color: var(--text); display: block; }
+    #pwa-banner-text span { font-size: 12px; color: var(--text2); }
+    #pwa-install-btn {
+      padding: 9px 16px;
+      background: var(--accent);
+      color: var(--accent-text);
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    #pwa-dismiss-btn {
+      width: 28px;
+      height: 28px;
+      background: var(--bg3);
+      border: none;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      color: var(--text3);
+      font-size: 16px;
+    }
   </style>
 </head>
 <body>
@@ -1647,6 +1706,19 @@
   </div>
 
 </div><!-- #app -->
+
+<!-- PWA INSTALL BANNER -->
+<div id="pwa-banner">
+  <div id="pwa-banner-icon">
+    <img src="./1-192.png" alt="Logo" onerror="this.style.display='none'" />
+  </div>
+  <div id="pwa-banner-text">
+    <strong>Instalar Nueva Vida</strong>
+    <span>Agrega la app a tu pantalla de inicio</span>
+  </div>
+  <button id="pwa-install-btn" onclick="installPWA()">Instalar</button>
+  <button id="pwa-dismiss-btn" onclick="dismissPWA()" aria-label="Cerrar">✕</button>
+</div>
 
 <!-- SUPABASE -->
 <script src="https://unpkg.com/@supabase/supabase-js@2.39.3/dist/umd/supabase.js"></script>
@@ -2507,6 +2579,48 @@ function openFabAction() {
 // ============================================================
 // INIT
 // ============================================================
+let deferredInstallPrompt = null;
+
+// Captura el evento de instalación PWA (Chrome/Android/Edge)
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  // Mostrar banner solo si no fue descartado antes
+  if (!localStorage.getItem('nvaa_pwa_dismissed')) {
+    setTimeout(() => {
+      document.getElementById('pwa-banner').classList.add('show');
+    }, 3000);
+  }
+});
+
+// Cuando la PWA ya fue instalada, ocultar banner
+window.addEventListener('appinstalled', () => {
+  document.getElementById('pwa-banner').classList.remove('show');
+  deferredInstallPrompt = null;
+  showToast('✓ App instalada correctamente');
+});
+
+function installPWA() {
+  if (!deferredInstallPrompt) {
+    // iOS: mostrar instrucción manual
+    showToast('En iOS: toca Compartir → "Añadir a inicio"');
+    return;
+  }
+  deferredInstallPrompt.prompt();
+  deferredInstallPrompt.userChoice.then((result) => {
+    if (result.outcome === 'accepted') {
+      showToast('¡Instalando app!');
+    }
+    deferredInstallPrompt = null;
+    document.getElementById('pwa-banner').classList.remove('show');
+  });
+}
+
+function dismissPWA() {
+  document.getElementById('pwa-banner').classList.remove('show');
+  localStorage.setItem('nvaa_pwa_dismissed', '1');
+}
+
 async function init() {
   applyTheme(currentTheme);
 
@@ -2536,9 +2650,18 @@ async function init() {
     showMainApp();
   }
 
-  // Service worker
+  // Service worker con detección de actualización
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+    navigator.serviceWorker.register('./sw.js').then(reg => {
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            showToast('Nueva versión disponible — recarga la app');
+          }
+        });
+      });
+    }).catch(() => {});
   }
 
   // Theme media query listener
