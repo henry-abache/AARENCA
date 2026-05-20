@@ -1332,11 +1332,11 @@
       bottom: calc(env(safe-area-inset-bottom, 0px) + 72px);
       left: 12px;
       right: 12px;
-      background: var(--surface);
-      border: 1.5px solid var(--accent);
+      background: #1e293b;
+      border: 2px solid #FBBF24;
       border-radius: var(--radius);
       padding: 14px 16px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
       z-index: 90;
       flex-direction: row;
       align-items: center;
@@ -1348,7 +1348,7 @@
       width: 44px;
       height: 44px;
       border-radius: 10px;
-      background: var(--accent);
+      background: #FBBF24;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1356,15 +1356,15 @@
     }
     #pwa-banner-icon img { width: 28px; height: 28px; object-fit: contain; }
     #pwa-banner-text { flex: 1; }
-    #pwa-banner-text strong { font-size: 14px; font-weight: 700; color: var(--text); display: block; }
-    #pwa-banner-text span { font-size: 12px; color: var(--text2); }
+    #pwa-banner-text strong { font-size: 15px; font-weight: 700; color: #ffffff; display: block; }
+    #pwa-banner-text span { font-size: 13px; color: #cbd5e1; }
     #pwa-install-btn {
-      padding: 9px 16px;
-      background: var(--accent);
-      color: var(--accent-text);
+      padding: 10px 18px;
+      background: #FBBF24;
+      color: #0f172a;
       border: none;
       border-radius: var(--radius-sm);
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 700;
       cursor: pointer;
       flex-shrink: 0;
@@ -1372,7 +1372,7 @@
     #pwa-dismiss-btn {
       width: 28px;
       height: 28px;
-      background: var(--bg3);
+      background: #334155;
       border: none;
       border-radius: 50%;
       display: flex;
@@ -1380,7 +1380,7 @@
       justify-content: center;
       cursor: pointer;
       flex-shrink: 0;
-      color: var(--text3);
+      color: #ffffff;
       font-size: 16px;
     }
     /* ===== DIARIO ===== */
@@ -1396,12 +1396,12 @@
     .diary-pin-title {
       font-size: 20px;
       font-weight: 700;
-      color: var(--text);
+      color: #ffffff;
       text-align: center;
     }
     .diary-pin-sub {
       font-size: 14px;
-      color: var(--text2);
+      color: #cbd5e1;
       text-align: center;
     }
     .diary-pin-dots {
@@ -1430,11 +1430,11 @@
     .diary-pin-key {
       height: 64px;
       border-radius: var(--radius-sm);
-      border: 1.5px solid var(--border);
-      background: var(--surface);
-      color: var(--text);
-      font-size: 22px;
-      font-weight: 600;
+      border: 2px solid #334155;
+      background: #1e293b;
+      color: #ffffff;
+      font-size: 24px;
+      font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -1442,8 +1442,8 @@
       transition: background var(--transition), transform var(--transition);
       -webkit-tap-highlight-color: transparent;
     }
-    .diary-pin-key:active { transform: scale(0.93); background: var(--bg3); }
-    .diary-pin-key.key-del { font-size: 18px; }
+    .diary-pin-key:active { transform: scale(0.93); background: #334155; }
+    .diary-pin-key.key-del { font-size: 20px; color: #ffffff; }
     .diary-pin-key.key-empty { border: none; background: transparent; cursor: default; }
     .diary-pin-error {
       color: var(--danger);
@@ -1518,8 +1518,8 @@
     }
     .diary-setup-step {
       font-size: 13px;
-      color: var(--text3);
-      font-weight: 500;
+      color: #94a3b8;
+      font-weight: 600;
     }
   </style>
 </head>
