@@ -119,6 +119,21 @@
       resize: vertical;
     }
     
+    [data-theme="claro"] .diary-input {
+      background: #ffffff;
+      border: 1px solid #d1d5db;
+      color: #1f2937;
+    }
+    
+    [data-theme="claro"] select,
+    [data-theme="claro"] input[type="text"],
+    [data-theme="claro"] input[type="number"],
+    [data-theme="claro"] input[type="password"] {
+      background: #ffffff;
+      border: 1px solid #d1d5db;
+      color: #1f2937;
+    }
+    
     /* LOGROS */
     .achievements {
       display: grid;
@@ -227,7 +242,7 @@
     }
   </style>
 </head>
-<body data-theme="auto">
+<body data-theme="claro">
 
 <div class="header">
   <div class="logo">🟡 Nueva Vida AA</div>
@@ -429,7 +444,7 @@ const AA_MESSAGES = [
 ];
 
 let currentLanguage = localStorage.getItem('language') || 'es';
-let currentTheme = localStorage.getItem('theme') || 'auto';
+let currentTheme = localStorage.getItem('theme') || 'claro';
 
 // =================================
 // INICIALIZACIÓN
