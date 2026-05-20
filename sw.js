@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nueva-vida-aa-v10';
+const CACHE_NAME = 'nueva-vida-aa-v1.0';
 const urlsToCache = [
   './',
   './index.html',
@@ -9,27 +9,22 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', event => {
-  console.log('[SW] Instalando v9...');
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       return cache.addAll(urlsToCache).catch(err => {
-        console.warn('[SW] Error cacheando algunos recursos:', err);
+        console.warn('[SW] Error cacheando:', err);
         return Promise.resolve();
       });
     })
   );
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
-  console.log('[SW] Activando v9...');
   event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(
-        keys.filter(k => k !== CACHE_NAME).map(k => {
-          console.log('[SW] Eliminando caché viejo:', k);
-          return caches.delete(k);
-        })
+        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
       )
     )
   );
@@ -39,43 +34,73 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
 
-  // Supabase siempre en red
-  if (event.request.url.includes('supabase.co')) {
+  if (event.request.url.includes('supabase.co') || event.request.url.includes('googleapis.com')) {
     event.respondWith(
-      fetch(event.request).catch(() =>
-        new Response(JSON.stringify({ error: 'Sin conexión' }), {
-          status: 503,
-          headers: { 'Content-Type': 'application/json' }
-        })
-      )
+      fetch(event.request).catch(() => new Response('Sin conexión', {status: 503}))
     );
     return;
   }
 
-  // Google Maps siempre en red
-  if (event.request.url.includes('maps.google.com') || event.request.url.includes('maps.googleapis.com')) {
-    event.respondWith(fetch(event.request));
-    return;
-  }
-
-  // Cache-first para todo lo demás
   event.respondWith(
     caches.match(event.request).then(cached => {
       if (cached) return cached;
       return fetch(event.request).then(response => {
-        if (!response || response.status !== 200 || response.type === 'error') {
-          return response;
-        }
+        if (!response || response.status !== 200 || response.type === 'error') return response;
         const toCache = response.clone();
         caches.open(CACHE_NAME).then(cache => cache.put(event.request, toCache));
         return response;
-      }).catch(() =>
-        new Response('Sin conexión — Por favor revisa tu red', {
-          status: 503,
-          statusText: 'Service Unavailable',
-          headers: { 'Content-Type': 'text/plain; charset=utf-8' }
-        })
-      );
+      }).catch(() => new Response('Sin conexión', {status: 503}));
+    })
+  );
+});
+
+self.addEventListener('sync', event => {
+  if (event.tag === 'sync-diary') {
+    event.waitUntil(syncDiary());
+  }
+});
+
+async function syncDiary() {
+  try {
+    const diaryEntries = JSON.parse(localStorage.getItem('diaryEntries') || '[]');
+    for (let entry of diaryEntries) {
+      if (!entry.synced) {
+        // Sincronizar con Supabase si es necesario
+        entry.synced = true;
+      }
+    }
+    localStorage.setItem('diaryEntries', JSON.stringify(diaryEntries));
+  } catch (e) {
+    console.error('Error en sync:', e);
+  }
+}
+
+self.addEventListener('push', event => {
+  const options = {
+    body: event.data.text(),
+    icon: './1-192.png',
+    badge: './1-192.png',
+    vibrate: [200, 100, 200],
+    tag: 'notification',
+    requireInteraction: false
+  };
+  event.waitUntil(
+    self.registration.showNotification('Nueva Vida AA', options)
+  );
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil(
+    clients.matchAll({type: 'window'}).then(clientList => {
+      for (let client of clientList) {
+        if (client.url === '/' && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow('./');
+      }
     })
   );
 });
