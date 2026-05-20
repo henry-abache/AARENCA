@@ -1383,6 +1383,144 @@
       color: var(--text3);
       font-size: 16px;
     }
+    /* ===== DIARIO ===== */
+    .diary-pin-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+      gap: 20px;
+      flex: 1;
+    }
+    .diary-pin-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      text-align: center;
+    }
+    .diary-pin-sub {
+      font-size: 14px;
+      color: var(--text2);
+      text-align: center;
+    }
+    .diary-pin-dots {
+      display: flex;
+      gap: 16px;
+      margin: 8px 0;
+    }
+    .diary-pin-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2.5px solid var(--accent);
+      background: transparent;
+      transition: background 0.15s;
+    }
+    .diary-pin-dot.filled {
+      background: var(--accent);
+    }
+    .diary-pin-keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      width: 100%;
+      max-width: 280px;
+    }
+    .diary-pin-key {
+      height: 64px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 22px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background var(--transition), transform var(--transition);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .diary-pin-key:active { transform: scale(0.93); background: var(--bg3); }
+    .diary-pin-key.key-del { font-size: 18px; }
+    .diary-pin-key.key-empty { border: none; background: transparent; cursor: default; }
+    .diary-pin-error {
+      color: var(--danger);
+      font-size: 14px;
+      font-weight: 600;
+      min-height: 20px;
+      text-align: center;
+    }
+    .diary-content {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .diary-write-box {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+    .diary-write-box textarea {
+      min-height: 120px;
+      font-size: 16px;
+      color: var(--text);
+      background: transparent;
+      border: none;
+      outline: none;
+      width: 100%;
+      resize: none;
+      font-family: var(--font-main);
+      line-height: 1.6;
+    }
+    .diary-write-box textarea::placeholder { color: var(--text3); }
+    .diary-entry-item {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+    }
+    .diary-entry-date {
+      font-size: 12px;
+      color: var(--text3);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    .diary-entry-text {
+      font-size: 15px;
+      color: var(--text);
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .diary-entry-del {
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--danger);
+      background: transparent;
+      border: 1px solid var(--danger);
+      border-radius: 6px;
+      padding: 4px 12px;
+      cursor: pointer;
+      font-family: var(--font-main);
+    }
+    .diary-setup-form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 24px;
+      gap: 16px;
+      flex: 1;
+    }
+    .diary-setup-step {
+      font-size: 13px;
+      color: var(--text3);
+      font-weight: 500;
+    }
   </style>
 </head>
 <body>
@@ -1550,6 +1688,87 @@
       <div id="phones-list"></div>
     </div>
 
+    <!-- DIARIO PRIVADO -->
+    <div class="scroll-content" id="tab-diario" style="display:none;padding:0;overflow:hidden;display:none;flex-direction:column">
+      <!-- Estado: configurar PIN (primera vez) -->
+      <div id="diary-setup" style="display:none;flex-direction:column;flex:1">
+        <div class="diary-setup-form">
+          <div style="font-size:32px">📔</div>
+          <div class="diary-pin-title">Configura tu Diario Privado</div>
+          <div class="diary-pin-sub">Elige un PIN de 4 dígitos para proteger tu diario. Solo tú lo sabrás.</div>
+          <div class="diary-setup-step" id="diary-setup-step-label">Paso 1: Elige tu PIN</div>
+          <div class="diary-pin-dots" id="diary-setup-dots">
+            <div class="diary-pin-dot" id="sd0"></div>
+            <div class="diary-pin-dot" id="sd1"></div>
+            <div class="diary-pin-dot" id="sd2"></div>
+            <div class="diary-pin-dot" id="sd3"></div>
+          </div>
+          <div class="diary-pin-error" id="diary-setup-error"></div>
+          <div class="diary-pin-keypad">
+            <button class="diary-pin-key" onclick="diarySetupKey('1')">1</button>
+            <button class="diary-pin-key" onclick="diarySetupKey('2')">2</button>
+            <button class="diary-pin-key" onclick="diarySetupKey('3')">3</button>
+            <button class="diary-pin-key" onclick="diarySetupKey('4')">4</button>
+            <button class="diary-pin-key" onclick="diarySetupKey('5')">5</button>
+            <button class="diary-pin-key" onclick="diarySetupKey('6')">6</button>
+            <button class="diary-pin-key" onclick="diarySetupKey('7')">7</button>
+            <button class="diary-pin-key" onclick="diarySetupKey('8')">8</button>
+            <button class="diary-pin-key" onclick="diarySetupKey('9')">9</button>
+            <button class="diary-pin-key key-empty"></button>
+            <button class="diary-pin-key" onclick="diarySetupKey('0')">0</button>
+            <button class="diary-pin-key key-del" onclick="diarySetupDel()">⌫</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estado: ingresar PIN -->
+      <div id="diary-lock" style="display:none;flex-direction:column;flex:1">
+        <div class="diary-pin-screen">
+          <div style="font-size:36px">🔒</div>
+          <div class="diary-pin-title">Diario Privado</div>
+          <div class="diary-pin-sub">Ingresa tu PIN de 4 dígitos</div>
+          <div class="diary-pin-dots" id="diary-lock-dots">
+            <div class="diary-pin-dot" id="ld0"></div>
+            <div class="diary-pin-dot" id="ld1"></div>
+            <div class="diary-pin-dot" id="ld2"></div>
+            <div class="diary-pin-dot" id="ld3"></div>
+          </div>
+          <div class="diary-pin-error" id="diary-lock-error"></div>
+          <div class="diary-pin-keypad">
+            <button class="diary-pin-key" onclick="diaryLockKey('1')">1</button>
+            <button class="diary-pin-key" onclick="diaryLockKey('2')">2</button>
+            <button class="diary-pin-key" onclick="diaryLockKey('3')">3</button>
+            <button class="diary-pin-key" onclick="diaryLockKey('4')">4</button>
+            <button class="diary-pin-key" onclick="diaryLockKey('5')">5</button>
+            <button class="diary-pin-key" onclick="diaryLockKey('6')">6</button>
+            <button class="diary-pin-key" onclick="diaryLockKey('7')">7</button>
+            <button class="diary-pin-key" onclick="diaryLockKey('8')">8</button>
+            <button class="diary-pin-key" onclick="diaryLockKey('9')">9</button>
+            <button class="diary-pin-key key-empty"></button>
+            <button class="diary-pin-key" onclick="diaryLockKey('0')">0</button>
+            <button class="diary-pin-key key-del" onclick="diaryLockDel()">⌫</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estado: diario abierto -->
+      <div id="diary-open" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px 0">
+          <div style="font-size:15px;font-weight:700;color:var(--text)">📔 Mi Diario</div>
+          <button class="btn btn-sm btn-secondary" onclick="diaryLock()" style="width:auto;font-size:13px;padding:6px 14px">🔒 Cerrar</button>
+        </div>
+        <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(env(safe-area-inset-bottom,0px)+80px)">
+          <div class="diary-content">
+            <div class="diary-write-box">
+              <textarea id="diary-textarea" placeholder="Escribe cómo te sientes hoy... (privado, solo en tu dispositivo)" rows="5"></textarea>
+              <button class="btn btn-primary" style="margin-top:8px" onclick="diarySave()">💾 Guardar entrada</button>
+            </div>
+            <div id="diary-entries-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ADMIN PANEL -->
     <div class="scroll-content" id="tab-admin" style="display:none">
       <div id="admin-panel-body"></div>
@@ -1576,6 +1795,10 @@
       <button class="nav-item" onclick="switchTab('telefonos',this)">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/></svg>
         <span class="nav-label">Directorio</span>
+      </button>
+      <button class="nav-item" onclick="switchTab('diario',this);diaryOpen()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+        <span class="nav-label">Diario</span>
       </button>
       <button class="nav-item" id="nav-admin" style="display:none" onclick="switchTab('admin',this)">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
@@ -3343,6 +3566,184 @@ function openTransferRequest() {
   </div>`;
   overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
   document.getElementById('app').appendChild(overlay);
+}
+
+// ============================================================
+// DIARIO PRIVADO CON PIN
+// ============================================================
+const DIARY_PIN_KEY   = 'nvaa_diary_pin';
+const DIARY_DATA_KEY  = 'nvaa_diary_entries';
+const DIARY_UNLOCKED_KEY = 'nvaa_diary_session';
+
+let diarySetupBuffer = '';
+let diarySetupConfirmBuffer = '';
+let diarySetupPhase = 1; // 1=elegir pin, 2=confirmar pin
+let diaryLockBuffer = '';
+
+function diaryOpen() {
+  const pin = localStorage.getItem(DIARY_PIN_KEY);
+  if (!pin) {
+    // Primera vez: configurar PIN
+    diarySetupBuffer = '';
+    diarySetupConfirmBuffer = '';
+    diarySetupPhase = 1;
+    document.getElementById('diary-setup-step-label').textContent = 'Paso 1: Elige tu PIN de 4 dígitos';
+    document.getElementById('diary-setup-error').textContent = '';
+    diaryUpdateSetupDots();
+    _diaryShow('diary-setup');
+  } else if (sessionStorage.getItem(DIARY_UNLOCKED_KEY) === '1') {
+    // Ya desbloqueado en esta sesión
+    _diaryShow('diary-open');
+    diaryRenderEntries();
+  } else {
+    // Pedir PIN
+    diaryLockBuffer = '';
+    document.getElementById('diary-lock-error').textContent = '';
+    diaryUpdateLockDots();
+    _diaryShow('diary-lock');
+  }
+}
+
+function _diaryShow(state) {
+  // state: 'diary-setup' | 'diary-lock' | 'diary-open'
+  const tab = document.getElementById('tab-diario');
+  tab.style.display = 'flex';
+  tab.style.flexDirection = 'column';
+  ['diary-setup','diary-lock','diary-open'].forEach(id => {
+    const el = document.getElementById(id);
+    el.style.display = id === state ? 'flex' : 'none';
+  });
+}
+
+// --- Setup PIN ---
+function diaryUpdateSetupDots() {
+  const buf = diarySetupPhase === 1 ? diarySetupBuffer : diarySetupConfirmBuffer;
+  for (let i = 0; i < 4; i++) {
+    document.getElementById('sd' + i).classList.toggle('filled', i < buf.length);
+  }
+}
+
+function diarySetupKey(digit) {
+  const buf = diarySetupPhase === 1 ? diarySetupBuffer : diarySetupConfirmBuffer;
+  if (buf.length >= 4) return;
+  if (diarySetupPhase === 1) {
+    diarySetupBuffer += digit;
+    diaryUpdateSetupDots();
+    if (diarySetupBuffer.length === 4) {
+      setTimeout(() => {
+        diarySetupPhase = 2;
+        diarySetupConfirmBuffer = '';
+        document.getElementById('diary-setup-step-label').textContent = 'Paso 2: Confirma tu PIN';
+        document.getElementById('diary-setup-error').textContent = '';
+        diaryUpdateSetupDots();
+      }, 200);
+    }
+  } else {
+    diarySetupConfirmBuffer += digit;
+    diaryUpdateSetupDots();
+    if (diarySetupConfirmBuffer.length === 4) {
+      setTimeout(() => {
+        if (diarySetupBuffer === diarySetupConfirmBuffer) {
+          localStorage.setItem(DIARY_PIN_KEY, diarySetupBuffer);
+          sessionStorage.setItem(DIARY_UNLOCKED_KEY, '1');
+          _diaryShow('diary-open');
+          diaryRenderEntries();
+          showToast('📔 PIN guardado. Diario desbloqueado');
+        } else {
+          diarySetupPhase = 1;
+          diarySetupBuffer = '';
+          diarySetupConfirmBuffer = '';
+          document.getElementById('diary-setup-step-label').textContent = 'Paso 1: Elige tu PIN de 4 dígitos';
+          document.getElementById('diary-setup-error').textContent = 'Los PINs no coinciden, inténtalo de nuevo';
+          diaryUpdateSetupDots();
+        }
+      }, 200);
+    }
+  }
+}
+
+function diarySetupDel() {
+  if (diarySetupPhase === 1) {
+    diarySetupBuffer = diarySetupBuffer.slice(0, -1);
+  } else {
+    diarySetupConfirmBuffer = diarySetupConfirmBuffer.slice(0, -1);
+  }
+  diaryUpdateSetupDots();
+}
+
+// --- Lock PIN ---
+function diaryUpdateLockDots() {
+  for (let i = 0; i < 4; i++) {
+    document.getElementById('ld' + i).classList.toggle('filled', i < diaryLockBuffer.length);
+  }
+}
+
+function diaryLockKey(digit) {
+  if (diaryLockBuffer.length >= 4) return;
+  diaryLockBuffer += digit;
+  diaryUpdateLockDots();
+  if (diaryLockBuffer.length === 4) {
+    setTimeout(() => {
+      const pin = localStorage.getItem(DIARY_PIN_KEY);
+      if (diaryLockBuffer === pin) {
+        sessionStorage.setItem(DIARY_UNLOCKED_KEY, '1');
+        document.getElementById('diary-lock-error').textContent = '';
+        _diaryShow('diary-open');
+        diaryRenderEntries();
+      } else {
+        document.getElementById('diary-lock-error').textContent = 'PIN incorrecto, intenta de nuevo';
+        diaryLockBuffer = '';
+        diaryUpdateLockDots();
+      }
+    }, 200);
+  }
+}
+
+function diaryLockDel() {
+  diaryLockBuffer = diaryLockBuffer.slice(0, -1);
+  diaryUpdateLockDots();
+}
+
+// --- Diario abierto ---
+function diaryLock() {
+  sessionStorage.removeItem(DIARY_UNLOCKED_KEY);
+  diaryLockBuffer = '';
+  document.getElementById('diary-lock-error').textContent = '';
+  diaryUpdateLockDots();
+  _diaryShow('diary-lock');
+}
+
+function diarySave() {
+  const text = document.getElementById('diary-textarea').value.trim();
+  if (!text) { showToast('Escribe algo antes de guardar'); return; }
+  const entries = JSON.parse(localStorage.getItem(DIARY_DATA_KEY) || '[]');
+  entries.unshift({ id: Date.now(), text, date: new Date().toLocaleString('es-CL') });
+  localStorage.setItem(DIARY_DATA_KEY, JSON.stringify(entries));
+  document.getElementById('diary-textarea').value = '';
+  diaryRenderEntries();
+  showToast('📔 Entrada guardada');
+}
+
+function diaryDeleteEntry(id) {
+  const entries = JSON.parse(localStorage.getItem(DIARY_DATA_KEY) || '[]');
+  localStorage.setItem(DIARY_DATA_KEY, JSON.stringify(entries.filter(e => e.id !== id)));
+  diaryRenderEntries();
+}
+
+function diaryRenderEntries() {
+  const entries = JSON.parse(localStorage.getItem(DIARY_DATA_KEY) || '[]');
+  const container = document.getElementById('diary-entries-list');
+  if (!entries.length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">📝</div><div class="empty-title">Sin entradas aún</div><div class="empty-sub">Tu primera entrada aparecerá aquí</div></div>';
+    return;
+  }
+  container.innerHTML = entries.map(e => `
+    <div class="diary-entry-item">
+      <div class="diary-entry-date">${e.date}</div>
+      <div class="diary-entry-text">${e.text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+      <button class="diary-entry-del" onclick="diaryDeleteEntry(${e.id})">🗑 Eliminar</button>
+    </div>
+  `).join('');
 }
 
 init();
