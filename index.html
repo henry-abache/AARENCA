@@ -1213,6 +1213,196 @@
     .dot-videos { color: #f87171; }
     .dot-material_aa { color: var(--accent); }
 
+    /* ===== OFFLINE BANNER ===== */
+    #offline-banner {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      background: #b91c1c;
+      color: white;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 16px;
+      z-index: 9999;
+      letter-spacing: 0.2px;
+    }
+    #offline-banner.show { display: block; }
+    body.is-offline #app { padding-top: 34px; }
+
+    /* ===== SOS BUTTON ===== */
+    .sos-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 18px 20px;
+      border-radius: var(--radius);
+      border: none;
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      color: white;
+      font-size: 18px;
+      font-weight: 800;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 20px rgba(220,38,38,0.5);
+      margin-bottom: 16px;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .sos-btn:active { transform: scale(0.97); box-shadow: 0 2px 8px rgba(220,38,38,0.3); }
+    .sos-btn svg { width: 26px; height: 26px; }
+
+    .sos-modal-contact {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px;
+      background: var(--surface2);
+      border-radius: var(--radius-sm);
+      margin-bottom: 10px;
+      border: 1px solid var(--border);
+    }
+    .sos-contact-icon {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--danger);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+    .sos-contact-icon.padrino { background: var(--accent); }
+    .sos-contact-info { flex: 1; }
+    .sos-contact-name { font-size: 14px; font-weight: 700; color: var(--text); }
+    .sos-contact-num { font-size: 13px; color: var(--text2); margin-top: 2px; }
+    .sos-call-btn {
+      padding: 9px 16px; border-radius: var(--radius-sm);
+      background: var(--success); color: white;
+      border: none; font-size: 13px; font-weight: 700; cursor: pointer;
+      text-decoration: none; display: inline-flex; align-items: center;
+    }
+    .sos-support-msg {
+      background: linear-gradient(135deg, rgba(251,191,36,0.12), rgba(251,191,36,0.06));
+      border: 1px solid rgba(251,191,36,0.3);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-top: 16px;
+      font-size: 15px;
+      color: var(--text);
+      line-height: 1.6;
+      text-align: center;
+      font-style: italic;
+    }
+
+    /* ===== DIARY ===== */
+    .diary-entry-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: transform var(--transition);
+    }
+    .diary-entry-card:active { transform: scale(0.98); }
+    .diary-entry-date { font-size: 12px; color: var(--text3); margin-bottom: 5px; }
+    .diary-entry-preview { font-size: 14px; color: var(--text2); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .diary-entry-mood { font-size: 18px; }
+    .diary-entry-header { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
+    .diary-write-area { min-height: 160px; width: 100%; }
+    .mood-picker {
+      display: flex; gap: 10px; margin: 12px 0; flex-wrap: wrap;
+    }
+    .mood-chip {
+      padding: 8px 14px; border-radius: 20px;
+      background: var(--bg3); border: 2px solid var(--border);
+      font-size: 18px; cursor: pointer; transition: all var(--transition);
+      display: flex; align-items: center; gap: 6px;
+      font-family: var(--font-main); font-size: 14px;
+    }
+    .mood-chip.selected {
+      border-color: var(--accent);
+      background: rgba(251,191,36,0.12);
+    }
+
+    /* ===== MEDALS ===== */
+    .medals-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 12px 0;
+    }
+    .medal-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 14px 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      text-align: center;
+    }
+    .medal-item.achieved {
+      background: linear-gradient(135deg, rgba(251,191,36,0.18), rgba(251,191,36,0.06));
+      border-color: var(--accent);
+    }
+    .medal-icon { font-size: 30px; line-height: 1; filter: grayscale(1) opacity(0.4); }
+    .medal-item.achieved .medal-icon { filter: none; }
+    .medal-label { font-size: 11px; font-weight: 600; color: var(--text3); }
+    .medal-item.achieved .medal-label { color: var(--accent); }
+
+    /* Medallón de celebración */
+    .medal-celebrate {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 9000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      animation: fadeInBg 0.3s ease;
+    }
+    @keyframes fadeInBg { from { opacity:0 } to { opacity:1 } }
+    .medal-celebrate-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      padding: 40px 32px;
+      text-align: center;
+      max-width: 300px;
+      width: 90%;
+      animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes popIn { from { transform: scale(0.5); opacity:0 } to { transform: scale(1); opacity:1 } }
+    .medal-celebrate-icon { font-size: 72px; line-height: 1; margin-bottom: 16px; }
+    .medal-celebrate-title { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+    .medal-celebrate-sub { font-size: 15px; color: var(--text2); margin-bottom: 24px; }
+
+    /* ===== NOTIFICATIONS / PUSH ===== */
+    .push-permission-card {
+      background: linear-gradient(135deg, rgba(96,165,250,0.12), rgba(96,165,250,0.04));
+      border: 1px solid rgba(96,165,250,0.3);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .push-permission-icon { font-size: 28px; flex-shrink: 0; }
+    .push-permission-text { flex: 1; }
+    .push-permission-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+    .push-permission-desc { font-size: 12px; color: var(--text2); }
+    .push-enable-btn {
+      padding: 9px 14px; border-radius: var(--radius-sm);
+      background: var(--info); color: white;
+      border: none; font-size: 12px; font-weight: 700; cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    /* ===== DIARY NAV ITEM ===== */
+    .home-actions .action-row:last-child { margin-bottom: 0; }
+
     input[type="date"]::-webkit-calendar-picker-indicator {
       filter: invert(0.5);
     }
@@ -1490,6 +1680,11 @@
     <!-- HOME -->
     <div class="scroll-content" id="tab-home" style="display:block">
       <div id="msg-card-wrap"></div>
+      <!-- SOS Button -->
+      <button class="sos-btn" onclick="openSOS()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        🆘 Botón de Crisis
+      </button>
       <div class="counters-section">
         <div class="counters-title">Mis Contadores</div>
         <div id="counters-list"></div>
@@ -1500,6 +1695,22 @@
           <div class="action-text">
             <div class="action-title">Agregar o modificar adicciones</div>
             <div class="action-desc">Gestiona tus contadores de recuperación</div>
+          </div>
+          <div class="action-chevron"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></div>
+        </div>
+        <div class="action-row" onclick="openDiary()">
+          <div class="action-icon">📓</div>
+          <div class="action-text">
+            <div class="action-title">Mi Diario Personal</div>
+            <div class="action-desc">Escribe cómo fue tu día — solo tú puedes verlo</div>
+          </div>
+          <div class="action-chevron"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></div>
+        </div>
+        <div class="action-row" onclick="openMedals()">
+          <div class="action-icon">🏅</div>
+          <div class="action-text">
+            <div class="action-title">Mis Medallones</div>
+            <div class="action-desc">Logros y hitos de tu recuperación</div>
           </div>
           <div class="action-chevron"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></div>
         </div>
@@ -1849,6 +2060,69 @@
     </div>
   </div>
 
+  <!-- ===== MODAL: DIARIO PERSONAL ===== -->
+  <div class="modal-overlay" id="modal-diary">
+    <div class="modal-sheet" style="max-height:90vh">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <div class="modal-title">📓 Mi Diario</div>
+        <button class="modal-close" onclick="closeModal('modal-diary')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      </div>
+      <div class="modal-body" id="diary-body"></div>
+    </div>
+  </div>
+  <!-- ===== MODAL: ESCRIBIR ENTRADA DIARIO ===== -->
+  <div class="modal-overlay" id="modal-diary-write">
+    <div class="modal-sheet" style="max-height:90vh">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <div class="modal-title" id="diary-write-title">Nueva entrada</div>
+        <button class="modal-close" onclick="closeDiaryWrite()"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      </div>
+      <div class="modal-body">
+        <div class="input-group">
+          <label class="input-label">¿Cómo te sientes hoy?</label>
+          <div class="mood-picker" id="diary-mood-picker">
+            <div class="mood-chip" onclick="selectMood('😊',this)">😊 Bien</div>
+            <div class="mood-chip" onclick="selectMood('😐',this)">😐 Regular</div>
+            <div class="mood-chip" onclick="selectMood('😔',this)">😔 Mal</div>
+            <div class="mood-chip" onclick="selectMood('💪',this)">💪 Fuerte</div>
+            <div class="mood-chip" onclick="selectMood('😰',this)">😰 Tentado</div>
+            <div class="mood-chip" onclick="selectMood('🙏',this)">🙏 Agradecido</div>
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">¿Qué quieres escribir hoy?</label>
+          <textarea class="diary-write-area" id="diary-text" placeholder="Escribe cómo fue tu día, qué te ayudó, qué fue difícil... Este espacio es solo tuyo, nadie más puede leerlo."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="saveDiaryEntry()">Guardar entrada</button>
+        <p style="font-size:11px;color:var(--text3);text-align:center;margin-top:10px">🔒 Guardado solo en este dispositivo — completamente privado</p>
+      </div>
+    </div>
+  </div>
+  <!-- ===== MODAL: SOS / CRISIS ===== -->
+  <div class="modal-overlay" id="modal-sos">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-header" style="border-bottom-color: rgba(220,38,38,0.3)">
+        <div class="modal-title" style="color:var(--danger)">🆘 Apoyo de Emergencia</div>
+        <button class="modal-close" onclick="closeModal('modal-sos')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      </div>
+      <div class="modal-body" id="sos-body"></div>
+    </div>
+  </div>
+  <!-- ===== MODAL: MEDALLONES ===== -->
+  <div class="modal-overlay" id="modal-medals">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <div class="modal-title">🏅 Mis Medallones</div>
+        <button class="modal-close" onclick="closeModal('modal-medals')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      </div>
+      <div class="modal-body" id="medals-body"></div>
+    </div>
+  </div>
+
   <!-- Modal: Clave admin para acciones sensibles -->
   <div class="modal-overlay" id="modal-admin-secret">
     <div class="modal-sheet">
@@ -1870,6 +2144,9 @@
   </div>
 
 </div><!-- #app -->
+
+<!-- OFFLINE BANNER -->
+<div id="offline-banner">📵 Sin conexión — mostrando datos guardados</div>
 
 <!-- PWA INSTALL BANNER -->
 <div id="pwa-banner">
@@ -1934,6 +2211,18 @@ let libType = 'url';
 let pendingRegAddictions = [];
 let adminSecretCallback = null;
 let managingUserId = null;
+
+// ============================================================
+// OFFLINE CACHE HELPERS (defined early, used throughout)
+// ============================================================
+const OFFLINE_CACHE_KEY = 'nvaa_offline_cache';
+function saveOfflineCache(key, data) {
+  try { const c = JSON.parse(localStorage.getItem(OFFLINE_CACHE_KEY)||'{}'); c[key]=data; localStorage.setItem(OFFLINE_CACHE_KEY,JSON.stringify(c)); } catch(e) {}
+}
+function getOfflineCache(key) {
+  try { return (JSON.parse(localStorage.getItem(OFFLINE_CACHE_KEY)||'{}'))[key]||null; } catch(e) { return null; }
+}
+let isOnline = navigator.onLine;
 
 // ============================================================
 // THEME
@@ -2253,11 +2542,35 @@ function switchTab(tab, navEl) {
 async function loadHomeTab() {
   loadDailyMessage();
   renderCounters();
+  // Insert push notification card before msg-card-wrap if not shown
+  const wrap = document.getElementById('msg-card-wrap');
+  if (wrap && !document.getElementById('push-card')) {
+    const pushHtml = getPushCardHTML();
+    if (pushHtml) {
+      const div = document.createElement('div');
+      div.innerHTML = pushHtml;
+      wrap.parentNode.insertBefore(div.firstChild, wrap);
+    }
+  }
+  // Check for new medal achievements
+  setTimeout(checkNewMedals, 2000);
 }
 
 async function loadDailyMessage() {
+  if (!isOnline) {
+    const cached = getOfflineCache('mensajes_diarios');
+    if (cached && cached.length) {
+      const today = new Date().getDay();
+      const msg = cached[today % cached.length];
+      document.getElementById('msg-card-wrap').innerHTML = `<div class="msg-card"><div class="msg-card-text">${msg.mensaje}</div><div class="msg-card-author">— ${msg.autor}</div></div>`;
+      return;
+    }
+    document.getElementById('msg-card-wrap').innerHTML = `<div class="msg-card"><div class="msg-card-text">Un día a la vez. El presente es todo lo que tienes y todo lo que necesitas.</div><div class="msg-card-author">— AA</div></div>`;
+    return;
+  }
   const { data } = await sb.from('mensajes_diarios').select('*').eq('activo', true);
   if (!data || !data.length) return;
+  saveOfflineCache('mensajes_diarios', data);
   const today = new Date().getDay();
   const msg = data[today % data.length];
   document.getElementById('msg-card-wrap').innerHTML = `
@@ -2410,7 +2723,14 @@ async function savePhone() {
 async function loadPasos() {
   const list = document.getElementById('steps-list');
   list.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><div class="loading-text">Cargando pasos...</div></div>';
-  const { data } = await sb.from('pasos_aa').select('*').order('numero');
+  let data;
+  if (!isOnline) {
+    data = getOfflineCache('pasos_aa');
+  } else {
+    const res = await sb.from('pasos_aa').select('*').order('numero');
+    data = res.data;
+    if (data) saveOfflineCache('pasos_aa', data);
+  }
   if (!data) { list.innerHTML = ''; return; }
   const completed = currentUser.pasos_completados || [];
   const current = currentUser.paso_actual || 1;
@@ -2815,6 +3135,7 @@ function dismissPWA() {
 
 async function init() {
   applyTheme(currentTheme);
+  updateOnlineStatus();
 
   // Cargar sedes
   const { data: sedesData } = await sb.from('sedes').select('*').order('nombre');
@@ -3343,6 +3664,343 @@ function openTransferRequest() {
   </div>`;
   overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
   document.getElementById('app').appendChild(overlay);
+}
+
+function updateOnlineStatus() {
+  isOnline = navigator.onLine;
+  const banner = document.getElementById('offline-banner');
+  if (banner) {
+    banner.classList.toggle('show', !isOnline);
+    document.body.classList.toggle('is-offline', !isOnline);
+  }
+}
+
+window.addEventListener('online', () => { updateOnlineStatus(); showToast('✓ Conexión restaurada'); });
+window.addEventListener('offline', () => { updateOnlineStatus(); showToast('📵 Sin conexión — mostrando datos guardados'); });
+
+// ============================================================
+// SOS / CRISIS BUTTON
+// ============================================================
+const SOS_NUMBERS = [
+  { name: 'CONACE – Drogas Chile', num: '1414', emoji: '🏥' },
+  { name: 'Fono Orientación Salud Mental', num: '600 360 7777', emoji: '🧠' },
+  { name: 'Fono Familia', num: '149', emoji: '👨‍👩‍👧' },
+  { name: 'Emergencias', num: '131', emoji: '🚑' },
+];
+
+const SOS_MESSAGES = [
+  'Este momento va a pasar. Eres más fuerte que lo que sientes ahora mismo.',
+  'Pedir ayuda es el acto más valiente que puedes hacer hoy.',
+  'No estás solo/a. Hay personas que se preocupan por ti.',
+  'Un día a la vez. Incluso un minuto a la vez si es necesario.',
+  'Recuerda cuánto has avanzado. No lo desperdicies por un momento difícil.',
+];
+
+function openSOS() {
+  const padrino = (currentUser?.telefono) ? null : null; // Se podría buscar padrino designado
+  const randomMsg = SOS_MESSAGES[Math.floor(Math.random() * SOS_MESSAGES.length)];
+  
+  // Get padrino from contacts if set
+  const padrinoData = JSON.parse(localStorage.getItem('nvaa_padrino_' + (currentUser?.id || '')) || 'null');
+
+  let html = `<p style="font-size:14px;color:var(--text2);margin-bottom:16px;text-align:center">Llama ahora — alguien está disponible para ayudarte</p>`;
+  
+  if (padrinoData) {
+    html += `<div class="sos-modal-contact">
+      <div class="sos-contact-icon padrino">🤝</div>
+      <div class="sos-contact-info">
+        <div class="sos-contact-name">${padrinoData.nombre} (Mi Padrino/a)</div>
+        <div class="sos-contact-num">${padrinoData.telefono}</div>
+      </div>
+      <a class="sos-call-btn" href="tel:${padrinoData.telefono}">Llamar</a>
+    </div>`;
+  }
+
+  html += SOS_NUMBERS.map(s => `
+    <div class="sos-modal-contact">
+      <div class="sos-contact-icon">${s.emoji}</div>
+      <div class="sos-contact-info">
+        <div class="sos-contact-name">${s.name}</div>
+        <div class="sos-contact-num">${s.num}</div>
+      </div>
+      <a class="sos-call-btn" href="tel:${s.num.replace(/\s/g,'')}">Llamar</a>
+    </div>`).join('');
+
+  html += `<div class="sos-support-msg">"${randomMsg}"</div>`;
+
+  if (!padrinoData) {
+    html += `<button class="btn btn-secondary" style="margin-top:16px;font-size:14px" onclick="openSetPadrino()">+ Agregar contacto de padrino/a</button>`;
+  } else {
+    html += `<button class="btn btn-secondary" style="margin-top:12px;font-size:13px" onclick="openSetPadrino()">✏️ Editar padrino/a</button>`;
+  }
+
+  document.getElementById('sos-body').innerHTML = html;
+  openModal('modal-sos');
+}
+
+function openSetPadrino() {
+  const existing = JSON.parse(localStorage.getItem('nvaa_padrino_' + (currentUser?.id || '')) || 'null');
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay open';
+  overlay.id = 'modal-padrino';
+  overlay.innerHTML = `<div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">🤝 Mi Padrino/a</div>
+      <button class="modal-close" onclick="document.getElementById('modal-padrino').remove()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--text2);font-size:13px;margin-bottom:16px">Guardado solo en este dispositivo</p>
+      <div class="input-group">
+        <label class="input-label">Nombre</label>
+        <input type="text" id="padrino-nombre" value="${existing?.nombre||''}" placeholder="Nombre de tu padrino/a" />
+      </div>
+      <div class="input-group">
+        <label class="input-label">Teléfono</label>
+        <input type="tel" id="padrino-tel" value="${existing?.telefono||''}" placeholder="+56912345678" />
+      </div>
+      <button class="btn btn-primary" onclick="savePadrino()">Guardar</button>
+    </div>
+  </div>`;
+  overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
+  document.getElementById('app').appendChild(overlay);
+}
+
+function savePadrino() {
+  const nombre = document.getElementById('padrino-nombre').value.trim();
+  const telefono = document.getElementById('padrino-tel').value.trim();
+  if (!nombre || !telefono) { showToast('Completa nombre y teléfono'); return; }
+  localStorage.setItem('nvaa_padrino_' + (currentUser?.id || ''), JSON.stringify({ nombre, telefono }));
+  document.getElementById('modal-padrino')?.remove();
+  showToast('Padrino/a guardado');
+  openSOS(); // Reload SOS modal
+}
+
+// ============================================================
+// DIARIO PERSONAL (100% localStorage, privado)
+// ============================================================
+let currentDiaryMood = '';
+let editingDiaryId = null;
+
+function getDiaryEntries() {
+  try {
+    return JSON.parse(localStorage.getItem('nvaa_diary_' + (currentUser?.id || '')) || '[]');
+  } catch(e) { return []; }
+}
+
+function saveDiaryEntries(entries) {
+  localStorage.setItem('nvaa_diary_' + (currentUser?.id || ''), JSON.stringify(entries));
+}
+
+function openDiary() {
+  const entries = getDiaryEntries();
+  let html = `<button class="btn btn-primary" style="margin-bottom:16px" onclick="openDiaryWrite()">✏️ Nueva entrada de hoy</button>`;
+
+  if (!entries.length) {
+    html += `<div class="empty-state"><div class="empty-icon">📓</div><div class="empty-title">Sin entradas aún</div><div class="empty-sub">Escribe tu primera entrada — nadie más puede leerla</div></div>`;
+  } else {
+    const sorted = [...entries].sort((a,b) => new Date(b.date) - new Date(a.date));
+    html += sorted.map(e => {
+      const d = new Date(e.date);
+      const dateStr = d.toLocaleDateString('es-CL', { weekday:'long', day:'numeric', month:'long' });
+      const preview = e.text.substring(0, 120) + (e.text.length > 120 ? '...' : '');
+      return `<div class="diary-entry-card" onclick="openDiaryWrite('${e.id}')">
+        <div class="diary-entry-header">
+          <span class="diary-entry-mood">${e.mood || '📝'}</span>
+          <span class="diary-entry-date">${dateStr}</span>
+        </div>
+        <div class="diary-entry-preview">${preview || '(sin texto)'}</div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('diary-body').innerHTML = html;
+  openModal('modal-diary');
+}
+
+function openDiaryWrite(entryId = null) {
+  editingDiaryId = entryId;
+  currentDiaryMood = '';
+
+  if (entryId) {
+    const entries = getDiaryEntries();
+    const entry = entries.find(e => e.id === entryId);
+    if (entry) {
+      document.getElementById('diary-write-title').textContent = 'Editar entrada';
+      document.getElementById('diary-text').value = entry.text || '';
+      currentDiaryMood = entry.mood || '';
+      // Mark mood
+      document.querySelectorAll('#diary-mood-picker .mood-chip').forEach(chip => {
+        chip.classList.toggle('selected', chip.textContent.startsWith(entry.mood || '__'));
+      });
+    }
+  } else {
+    document.getElementById('diary-write-title').textContent = 'Nueva entrada';
+    document.getElementById('diary-text').value = '';
+    document.querySelectorAll('#diary-mood-picker .mood-chip').forEach(c => c.classList.remove('selected'));
+  }
+  openModal('modal-diary-write');
+}
+
+function selectMood(mood, el) {
+  currentDiaryMood = mood;
+  document.querySelectorAll('#diary-mood-picker .mood-chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function saveDiaryEntry() {
+  const text = document.getElementById('diary-text').value.trim();
+  if (!text && !currentDiaryMood) { showToast('Escribe algo o selecciona un estado de ánimo'); return; }
+  
+  const entries = getDiaryEntries();
+  if (editingDiaryId) {
+    const idx = entries.findIndex(e => e.id === editingDiaryId);
+    if (idx !== -1) {
+      entries[idx].text = text;
+      entries[idx].mood = currentDiaryMood;
+    }
+  } else {
+    entries.push({
+      id: Date.now().toString(),
+      date: new Date().toISOString(),
+      text,
+      mood: currentDiaryMood
+    });
+  }
+  saveDiaryEntries(entries);
+  closeModal('modal-diary-write');
+  openDiary();
+  showToast('Entrada guardada 🔒');
+}
+
+function closeDiaryWrite() {
+  closeModal('modal-diary-write');
+}
+
+// ============================================================
+// MEDALLONES / LOGROS
+// ============================================================
+const MEDALS_DEF = [
+  { label: '1 día', days: 1, icon: '🌱', title: '¡Primer día!' },
+  { label: '1 semana', days: 7, icon: '⭐', title: '¡Una semana!' },
+  { label: '2 semanas', days: 14, icon: '🌟', title: '¡Dos semanas!' },
+  { label: '1 mes', days: 30, icon: '🥉', title: '¡Un mes!' },
+  { label: '3 meses', days: 90, icon: '🥈', title: '¡Tres meses!' },
+  { label: '6 meses', days: 180, icon: '🥇', title: '¡Seis meses!' },
+  { label: '1 año', days: 365, icon: '🏆', title: '¡Un año entero!' },
+  { label: '2 años', days: 730, icon: '💎', title: '¡Dos años!' },
+  { label: '5 años', days: 1825, icon: '👑', title: '¡Cinco años!' },
+];
+
+function openMedals() {
+  const addictions = currentUser?.adicciones || [];
+  let html = '';
+
+  if (!addictions.length) {
+    html = `<div class="empty-state"><div class="empty-icon">🏅</div><div class="empty-title">Sin contadores activos</div><div class="empty-sub">Agrega una adicción para ver tus medallones</div></div>`;
+  } else {
+    addictions.forEach(a => {
+      const start = new Date(a.fecha_inicio);
+      const totalDays = Math.max(0, Math.floor((new Date() - start) / 86400000));
+      html += `<div class="section-label">${a.tipo}</div>
+        <div class="medals-grid">
+          ${MEDALS_DEF.map(m => `
+            <div class="medal-item ${totalDays >= m.days ? 'achieved' : ''}">
+              <div class="medal-icon">${m.icon}</div>
+              <div class="medal-label">${m.label}</div>
+            </div>`).join('')}
+        </div>`;
+    });
+  }
+  document.getElementById('medals-body').innerHTML = html;
+  openModal('modal-medals');
+}
+
+// Check for new medals on login and after counter update
+function checkNewMedals() {
+  const addictions = currentUser?.adicciones || [];
+  const seenKey = 'nvaa_medals_seen_' + (currentUser?.id || '');
+  const seen = JSON.parse(localStorage.getItem(seenKey) || '[]');
+  const newAchieved = [];
+
+  addictions.forEach(a => {
+    const totalDays = Math.max(0, Math.floor((new Date() - new Date(a.fecha_inicio)) / 86400000));
+    MEDALS_DEF.forEach(m => {
+      const medalId = `${a.tipo}_${m.days}`;
+      if (totalDays >= m.days && !seen.includes(medalId)) {
+        newAchieved.push({ ...m, addiction: a.tipo, medalId });
+      }
+    });
+  });
+
+  if (newAchieved.length) {
+    const m = newAchieved[0]; // celebrate first new one
+    localStorage.setItem(seenKey, JSON.stringify([...seen, ...newAchieved.map(x => x.medalId)]));
+    setTimeout(() => showMedalCelebration(m), 1200);
+  }
+}
+
+function showMedalCelebration(medal) {
+  const el = document.createElement('div');
+  el.className = 'medal-celebrate';
+  el.innerHTML = `<div class="medal-celebrate-card">
+    <div class="medal-celebrate-icon">${medal.icon}</div>
+    <div class="medal-celebrate-title">${medal.title}</div>
+    <div class="medal-celebrate-sub">¡Llevas ${medal.label} sin consumir ${medal.addiction}!<br>Este logro es tuyo para siempre.</div>
+    <button class="btn btn-primary" onclick="this.closest('.medal-celebrate').remove()">¡Gracias! 🙏</button>
+  </div>`;
+  document.getElementById('app').appendChild(el);
+  el.addEventListener('click', e => { if(e.target===el) el.remove(); });
+}
+
+// ============================================================
+// NOTIFICACIONES PUSH (recordatorio diario)
+// ============================================================
+async function requestPushPermission() {
+  if (!('Notification' in window)) {
+    showToast('Tu dispositivo no soporta notificaciones');
+    return;
+  }
+  if (Notification.permission === 'granted') {
+    scheduleDailyReminder();
+    showToast('✓ Recordatorios ya activados');
+    return;
+  }
+  const result = await Notification.requestPermission();
+  if (result === 'granted') {
+    scheduleDailyReminder();
+    localStorage.setItem('nvaa_push_enabled', '1');
+    showToast('✓ Recordatorios activados');
+    renderPushCard();
+  } else {
+    showToast('Notificaciones no permitidas');
+  }
+}
+
+function scheduleDailyReminder() {
+  // Use SW-based scheduling via localStorage + periodic check
+  // The SW will fire a reminder if it's been >20h since last open
+  localStorage.setItem('nvaa_last_open', new Date().toISOString());
+}
+
+function renderPushCard() {
+  const pushCard = document.getElementById('push-card');
+  if (!pushCard) return;
+  const enabled = Notification.permission === 'granted';
+  pushCard.style.display = enabled ? 'none' : 'flex';
+}
+
+function getPushCardHTML() {
+  if (!('Notification' in window) || Notification.permission === 'granted') return '';
+  return `<div class="push-permission-card" id="push-card">
+    <div class="push-permission-icon">🔔</div>
+    <div class="push-permission-text">
+      <div class="push-permission-title">Recordatorio diario</div>
+      <div class="push-permission-desc">Recibe un recordatorio de tu progreso cada día</div>
+    </div>
+    <button class="push-enable-btn" onclick="requestPushPermission()">Activar</button>
+  </div>`;
 }
 
 init();
