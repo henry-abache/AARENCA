@@ -1244,20 +1244,21 @@
     .pin-modal-overlay.hidden { display: none; }
     .pin-box {
       background: #1e293b;
-      border: 2px solid rgba(251,191,36,0.4);
+      border: 2px solid rgba(251,191,36,0.6);
       border-radius: var(--radius-lg, 24px);
       padding: 32px 28px;
       width: 100%; max-width: 360px;
-      box-shadow: 0 12px 60px rgba(0,0,0,0.9);
+      box-shadow: 0 20px 80px rgba(0,0,0,0.95), 0 0 30px rgba(251,191,36,0.2);
       text-align: center;
     }
-    /* Temas claros: caja blanca */
+    /* Temas claros: caja blanca con contraste azul */
     [data-theme="claro"] .pin-box,
     [data-theme="auto-claro"] .pin-box,
     [data-theme="minimalista"] .pin-box,
     [data-theme="adulto_mayor"] .pin-box {
       background: #ffffff;
-      border-color: rgba(0,0,0,0.15);
+      border-color: #3b82f6;
+      box-shadow: 0 20px 80px rgba(0,0,0,0.15), 0 0 30px rgba(59, 130, 246, 0.15);
     }
     .pin-icon { font-size: 48px; margin-bottom: 8px; }
     .pin-title {
@@ -1277,17 +1278,60 @@
     [data-theme="minimalista"] .pin-subtitle,
     [data-theme="adulto_mayor"] .pin-subtitle { color: #555555 !important; }
     .pin-dots {
-      display: flex; gap: 14px; justify-content: center;
+      display: flex; gap: 16px; justify-content: center;
       margin-bottom: 28px;
+      background: rgba(251, 191, 36, 0.1);
+      padding: 20px;
+      border-radius: 12px;
+      border: 2px solid rgba(251, 191, 36, 0.3);
     }
     .pin-dot {
-      width: 18px; height: 18px;
-      border-radius: 50%;
-      border: 2px solid var(--accent);
-      background: transparent;
-      transition: background 0.15s;
+      width: 30px; height: 40px;
+      border-radius: 6px;
+      border: 2px solid var(--accent, #fbbf24);
+      background: rgba(251, 191, 36, 0.15);
+      transition: all 0.15s ease;
+      font-weight: 700;
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent, #fbbf24);
+      font-family: 'Courier New', monospace;
+      letter-spacing: 2px;
+      text-shadow: 0 0 4px rgba(251, 191, 36, 0.4);
     }
-    .pin-dot.filled { background: var(--accent); }
+    .pin-dot.filled { 
+      background: var(--accent, #fbbf24); 
+      color: #0f172a;
+      box-shadow: 0 0 10px rgba(251, 191, 36, 0.5), inset 0 0 4px rgba(0,0,0,0.2);
+      font-weight: 900;
+    }
+    /* Temas claros para pin-dots */
+    [data-theme="claro"] .pin-dots,
+    [data-theme="auto-claro"] .pin-dots,
+    [data-theme="minimalista"] .pin-dots,
+    [data-theme="adulto_mayor"] .pin-dots {
+      background: rgba(59, 130, 246, 0.1);
+      border-color: rgba(59, 130, 246, 0.3);
+    }
+    [data-theme="claro"] .pin-dot,
+    [data-theme="auto-claro"] .pin-dot,
+    [data-theme="minimalista"] .pin-dot,
+    [data-theme="adulto_mayor"] .pin-dot {
+      border-color: #3b82f6;
+      background: rgba(59, 130, 246, 0.1);
+      color: #3b82f6;
+      text-shadow: 0 0 4px rgba(59, 130, 246, 0.3);
+    }
+    [data-theme="claro"] .pin-dot.filled,
+    [data-theme="auto-claro"] .pin-dot.filled,
+    [data-theme="minimalista"] .pin-dot.filled,
+    [data-theme="adulto_mayor"] .pin-dot.filled {
+      background: #3b82f6;
+      color: #ffffff;
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.5), inset 0 0 4px rgba(0,0,0,0.1);
+    }
     .pin-keypad {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -1301,21 +1345,31 @@
       font-size: 24px; font-weight: 600;
       color: #f1f5f9;
       cursor: pointer;
-      transition: transform 0.1s, background 0.15s;
+      transition: transform 0.1s, background 0.15s, box-shadow 0.15s;
       display: flex; align-items: center; justify-content: center;
       -webkit-tap-highlight-color: transparent;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
-    .pin-key:active { transform: scale(0.93); background: #475569; }
-    .pin-key.pin-key-del { font-size: 20px; background: #243147; color: #f1f5f9; }
-    .pin-key.pin-key-empty { background: transparent; cursor: default; }
+    .pin-key:active { transform: scale(0.93); background: #475569; box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
+    .pin-key.pin-key-del { font-size: 20px; background: #dc2626; color: #ffffff; font-weight: 700; }
+    .pin-key.pin-key-del:active { background: #b91c1c; }
+    .pin-key.pin-key-empty { background: transparent; cursor: default; box-shadow: none; }
     [data-theme="claro"] .pin-key,
     [data-theme="auto-claro"] .pin-key,
     [data-theme="minimalista"] .pin-key,
-    [data-theme="adulto_mayor"] .pin-key { background: #e2e8f0; color: #111111; }
+    [data-theme="adulto_mayor"] .pin-key { background: #dbeafe; color: #111111; box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2); }
+    [data-theme="claro"] .pin-key:active,
+    [data-theme="auto-claro"] .pin-key:active,
+    [data-theme="minimalista"] .pin-key:active,
+    [data-theme="adulto_mayor"] .pin-key:active { background: #bfdbfe; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3); }
     [data-theme="claro"] .pin-key.pin-key-del,
     [data-theme="auto-claro"] .pin-key.pin-key-del,
     [data-theme="minimalista"] .pin-key.pin-key-del,
-    [data-theme="adulto_mayor"] .pin-key.pin-key-del { background: #cbd5e1; color: #111111; }
+    [data-theme="adulto_mayor"] .pin-key.pin-key-del { background: #fecaca; color: #7f1d1d; font-weight: 700; box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2); }
+    [data-theme="claro"] .pin-key.pin-key-del:active,
+    [data-theme="auto-claro"] .pin-key.pin-key-del:active,
+    [data-theme="minimalista"] .pin-key.pin-key-del:active,
+    [data-theme="adulto_mayor"] .pin-key.pin-key-del:active { background: #fca5a5; }
     .pin-error {
       color: #f87171; font-size: 14px;
       min-height: 20px; margin-bottom: 8px;
@@ -1335,12 +1389,14 @@
     [data-theme="auto-claro"] .pin-link,
     [data-theme="minimalista"] .pin-link { color: #d97706; }
     [data-theme="adulto_mayor"] .pin-link { color: #b45309; }
-    [data-theme="adulto_mayor"] .pin-title { font-size: 24px !important; }
-    [data-theme="adulto_mayor"] .pin-subtitle { font-size: 17px !important; }
-    [data-theme="adulto_mayor"] .pin-key { height: 72px !important; font-size: 28px !important; }
-    [data-theme="adulto_mayor"] .pin-dot { width: 22px; height: 22px; }
-    [data-theme="adulto_mayor"] .pin-link { font-size: 17px !important; padding: 12px !important; }
-    [data-theme="adulto_mayor"] .pin-error { font-size: 16px !important; }
+    [data-theme="adulto_mayor"] .pin-title { font-size: 28px !important; font-weight: 900 !important; }
+    [data-theme="adulto_mayor"] .pin-subtitle { font-size: 18px !important; line-height: 1.6 !important; }
+    [data-theme="adulto_mayor"] .pin-dot { width: 40px !important; height: 52px !important; font-size: 28px !important; border-width: 3px !important; }
+    [data-theme="adulto_mayor"] .pin-dots { padding: 28px !important; gap: 20px !important; }
+    [data-theme="adulto_mayor"] .pin-key { height: 82px !important; font-size: 32px !important; font-weight: 700 !important; }
+    [data-theme="adulto_mayor"] .pin-key.pin-key-del { font-size: 24px !important; }
+    [data-theme="adulto_mayor"] .pin-link { font-size: 18px !important; padding: 14px !important; font-weight: 600 !important; }
+    [data-theme="adulto_mayor"] .pin-error { font-size: 17px !important; font-weight: 600 !important; }
 
     /* ===== SOS BUTTON ===== */
     .sos-btn {
@@ -4399,7 +4455,12 @@ function pinSetupCancel() {
 function _updatePinDots(containerId, prefix, count) {
   for (let i = 0; i < 4; i++) {
     const dot = document.getElementById(prefix + i);
-    if (dot) dot.classList.toggle('filled', i < count);
+    if (dot) {
+      const shouldFill = i < count;
+      dot.classList.toggle('filled', shouldFill);
+      // Mostrar asterisco (*) cuando está lleno, vacío cuando está vacío
+      dot.textContent = shouldFill ? '*' : '';
+    }
   }
 }
 
