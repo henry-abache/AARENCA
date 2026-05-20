@@ -1908,6 +1908,12 @@
           </div>
           <span class="more-menu-label">Admin</span>
         </button>
+        <button class="more-menu-item" onclick="closeMoreMenu();installPWA()">
+          <div class="more-menu-icon" style="background:#d1fae5">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#059669" width="26" height="26"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          </div>
+          <span class="more-menu-label">Instalar App</span>
+        </button>
         <button class="more-menu-item" onclick="closeMoreMenu();handleLogout()">
           <div class="more-menu-icon" style="background:#f1f5f9">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#64748b" width="26" height="26"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
@@ -2231,10 +2237,10 @@
 <!-- PWA INSTALL BANNER -->
 <div id="pwa-banner">
   <div id="pwa-banner-icon">
-    <img src="./1-192.png" alt="Logo" onerror="this.style.display='none'" />
+    <img src="./logo-aa.png" alt="Logo" onerror="this.src='./1-192.png'" />
   </div>
   <div id="pwa-banner-text">
-    <strong>Instalar Nueva Vida</strong>
+    <strong>📲 Instalar en tu teléfono</strong>
     <span>Agrega la app a tu pantalla de inicio</span>
   </div>
   <button id="pwa-install-btn" onclick="installPWA()">Instalar</button>
@@ -3172,12 +3178,10 @@ let deferredInstallPrompt = null;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredInstallPrompt = e;
-  // Mostrar banner solo si no fue descartado antes
-  if (!localStorage.getItem('nvaa_pwa_dismissed')) {
-    setTimeout(() => {
-      document.getElementById('pwa-banner').classList.add('show');
-    }, 3000);
-  }
+  // Mostrar banner siempre (resetear dismissed para que puedan instalar)
+  setTimeout(() => {
+    document.getElementById('pwa-banner').classList.add('show');
+  }, 2000);
 });
 
 // Cuando la PWA ya fue instalada, ocultar banner
@@ -3187,10 +3191,27 @@ window.addEventListener('appinstalled', () => {
   showToast('✓ App instalada correctamente');
 });
 
+// iOS: mostrar banner con instrucciones si no está instalada
+function checkIOSInstall() {
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isInStandaloneMode = ('standalone' in window.navigator) && window.navigator.standalone;
+  if (isIOS && !isInStandaloneMode) {
+    setTimeout(() => {
+      document.getElementById('pwa-banner').classList.add('show');
+    }, 2000);
+  }
+}
+checkIOSInstall();
+
 function installPWA() {
   if (!deferredInstallPrompt) {
     // iOS: mostrar instrucción manual
-    showToast('En iOS: toca Compartir → "Añadir a inicio"');
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    if (isIOS) {
+      alert('En iPhone/iPad:\n1. Toca el botón Compartir (□↑) en Safari\n2. Desplázate y toca "Añadir a pantalla de inicio"\n3. Toca "Añadir" para confirmar');
+    } else {
+      showToast('Abre en Chrome/Edge y toca el menú → Instalar app');
+    }
     return;
   }
   deferredInstallPrompt.prompt();
@@ -3205,7 +3226,6 @@ function installPWA() {
 
 function dismissPWA() {
   document.getElementById('pwa-banner').classList.remove('show');
-  localStorage.setItem('nvaa_pwa_dismissed', '1');
 }
 
 async function init() {
