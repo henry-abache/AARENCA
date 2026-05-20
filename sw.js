@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nueva-vida-aa-v9';
+const CACHE_NAME = 'nueva-vida-aa-v10';
 const urlsToCache = [
   './',
   './index.html',

@@ -1069,6 +1069,110 @@
     [data-theme="auto-oscuro"] input[type="date"]::-webkit-calendar-picker-indicator {
       filter: invert(1);
     }
+
+    /* ===== ADMIN PANEL ===== */
+    .admin-section { margin-bottom: 20px; }
+    .admin-section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+    }
+    .pending-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 8px;
+    }
+    .pending-item.highlight { border-color: var(--accent); }
+    .pending-avatar {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: var(--bg3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px; font-weight: 700; color: var(--text2);
+      flex-shrink: 0;
+    }
+    .pending-info { flex: 1; }
+    .pending-name { font-size: 14px; font-weight: 600; color: var(--text); }
+    .pending-detail { font-size: 12px; color: var(--text3); margin-top: 2px; }
+    .pending-actions { display: flex; gap: 6px; }
+    .btn-approve {
+      padding: 7px 14px; border-radius: var(--radius-sm);
+      background: var(--success); color: white;
+      border: none; font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    .btn-reject {
+      padding: 7px 14px; border-radius: var(--radius-sm);
+      background: transparent; color: var(--danger);
+      border: 1.5px solid var(--danger); font-size: 13px; font-weight: 600; cursor: pointer;
+    }
+    .user-manage-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      margin-bottom: 6px;
+    }
+    .user-manage-av {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--bg3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 700; color: var(--text2);
+      flex-shrink: 0;
+    }
+    .user-manage-av.is-admin { background: var(--accent); color: var(--accent-text); }
+    .user-manage-info { flex: 1; }
+    .user-manage-name { font-size: 14px; font-weight: 600; color: var(--text); }
+    .user-manage-role { font-size: 12px; color: var(--text3); }
+    .user-manage-btn {
+      padding: 6px 12px; border-radius: var(--radius-sm);
+      background: var(--bg3); color: var(--text2);
+      border: 1px solid var(--border); font-size: 12px; cursor: pointer;
+    }
+    .rejected-section {
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    .rejected-toggle {
+      padding: 12px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer;
+      font-size: 14px; font-weight: 600; color: var(--text2);
+      background: var(--surface);
+    }
+    .rejected-list { display: none; }
+    .rejected-list.open { display: block; }
+    .rejected-item {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+    }
+    .rejected-info { flex: 1; font-size: 13px; color: var(--text2); }
+    .btn-restore {
+      padding: 6px 12px; border-radius: var(--radius-sm);
+      background: var(--info); color: white;
+      border: none; font-size: 12px; font-weight: 600; cursor: pointer;
+    }
+    .nav-item .nav-badge {
+      position: absolute;
+      top: 4px; right: calc(50% - 18px);
+      width: 14px; height: 14px;
+      background: var(--danger);
+      border-radius: 50%;
+      font-size: 9px; font-weight: 700; color: white;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .nav-item { position: relative; }
   </style>
 </head>
 <body>
@@ -1197,6 +1301,14 @@
           </div>
           <div class="action-chevron"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></div>
         </div>
+        <div class="action-row" onclick="openTransferRequest()">
+          <div class="action-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg></div>
+          <div class="action-text">
+            <div class="action-title">Solicitar traslado de sede</div>
+            <div class="action-desc">Pide cambiar a otra sede</div>
+          </div>
+          <div class="action-chevron"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></div>
+        </div>
       </div>
     </div>
 
@@ -1228,6 +1340,11 @@
       <div id="phones-list"></div>
     </div>
 
+    <!-- ADMIN PANEL -->
+    <div class="scroll-content" id="tab-admin" style="display:none">
+      <div id="admin-panel-body"></div>
+    </div>
+
     <!-- BOTTOM NAV -->
     <nav class="bottom-nav">
       <button class="nav-item active" onclick="switchTab('home',this)">
@@ -1249,6 +1366,11 @@
       <button class="nav-item" onclick="switchTab('telefonos',this)">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/></svg>
         <span class="nav-label">Directorio</span>
+      </button>
+      <button class="nav-item" id="nav-admin" style="display:none" onclick="switchTab('admin',this)">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <div class="nav-badge" id="admin-nav-badge" style="display:none">!</div>
+        <span class="nav-label">Admin</span>
       </button>
       <button class="nav-item" onclick="handleLogout()">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
@@ -1412,6 +1534,118 @@
     </div>
   </div>
 
+  <!-- Modal: Crear nuevo usuario (admin) -->
+  <div class="modal-overlay" id="modal-new-user">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <div class="modal-title">Nuevo Usuario</div>
+        <button class="modal-close" onclick="closeModal('modal-new-user')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      </div>
+      <div class="modal-body">
+        <div class="input-group">
+          <label class="input-label">Nombre</label>
+          <input type="text" id="nu-nombre" placeholder="Nombre del nuevo miembro" autocapitalize="words" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Sede</label>
+          <select id="nu-sede"></select>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Teléfono (opcional)</label>
+          <div class="tel-row">
+            <select id="nu-prefijo"></select>
+            <input type="tel" id="nu-telefono" placeholder="912345678" />
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Rol</label>
+          <select id="nu-rol">
+            <option value="usuario">Usuario</option>
+            <option value="admin_adjunto">Admin Adjunto</option>
+            <option value="admin_principal">Admin Principal</option>
+          </select>
+        </div>
+        <div id="nu-error" class="error-msg"></div>
+        <button class="btn btn-primary" onclick="adminCreateUser()">Crear Usuario</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Crear nueva sede (admin) -->
+  <div class="modal-overlay" id="modal-new-sede">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <div class="modal-title">Nueva Sede</div>
+        <button class="modal-close" onclick="closeModal('modal-new-sede')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      </div>
+      <div class="modal-body">
+        <div class="input-group">
+          <label class="input-label">Nombre de la sede</label>
+          <input type="text" id="sede-nombre" placeholder="Ej: Las Condes" autocapitalize="words" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Ciudad</label>
+          <input type="text" id="sede-ciudad" placeholder="Ej: Santiago" autocapitalize="words" />
+        </div>
+        <div id="sede-error" class="error-msg"></div>
+        <button class="btn btn-primary" onclick="adminCreateSede()">Crear Sede</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Nueva adicción al catálogo (admin) -->
+  <div class="modal-overlay" id="modal-new-adiccion">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <div class="modal-title">Nueva Adicción</div>
+        <button class="modal-close" onclick="closeModal('modal-new-adiccion')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      </div>
+      <div class="modal-body">
+        <div class="input-group">
+          <label class="input-label">Nombre de la adicción</label>
+          <input type="text" id="add-nombre" placeholder="Ej: Cannabis" autocapitalize="words" />
+        </div>
+        <div id="add-error" class="error-msg"></div>
+        <button class="btn btn-primary" onclick="adminCreateAdiccion()">Agregar al Catálogo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Gestionar usuario (admin) -->
+  <div class="modal-overlay" id="modal-manage-user">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <div class="modal-title" id="manage-user-title">Gestionar Usuario</div>
+        <button class="modal-close" onclick="closeModal('modal-manage-user')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      </div>
+      <div class="modal-body" id="manage-user-body"></div>
+    </div>
+  </div>
+
+  <!-- Modal: Clave admin para acciones sensibles -->
+  <div class="modal-overlay" id="modal-admin-secret">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <div class="modal-title">Confirmar acción</div>
+        <button class="modal-close" onclick="closeModal('modal-admin-secret')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      </div>
+      <div class="modal-body">
+        <p style="color:var(--text2);font-size:14px;margin-bottom:16px" id="admin-secret-msg">Ingresa la palabra secreta para confirmar.</p>
+        <div class="input-group">
+          <label class="input-label">Palabra secreta</label>
+          <input type="text" id="admin-secret-input" placeholder="felices24" autocomplete="off" />
+        </div>
+        <div id="admin-secret-error" class="error-msg"></div>
+        <button class="btn btn-primary" onclick="confirmAdminSecret()">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
 </div><!-- #app -->
 
 <!-- SUPABASE -->
@@ -1462,6 +1696,8 @@ let currentTheme = localStorage.getItem('nvaa_theme') || 'auto';
 let libEditingId = null;
 let libType = 'url';
 let pendingRegAddictions = [];
+let adminSecretCallback = null;
+let managingUserId = null;
 
 // ============================================================
 // THEME
@@ -1566,6 +1802,17 @@ async function handleLogin() {
   const { data, error } = await sb.from('usuarios').select('*').eq('id', userId).single();
   if (error || !data) { errEl.textContent = 'Usuario no encontrado en esa sede.'; return; }
 
+  // Verificar si está pendiente de aprobación
+  if (data.estado === 'pendiente' || data.estado === 'rechazado') {
+    if (data.estado === 'pendiente') {
+      errEl.textContent = '⏳ Tu solicitud está pendiente de aprobación por un administrador.';
+    } else {
+      errEl.textContent = '❌ Tu solicitud fue rechazada. Contacta al administrador de tu sede.';
+    }
+    errEl.style.color = 'var(--accent)';
+    return;
+  }
+
   if (data.rol === 'admin_principal' || data.rol === 'admin_adjunto') {
     const adminSecretWrap = document.getElementById('admin-secret-wrap');
     if (!adminSecretWrap.classList.contains('show')) {
@@ -1602,12 +1849,14 @@ async function handleRegister() {
 
   // Determinar rol
   let rol = 'usuario';
+  let estado = 'pendiente'; // nuevo: requiere aprobación
   const isAdmin = document.getElementById('reg-admin-wrap').classList.contains('show') && secret === SECRET_WORD;
 
   if (isAdmin) {
     // ¿Ya hay admin principal en la sede?
-    const { data: admins } = await sb.from('usuarios').select('id').eq('sede_id', sedeId).eq('rol', 'admin_principal');
+    const { data: admins } = await sb.from('usuarios').select('id').eq('sede_id', sedeId).eq('rol', 'admin_principal').eq('activo', true);
     rol = (admins && admins.length > 0) ? 'admin_adjunto' : 'admin_principal';
+    estado = 'aprobado'; // admins entran directo
   } else if (document.getElementById('reg-admin-wrap').classList.contains('show') && secret !== '' && secret !== SECRET_WORD) {
     errEl.textContent = 'Clave de administrador incorrecta.'; return;
   }
@@ -1623,23 +1872,40 @@ async function handleRegister() {
     nombre,
     sede_id: sedeId,
     rol,
+    estado: estado,
     telefono: tel || null,
     prefijo_pais: prefijo,
     adicciones: addictions,
     paso_actual: 1,
     pasos_completados: [],
     tema: currentTheme,
+    activo: estado === 'aprobado',
   };
 
   const { data: newUser, error } = await sb.from('usuarios').insert(userData).select().single();
   if (error) { errEl.textContent = 'Error al registrarse: ' + error.message; return; }
 
-  // Notificar a la sede
+  if (estado === 'pendiente') {
+    // Notificar admins de la sede
+    await sb.from('notificaciones').insert({
+      sede_id: sedeId,
+      tipo: 'nuevo_usuario',
+      titulo: '⏳ Solicitud de ingreso',
+      cuerpo: `${nombre} solicita unirse a la sede ${sede.nombre}. Revisa el panel de Admin.`,
+    });
+    // Mostrar mensaje y volver a login
+    errEl.style.color = 'var(--success)';
+    errEl.textContent = '✓ Solicitud enviada. Un administrador debe aprobar tu ingreso.';
+    setTimeout(() => switchAuthTab('login'), 3000);
+    return;
+  }
+
+  // Notificar a la sede (admin que entró directo)
   await sb.from('notificaciones').insert({
     sede_id: sedeId,
     tipo: 'nuevo_usuario',
-    titulo: 'Nuevo miembro',
-    cuerpo: `${nombre} se ha unido a la sede ${sede.nombre}.`,
+    titulo: 'Nuevo administrador',
+    cuerpo: `${nombre} se ha unido como administrador a la sede ${sede.nombre}.`,
   });
 
   loginUser(newUser);
@@ -1663,7 +1929,12 @@ async function autoLogin() {
   const savedId = localStorage.getItem('nvaa_user_id');
   if (!savedId) return false;
   const { data } = await sb.from('usuarios').select('*').eq('id', savedId).single();
-  if (data) { currentUser = data; applyTheme(data.tema || currentTheme); return true; }
+  if (data && (data.activo || data.estado === 'aprobado')) { currentUser = data; applyTheme(data.tema || currentTheme); return true; }
+  if (data && data.estado === 'pendiente') {
+    // Show pending message on auth screen
+    document.getElementById('login-error').textContent = '⏳ Tu solicitud está pendiente de aprobación.';
+    document.getElementById('login-error').style.color = 'var(--accent)';
+  }
   return false;
 }
 
@@ -1688,15 +1959,17 @@ function showMainApp() {
 
   const isAdmin = currentUser.rol !== 'usuario';
   document.getElementById('fab-add').classList.toggle('hidden', !isAdmin);
+  document.getElementById('nav-admin').style.display = isAdmin ? 'flex' : 'none';
 
   loadHomeTab();
   loadNotifBadge();
+  if (isAdmin) loadAdminBadge();
 }
 
 // ============================================================
 // TABS
 // ============================================================
-const TABS = ['home','pasos','biblioteca','eventos','telefonos'];
+const TABS = ['home','pasos','biblioteca','eventos','telefonos','admin'];
 function switchTab(tab, navEl) {
   currentTab = tab;
   TABS.forEach(t => {
@@ -1715,6 +1988,7 @@ function switchTab(tab, navEl) {
   if (tab==='biblioteca') loadBiblioteca();
   if (tab==='eventos') loadEventos();
   if (tab==='telefonos') loadTelefonos();
+  if (tab==='admin') loadAdminPanel();
 }
 
 // ============================================================
@@ -2159,10 +2433,10 @@ async function loadTelefonos() {
           <div class="phone-avatar ${isA?'admin-av':''}">${initial}</div>
           <div class="phone-info">
             <div class="phone-name">${u.nombre} ${isA?`<span class="admin-badge">${ROL_LABELS[u.rol]}</span>`:''}</div>
-            <div class="phone-num">${tel}</div>
+            <div class="phone-num" style="cursor:pointer" onclick="window.open('https://wa.me/${(u.prefijo_pais||'+56').replace('+','')}${u.telefono}','_blank')">${tel}</div>
           </div>
-          <a href="tel:${tel}" class="phone-call">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.948V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 12V5z"/></svg>
+          <a href="https://wa.me/${(u.prefijo_pais||'+56').replace('+','')}${u.telefono}" target="_blank" class="phone-call" style="background:#25D366">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="18" height="18"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
           </a>
         </div>`;
       }).join('')}
@@ -2282,6 +2556,473 @@ function toggleRegAddiction(tipo, el) {
     pendingRegAddictions = pendingRegAddictions.filter(t=>t!==tipo);
     if (!pendingRegAddictions.length) document.getElementById('reg-date-row').classList.remove('show');
   }
+}
+
+// ============================================================
+// ADMIN SECRET MODAL
+// ============================================================
+function requireAdminSecret(msg, callback) {
+  adminSecretCallback = callback;
+  document.getElementById('admin-secret-msg').textContent = msg;
+  document.getElementById('admin-secret-input').value = '';
+  document.getElementById('admin-secret-error').textContent = '';
+  openModal('modal-admin-secret');
+}
+
+function confirmAdminSecret() {
+  const val = document.getElementById('admin-secret-input').value.trim();
+  if (val !== SECRET_WORD) {
+    document.getElementById('admin-secret-error').textContent = 'Palabra incorrecta.';
+    return;
+  }
+  closeModal('modal-admin-secret');
+  if (adminSecretCallback) adminSecretCallback();
+  adminSecretCallback = null;
+}
+
+// ============================================================
+// ADMIN BADGE (pending users count)
+// ============================================================
+async function loadAdminBadge() {
+  const { count } = await sb.from('usuarios')
+    .select('id', { count: 'exact', head: true })
+    .eq('sede_id', currentUser.sede_id)
+    .eq('estado', 'pendiente');
+  
+  // Also check transfer requests
+  const { count: tc } = await sb.from('solicitudes_traslado')
+    .select('id', { count: 'exact', head: true })
+    .eq('sede_origen_id', currentUser.sede_id)
+    .eq('estado', 'pendiente')
+    .catch(() => ({ count: 0 }));
+
+  const total = (count || 0) + (tc || 0);
+  const badge = document.getElementById('admin-nav-badge');
+  badge.style.display = total > 0 ? 'flex' : 'none';
+  badge.textContent = total > 9 ? '9+' : (total || '');
+}
+
+// ============================================================
+// ADMIN PANEL
+// ============================================================
+async function loadAdminPanel() {
+  const body = document.getElementById('admin-panel-body');
+  body.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><div class="loading-text">Cargando panel...</div></div>';
+
+  const isPrincipal = currentUser.rol === 'admin_principal';
+
+  // Load pending users
+  const { data: pendingUsers } = await sb.from('usuarios')
+    .select('*').eq('sede_id', currentUser.sede_id).eq('estado', 'pendiente');
+  
+  // Load rejected users
+  const { data: rejectedUsers } = await sb.from('usuarios')
+    .select('*').eq('sede_id', currentUser.sede_id).eq('estado', 'rechazado');
+
+  // Load current users in sede
+  const { data: sedeUsers } = await sb.from('usuarios')
+    .select('*').eq('sede_id', currentUser.sede_id).eq('activo', true).order('rol');
+
+  // Load transfer requests
+  let transferRequests = [];
+  try {
+    const { data: tr } = await sb.from('solicitudes_traslado')
+      .select('*, usuarios(*)')
+      .eq('sede_origen_id', currentUser.sede_id)
+      .eq('estado', 'pendiente');
+    transferRequests = tr || [];
+  } catch(e) {}
+
+  const ROL_LABELS = { admin_principal: 'Admin Principal', admin_adjunto: 'Admin Adjunto', usuario: 'Usuario' };
+  const rolOrder = { admin_principal: 0, admin_adjunto: 1, usuario: 2 };
+  const sortedUsers = (sedeUsers||[]).sort((a,b) => (rolOrder[a.rol]||2)-(rolOrder[b.rol]||2));
+
+  let html = '';
+
+  // === PENDING USERS ===
+  html += `<div class="admin-section">
+    <div class="admin-section-title">⏳ Solicitudes de ingreso (${(pendingUsers||[]).length})</div>`;
+  
+  if (!pendingUsers || !pendingUsers.length) {
+    html += '<div class="card" style="text-align:center;color:var(--text3)">Sin solicitudes pendientes</div>';
+  } else {
+    html += (pendingUsers||[]).map(u => `
+      <div class="pending-item highlight">
+        <div class="pending-avatar">${u.nombre.charAt(0).toUpperCase()}</div>
+        <div class="pending-info">
+          <div class="pending-name">${u.nombre}</div>
+          <div class="pending-detail">${u.telefono ? (u.prefijo_pais||'+56')+u.telefono : 'Sin teléfono'}</div>
+        </div>
+        <div class="pending-actions">
+          <button class="btn-approve" onclick="approveUser('${u.id}')">✓</button>
+          <button class="btn-reject" onclick="rejectUser('${u.id}')">✗</button>
+        </div>
+      </div>`).join('');
+  }
+
+  // === REJECTED (collapsible) ===
+  if (rejectedUsers && rejectedUsers.length) {
+    html += `<div class="rejected-section">
+      <div class="rejected-toggle" onclick="toggleRejected(this)">
+        Rechazados (${rejectedUsers.length}) <span>▶</span>
+      </div>
+      <div class="rejected-list" id="rejected-list">
+        ${rejectedUsers.map(u => `
+          <div class="rejected-item">
+            <div style="width:32px;height:32px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--text3)">${u.nombre.charAt(0).toUpperCase()}</div>
+            <div class="rejected-info">${u.nombre}</div>
+            <button class="btn-restore" onclick="approveUser('${u.id}')">Aprobar</button>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }
+  html += '</div>';
+
+  // === TRANSFER REQUESTS ===
+  if (transferRequests.length) {
+    html += `<div class="admin-section">
+      <div class="admin-section-title">🔄 Solicitudes de traslado (${transferRequests.length})</div>`;
+    html += transferRequests.map(tr => {
+      const u = tr.usuarios;
+      const sedeDestino = sedes.find(s=>s.id===tr.sede_destino_id);
+      return `<div class="pending-item highlight">
+        <div class="pending-avatar">${u ? u.nombre.charAt(0).toUpperCase() : '?'}</div>
+        <div class="pending-info">
+          <div class="pending-name">${u ? u.nombre : tr.usuario_id}</div>
+          <div class="pending-detail">→ ${sedeDestino ? sedeDestino.nombre : 'Sede desconocida'}</div>
+        </div>
+        <div class="pending-actions">
+          <button class="btn-approve" onclick="approveTransfer(${tr.id},'${tr.usuario_id}',${tr.sede_destino_id})">✓</button>
+          <button class="btn-reject" onclick="rejectTransfer(${tr.id})">✗</button>
+        </div>
+      </div>`;
+    }).join('');
+    html += '</div>';
+  }
+
+  // === MANAGE USERS ===
+  html += `<div class="admin-section">
+    <div class="admin-section-title">👥 Miembros de la sede</div>
+    ${sortedUsers.map(u => {
+      const isMe = u.id === currentUser.id;
+      const av = u.rol !== 'usuario';
+      return `<div class="user-manage-item">
+        <div class="user-manage-av ${av?'is-admin':''}">${u.nombre.charAt(0).toUpperCase()}</div>
+        <div class="user-manage-info">
+          <div class="user-manage-name">${u.nombre}${isMe?' (tú)':''}</div>
+          <div class="user-manage-role">${ROL_LABELS[u.rol]||u.rol}</div>
+        </div>
+        ${!isMe ? `<button class="user-manage-btn" onclick="openManageUser('${u.id}')">Gestionar</button>` : ''}
+      </div>`;
+    }).join('')}
+  </div>`;
+
+  // === CREAR COSAS ===
+  html += `<div class="admin-section">
+    <div class="admin-section-title">➕ Crear</div>
+    <button class="btn btn-secondary" style="margin-bottom:10px" onclick="openNewUserModal()">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+      Crear nuevo usuario
+    </button>
+    <button class="btn btn-secondary" style="margin-bottom:10px" onclick="openModal('modal-new-sede')">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+      Crear nueva sede
+    </button>
+    <button class="btn btn-secondary" onclick="openModal('modal-new-adiccion')">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      Agregar adicción al catálogo
+    </button>
+  </div>`;
+
+  body.innerHTML = html;
+  loadAdminBadge();
+}
+
+function toggleRejected(el) {
+  const list = document.getElementById('rejected-list');
+  list.classList.toggle('open');
+  el.querySelector('span').textContent = list.classList.contains('open') ? '▼' : '▶';
+}
+
+async function approveUser(userId) {
+  requireAdminSecret('¿Aprobar el ingreso de este usuario?', async () => {
+    await sb.from('usuarios').update({ estado: 'aprobado', activo: true }).eq('id', userId);
+    const { data: u } = await sb.from('usuarios').select('nombre,sede_id').eq('id', userId).single();
+    if (u) {
+      await sb.from('notificaciones').insert({
+        sede_id: u.sede_id, usuario_destino: userId,
+        tipo: 'mensaje', titulo: '✅ Bienvenido',
+        cuerpo: `Tu ingreso a la sede ha sido aprobado. ¡Bienvenido/a ${u.nombre}!`
+      });
+    }
+    showToast('Usuario aprobado');
+    loadAdminPanel();
+  });
+}
+
+async function rejectUser(userId) {
+  requireAdminSecret('¿Rechazar la solicitud de este usuario?', async () => {
+    await sb.from('usuarios').update({ estado: 'rechazado', activo: false }).eq('id', userId);
+    showToast('Solicitud rechazada');
+    loadAdminPanel();
+  });
+}
+
+// ============================================================
+// MANAGE USER MODAL
+// ============================================================
+async function openManageUser(userId) {
+  managingUserId = userId;
+  const { data: u } = await sb.from('usuarios').select('*').eq('id', userId).single();
+  if (!u) return;
+  const ROL_OPTIONS = ['usuario','admin_adjunto','admin_principal'];
+  const ROL_LABELS = { admin_principal: 'Admin Principal', admin_adjunto: 'Admin Adjunto', usuario: 'Usuario' };
+  document.getElementById('manage-user-title').textContent = u.nombre;
+
+  let html = `
+    <div class="admin-section">
+      <div class="admin-section-title">Rol actual: ${ROL_LABELS[u.rol]||u.rol}</div>
+      <div class="input-group">
+        <label class="input-label">Cambiar rol</label>
+        <select id="manage-rol-select">
+          ${ROL_OPTIONS.map(r => `<option value="${r}" ${r===u.rol?'selected':''}>${ROL_LABELS[r]}</option>`).join('')}
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="saveUserRole('${u.id}')">Guardar rol</button>
+    </div>
+    <div class="divider"></div>
+    <div class="admin-section">
+      <div class="admin-section-title">Traslado de sede</div>
+      <div class="input-group">
+        <label class="input-label">Mover a sede</label>
+        <select id="manage-sede-select">
+          ${sedes.filter(s=>s.id!==u.sede_id).map(s=>`<option value="${s.id}">${s.nombre}</option>`).join('')}
+        </select>
+      </div>
+      <button class="btn btn-secondary" onclick="transferUserDirect('${u.id}')">Trasladar directamente</button>
+    </div>
+    <div class="divider"></div>
+    <button class="btn btn-danger mt-8" onclick="toggleUserActive('${u.id}',${u.activo})">
+      ${u.activo ? '🚫 Desactivar usuario' : '✅ Reactivar usuario'}
+    </button>`;
+
+  document.getElementById('manage-user-body').innerHTML = html;
+  openModal('modal-manage-user');
+}
+
+async function saveUserRole(userId) {
+  const newRol = document.getElementById('manage-rol-select').value;
+  requireAdminSecret(`¿Cambiar el rol de este usuario a ${newRol}?`, async () => {
+    // Si se va a hacer admin_principal, quitar ese rol al actual
+    if (newRol === 'admin_principal') {
+      const { data: currentPrincipal } = await sb.from('usuarios')
+        .select('id').eq('sede_id', currentUser.sede_id).eq('rol', 'admin_principal').single();
+      if (currentPrincipal && currentPrincipal.id !== userId) {
+        await sb.from('usuarios').update({ rol: 'admin_adjunto' }).eq('id', currentPrincipal.id);
+      }
+    }
+    await sb.from('usuarios').update({ rol: newRol }).eq('id', userId);
+    showToast('Rol actualizado');
+    closeModal('modal-manage-user');
+    loadAdminPanel();
+  });
+}
+
+async function transferUserDirect(userId) {
+  const sedeDestinoId = parseInt(document.getElementById('manage-sede-select').value);
+  requireAdminSecret('¿Trasladar directamente a este usuario?', async () => {
+    const sedeDestino = sedes.find(s=>s.id===sedeDestinoId);
+    const { data: u } = await sb.from('usuarios').select('nombre').eq('id', userId).single();
+    // Generate new ID for the user in the new sede
+    const newUserId = makeId(u.nombre, sedeDestino.nombre);
+    await sb.from('usuarios').update({ sede_id: sedeDestinoId, id: newUserId }).eq('id', userId);
+    await sb.from('notificaciones').insert({
+      sede_id: sedeDestinoId, tipo: 'nuevo_usuario',
+      titulo: 'Nuevo miembro trasladado',
+      cuerpo: `${u.nombre} ha sido trasladado/a a esta sede.`
+    });
+    showToast('Usuario trasladado');
+    closeModal('modal-manage-user');
+    loadAdminPanel();
+  });
+}
+
+async function toggleUserActive(userId, isActive) {
+  requireAdminSecret(isActive ? '¿Desactivar este usuario?' : '¿Reactivar este usuario?', async () => {
+    await sb.from('usuarios').update({ activo: !isActive }).eq('id', userId);
+    showToast(isActive ? 'Usuario desactivado' : 'Usuario reactivado');
+    closeModal('modal-manage-user');
+    loadAdminPanel();
+  });
+}
+
+// ============================================================
+// TRANSFER REQUEST (from user perspective)
+// ============================================================
+async function requestTransfer() {
+  const sedeDestinoId = parseInt(document.getElementById('transfer-sede-select').value);
+  if (!sedeDestinoId || sedeDestinoId === currentUser.sede_id) {
+    showToast('Selecciona una sede diferente'); return;
+  }
+  try {
+    await sb.from('solicitudes_traslado').insert({
+      usuario_id: currentUser.id,
+      sede_origen_id: currentUser.sede_id,
+      sede_destino_id: sedeDestinoId,
+      estado: 'pendiente'
+    });
+    // Notify admins of origin sede
+    await sb.from('notificaciones').insert({
+      sede_id: currentUser.sede_id, tipo: 'mensaje',
+      titulo: '🔄 Solicitud de traslado',
+      cuerpo: `${currentUser.nombre} solicita trasladarse a ${sedes.find(s=>s.id===sedeDestinoId)?.nombre || 'otra sede'}.`
+    });
+    closeModal('modal-transfer');
+    showToast('Solicitud de traslado enviada');
+  } catch(e) {
+    showToast('Error: ' + e.message);
+  }
+}
+
+async function approveTransfer(trId, userId, sedeDestinoId) {
+  requireAdminSecret('¿Aprobar el traslado de este usuario?', async () => {
+    const sedeDestino = sedes.find(s=>s.id===sedeDestinoId);
+    const { data: u } = await sb.from('usuarios').select('nombre').eq('id', userId).single();
+    if (u && sedeDestino) {
+      const newUserId = makeId(u.nombre, sedeDestino.nombre);
+      await sb.from('usuarios').update({ sede_id: sedeDestinoId, id: newUserId }).eq('id', userId);
+      await sb.from('solicitudes_traslado').update({ estado: 'aprobado' }).eq('id', trId);
+      await sb.from('notificaciones').insert({
+        sede_id: sedeDestinoId, tipo: 'nuevo_usuario',
+        titulo: 'Nuevo miembro trasladado',
+        cuerpo: `${u.nombre} ha sido trasladado/a a esta sede.`
+      });
+      if (localStorage.getItem('nvaa_user_id') === userId) {
+        localStorage.setItem('nvaa_user_id', newUserId);
+      }
+    }
+    showToast('Traslado aprobado');
+    loadAdminPanel();
+  });
+}
+
+async function rejectTransfer(trId) {
+  requireAdminSecret('¿Rechazar esta solicitud de traslado?', async () => {
+    await sb.from('solicitudes_traslado').update({ estado: 'rechazado' }).eq('id', trId);
+    showToast('Traslado rechazado');
+    loadAdminPanel();
+  });
+}
+
+// ============================================================
+// ADMIN CREATE FUNCTIONS
+// ============================================================
+function openNewUserModal() {
+  buildSedeOptions('nu-sede', currentUser.sede_id);
+  buildPrefijoOptions('nu-prefijo');
+  document.getElementById('nu-nombre').value = '';
+  document.getElementById('nu-telefono').value = '';
+  document.getElementById('nu-error').textContent = '';
+  openModal('modal-new-user');
+}
+
+async function adminCreateUser() {
+  const nombre = document.getElementById('nu-nombre').value.trim();
+  const sedeId = parseInt(document.getElementById('nu-sede').value);
+  const prefijo = document.getElementById('nu-prefijo').value;
+  const tel = document.getElementById('nu-telefono').value.trim();
+  const rol = document.getElementById('nu-rol').value;
+  const errEl = document.getElementById('nu-error');
+
+  if (!nombre) { errEl.textContent = 'Ingresa el nombre'; return; }
+  const sede = sedes.find(s=>s.id===sedeId);
+  if (!sede) { errEl.textContent = 'Selecciona una sede'; return; }
+
+  const userId = makeId(nombre, sede.nombre);
+  const { data: existing } = await sb.from('usuarios').select('id').eq('id', userId).single();
+  if (existing) { errEl.textContent = 'Ya existe ese usuario en esa sede.'; return; }
+
+  requireAdminSecret(`¿Crear usuario "${nombre}" como ${rol}?`, async () => {
+    const { error } = await sb.from('usuarios').insert({
+      id: userId, nombre, sede_id: sedeId, rol,
+      estado: 'aprobado', activo: true,
+      telefono: tel || null, prefijo_pais: prefijo,
+      adicciones: [], paso_actual: 1, pasos_completados: [], tema: 'auto'
+    });
+    if (error) { showToast('Error: ' + error.message); return; }
+    await sb.from('notificaciones').insert({
+      sede_id: sedeId, tipo: 'nuevo_usuario',
+      titulo: 'Nuevo miembro agregado',
+      cuerpo: `${nombre} fue agregado/a por un administrador.`
+    });
+    closeModal('modal-new-user');
+    showToast('Usuario creado');
+    loadAdminPanel();
+  });
+}
+
+async function adminCreateSede() {
+  const nombre = document.getElementById('sede-nombre').value.trim();
+  const ciudad = document.getElementById('sede-ciudad').value.trim();
+  const errEl = document.getElementById('sede-error');
+  if (!nombre) { errEl.textContent = 'Ingresa el nombre de la sede'; return; }
+  requireAdminSecret(`¿Crear la sede "${nombre}"?`, async () => {
+    const { data, error } = await sb.from('sedes').insert({ nombre, ciudad: ciudad||null }).select().single();
+    if (error) { showToast('Error: ' + error.message); return; }
+    sedes.push(data);
+    buildSedeOptions('login-sede');
+    buildSedeOptions('reg-sede');
+    buildSedeOptions('nu-sede');
+    closeModal('modal-new-sede');
+    showToast('Sede creada');
+    document.getElementById('sede-nombre').value = '';
+    document.getElementById('sede-ciudad').value = '';
+  });
+}
+
+async function adminCreateAdiccion() {
+  const nombre = document.getElementById('add-nombre').value.trim();
+  const errEl = document.getElementById('add-error');
+  if (!nombre) { errEl.textContent = 'Ingresa el nombre'; return; }
+  requireAdminSecret(`¿Agregar "${nombre}" al catálogo?`, async () => {
+    const { data, error } = await sb.from('adicciones_catalogo').insert({ nombre }).select().single();
+    if (error) { showToast('Error: ' + error.message); return; }
+    addictions_catalog.push(data);
+    closeModal('modal-new-adiccion');
+    showToast('Adicción agregada al catálogo');
+    document.getElementById('add-nombre').value = '';
+  });
+}
+
+// Transfer request modal on home screen (for users)
+function openTransferRequest() {
+  const sedesOtras = sedes.filter(s=>s.id!==currentUser.sede_id);
+  if (!sedesOtras.length) { showToast('No hay otras sedes disponibles'); return; }
+  // Build simple inline modal
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay open';
+  overlay.id = 'modal-transfer';
+  overlay.innerHTML = `<div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">Solicitar traslado de sede</div>
+      <button class="modal-close" onclick="document.getElementById('modal-transfer').remove()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--text2);font-size:14px;margin-bottom:16px">El administrador de tu sede actual deberá aprobar el traslado.</p>
+      <div class="input-group">
+        <label class="input-label">Nueva sede</label>
+        <select id="transfer-sede-select">
+          ${sedesOtras.map(s=>`<option value="${s.id}">${s.nombre}</option>`).join('')}
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="requestTransfer()">Enviar solicitud</button>
+    </div>
+  </div>`;
+  overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
+  document.getElementById('app').appendChild(overlay);
 }
 
 init();
