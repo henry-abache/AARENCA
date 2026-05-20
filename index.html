@@ -1714,7 +1714,7 @@
         </div>
         <div class="input-group">
           <label class="input-label">Sede</label>
-          <select id="login-sede"></select>
+          <select id="login-sede"><option value="">Cargando sedes...</option></select>
         </div>
         <div class="admin-secret-field" id="admin-secret-wrap">
           <label class="input-label" style="color: var(--accent)">🔑 Clave de administrador</label>
@@ -1738,7 +1738,7 @@
         </div>
         <div class="input-group">
           <label class="input-label">Sede</label>
-          <select id="reg-sede"></select>
+          <select id="reg-sede"><option value="">Cargando sedes...</option></select>
         </div>
         <div class="input-group">
           <label class="input-label">Tu teléfono (opcional)</label>
@@ -2467,21 +2467,18 @@ document.querySelectorAll('.modal-overlay').forEach(o => {
 // ============================================================
 function buildSedeOptions(selId, selected=null) {
   const sel = document.getElementById(selId);
+  if (!sel) return;
 
-  // Si no se pasó una sede específica, buscar "San José de Renca" por nombre
-  let defaultSede = selected;
-  if (defaultSede === null) {
+  // Determinar cuál sede pre-seleccionar
+  let defaultId = selected;
+  if (defaultId === null) {
+    // Buscar "Renca" por nombre, si no existe tomar la primera
     const renca = sedes.find(s => s.nombre && s.nombre.toLowerCase().includes('renca'));
-    if (renca) defaultSede = renca.id;
-  }
-
-  if (sedes.length === 0) {
-    sel.innerHTML = '<option value="" selected>San José de Renca</option>';
-    return;
+    defaultId = renca ? renca.id : (sedes[0] ? sedes[0].id : null);
   }
 
   sel.innerHTML = sedes.map(s =>
-    `<option value="${s.id}" ${defaultSede == s.id ? 'selected' : ''}>${s.nombre}</option>`
+    `<option value="${s.id}" ${String(s.id) === String(defaultId) ? 'selected' : ''}>${s.nombre}</option>`
   ).join('');
 }
 
@@ -2518,7 +2515,8 @@ async function handleLogin() {
 
   if (!nombre) { errEl.textContent = 'Ingresa tu nombre'; return; }
 
-  const userId = makeId(nombre, sedes.find(s=>s.id===sedeId)?.nombre || 'San José de Renca');
+  const sedeName = sedes.find(s => String(s.id) === String(sedeId))?.nombre || 'San José de Renca';
+  const userId = makeId(nombre, sedeName);
 
   const { data, error } = await sb.from('usuarios').select('*').eq('id', userId).single();
   if (error || !data) { errEl.textContent = 'Usuario no encontrado en esa sede.'; return; }
@@ -2562,19 +2560,30 @@ async function handleRegister() {
   errEl.textContent = '';
 
   if (!nombre) { errEl.textContent = 'Ingresa tu nombre'; return; }
-  let sede = sedes.find(s=>s.id===sedeId);
-  // Si se seleccionó la sede por defecto, crearla en Supabase primero
+  let sede = sedes.find(s => String(s.id) === String(sedeId));
+
+  // Si se usa la sede default ('__renca__'), buscarla o crearla en Supabase
   if (!sede && sedeId === '__renca__') {
-    const { data: newSede, error: sedeErr } = await sb.from('sedes').insert({ nombre: 'San José de Renca' }).select().single();
-    if (newSede) {
-      sedes = [newSede];
-      localStorage.setItem('nvaa_sedes_cache', JSON.stringify(sedes));
-      sede = newSede;
+    // Primero intentar buscarla por nombre
+    const { data: sedeExistente } = await sb.from('sedes')
+      .select('*').ilike('nombre', '%renca%').single().catch(()=>({data:null}));
+    if (sedeExistente) {
+      sede = sedeExistente;
+      sedes = [sedeExistente];
     } else {
-      errEl.textContent = 'Error al crear la sede: ' + (sedeErr?.message || 'intenta de nuevo'); return;
+      // Crearla
+      const { data: nuevaSede, error: sedeErr } = await sb.from('sedes')
+        .insert({ nombre: 'San José de Renca' }).select().single();
+      if (nuevaSede) {
+        sede = nuevaSede;
+        sedes = [nuevaSede];
+      } else {
+        errEl.textContent = 'Error con la sede: ' + (sedeErr?.message || 'intenta de nuevo'); return;
+      }
     }
+    localStorage.setItem('nvaa_sedes_cache', JSON.stringify(sedes));
   }
-  if (!sede) { errEl.textContent = 'Selecciona una sede'; return; }
+  if (!sede) { errEl.textContent = 'Selecciona una sede válida'; return; }
 
   const userId = makeId(nombre, sede.nombre);
 
@@ -3502,28 +3511,33 @@ function dismissPWA() {
 async function init() {
   applyTheme(currentTheme);
 
-  // SEDE POR DEFECTO — siempre presente antes de cargar Supabase
+  // ── SEDES: carga robusta ──────────────────────────────────────
+  // 1) Siempre partimos con la sede conocida hardcodeada
   const SEDE_DEFAULT = [{ id: '__renca__', nombre: 'San José de Renca' }];
-  sedes = SEDE_DEFAULT;
+
+  // 2) Si hay caché válida la usamos de inmediato
+  try {
+    const cached = JSON.parse(localStorage.getItem('nvaa_sedes_cache') || '[]');
+    sedes = cached.length > 0 ? cached : SEDE_DEFAULT;
+  } catch(_) { sedes = SEDE_DEFAULT; }
+
+  // 3) Pintamos el select ahora (no esperar a Supabase)
   buildSedeOptions('login-sede');
   buildSedeOptions('reg-sede');
 
-  // Intentar cargar sedes reales de Supabase
+  // 4) Luego intentamos traer las sedes reales de Supabase
   try {
-    const { data: sedesData } = await sb.from('sedes').select('*').order('nombre');
-    if (sedesData && sedesData.length > 0) {
+    const { data: sedesData, error: sedesErr } = await sb
+      .from('sedes').select('id, nombre').order('nombre');
+    if (!sedesErr && sedesData && sedesData.length > 0) {
       sedes = sedesData;
       localStorage.setItem('nvaa_sedes_cache', JSON.stringify(sedes));
-    } else {
-      // Supabase no tiene sedes aún — usar caché o default
-      const sedesCache = JSON.parse(localStorage.getItem('nvaa_sedes_cache') || '[]');
-      sedes = sedesCache.length > 0 ? sedesCache : SEDE_DEFAULT;
+      // Repintar con datos reales
+      buildSedeOptions('login-sede');
+      buildSedeOptions('reg-sede');
     }
-  } catch(e) {
-    // Sin conexión — usar caché o default
-    const sedesCache = JSON.parse(localStorage.getItem('nvaa_sedes_cache') || '[]');
-    sedes = sedesCache.length > 0 ? sedesCache : SEDE_DEFAULT;
-  }
+    // Si Supabase devuelve vacío o error, quedamos con lo que ya tenemos
+  } catch(_) { /* sin conexión — quedamos con caché o default */ }
 
   // Cargar catálogo adicciones (globales + de esta sede, se actualiza tras login)
   const { data: addData } = await sb.from('adicciones_catalogo')
