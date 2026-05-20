@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Nueva Vida" />
+  <meta name="apple-mobile-web-app-title" content="Nueva Vida AA" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="theme-color" content="#0f172a" id="theme-color-meta" />
   <link rel="manifest" href="./manifest.json" />
-  <link rel="apple-touch-icon" href="./1-192.png" />
+  <link rel="apple-touch-icon" href="./logo-aa.png" />
   <title>Nueva Vida AA</title>
 
   <style>
@@ -1325,6 +1326,110 @@
     }
     .nav-item { position: relative; }
 
+    /* ===== MÁS MENU ===== */
+    .mas-menu {
+      display: none;
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 60px);
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      z-index: 85;
+      padding: 0 16px calc(env(safe-area-inset-bottom, 0px) + 8px);
+      box-shadow: 0 -8px 32px rgba(0,0,0,0.25);
+      animation: slideUp 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .mas-menu.open { display: block; }
+    .mas-menu-header {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      text-align: center;
+      padding: 14px 0 10px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 12px;
+    }
+    .mas-menu-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      padding-bottom: 4px;
+    }
+    .mas-menu-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 12px 4px;
+      border: none;
+      background: var(--bg3);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text2);
+      font-family: var(--font-main);
+      transition: all var(--transition);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .mas-menu-item:active { transform: scale(0.95); opacity: 0.8; }
+    .mas-menu-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+    }
+    .mas-menu-icon svg { width: 20px; height: 20px; color: var(--accent); }
+
+    /* ===== EVENT ADMIN CONTROLS ===== */
+    .event-admin-bar {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+    .btn-event-edit {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      background: var(--info);
+      color: white;
+      border: none;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn-event-delete {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      color: var(--danger);
+      border: 1.5px solid var(--danger);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
     /* ===== PWA INSTALL BANNER ===== */
     #pwa-banner {
       display: none;
@@ -1591,7 +1696,7 @@
   <div class="screen active" id="screen-auth">
     <div class="auth-container">
       <div class="auth-logo">
-        <img src="./1-192.png" alt="Logo" onerror="this.style.display='none';this.parentElement.innerHTML='<span style=\'font-size:36px\'>🙂</span>'" />
+        <img src="./logo-aa.png" alt="Logo" onerror="this.style.display='none';this.parentElement.innerHTML='<span style=\'font-size:36px\'>🙂</span>'" />
       </div>
       <div class="auth-title">Nueva Vida</div>
       <div class="auth-subtitle">Apoyo para Alcohólicos Anónimos</div>
@@ -1852,54 +1957,66 @@
       <div id="reuniones-content"></div>
     </div>
 
-    <!-- BOTTOM NAV -->
+    <!-- BOTTOM NAV - SIMPLIFICADO -->
     <nav class="bottom-nav">
-      <button class="nav-item active" onclick="switchTab('home',this)">
+      <button class="nav-item active" id="nav-home" onclick="switchTab('home',this)">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
         <span class="nav-label">Inicio</span>
       </button>
-      <button class="nav-item" onclick="switchTab('pasos',this)">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-        <span class="nav-label">Pasos</span>
-      </button>
-      <button class="nav-item" onclick="switchTab('biblioteca',this)">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
-        <span class="nav-label">Biblioteca</span>
-      </button>
-      <button class="nav-item" onclick="switchTab('eventos',this)">
+      <button class="nav-item" id="nav-eventos-btn" onclick="switchTab('eventos',this)">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
         <span class="nav-label">Eventos</span>
       </button>
-      <button class="nav-item" onclick="switchTab('telefonos',this)">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/></svg>
-        <span class="nav-label">Directorio</span>
-      </button>
-      <button class="nav-item" onclick="switchTab('diario',this);diaryOpen()">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-        <span class="nav-label">Diario</span>
-      </button>
-      <button class="nav-item" onclick="switchTab('sos',this);loadSOS()" style="color:var(--danger)">
+      <button class="nav-item" id="nav-sos-btn" onclick="switchTab('sos',this);loadSOS()" style="color:var(--danger)">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
         <span class="nav-label">SOS</span>
       </button>
-      <button class="nav-item" onclick="switchTab('logros',this);loadLogros()">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
-        <span class="nav-label">Logros</span>
+      <button class="nav-item" id="nav-diario-btn" onclick="switchTab('diario',this);diaryOpen()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+        <span class="nav-label">Diario</span>
       </button>
-      <button class="nav-item" onclick="switchTab('reuniones',this);loadReuniones()">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>
-        <span class="nav-label">Reuniones</span>
-      </button>
-      <button class="nav-item" id="nav-admin" style="display:none" onclick="switchTab('admin',this)">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      <button class="nav-item" id="nav-mas-btn" onclick="toggleMasMenu()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <span class="nav-label">Más</span>
         <div class="nav-badge" id="admin-nav-badge" style="display:none">!</div>
-        <span class="nav-label">Admin</span>
-      </button>
-      <button class="nav-item" onclick="handleLogout()">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-        <span class="nav-label">Salir</span>
       </button>
     </nav>
+
+    <!-- MENÚ MÁS (desplegable hacia arriba) -->
+    <div id="mas-menu-overlay" onclick="closeMasMenu()" style="display:none;position:fixed;inset:0;z-index:80;background:rgba(0,0,0,0.3);backdrop-filter:blur(2px)"></div>
+    <div id="mas-menu" class="mas-menu">
+      <div class="mas-menu-header">Más opciones</div>
+      <div class="mas-menu-grid">
+        <button class="mas-menu-item" onclick="switchTabFromMas('pasos')">
+          <div class="mas-menu-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+          <span>12 Pasos</span>
+        </button>
+        <button class="mas-menu-item" onclick="switchTabFromMas('biblioteca')">
+          <div class="mas-menu-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg></div>
+          <span>Biblioteca</span>
+        </button>
+        <button class="mas-menu-item" onclick="switchTabFromMas('telefonos')">
+          <div class="mas-menu-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/></svg></div>
+          <span>Directorio</span>
+        </button>
+        <button class="mas-menu-item" onclick="switchTabFromMas('logros');loadLogros()">
+          <div class="mas-menu-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg></div>
+          <span>Logros</span>
+        </button>
+        <button class="mas-menu-item" onclick="switchTabFromMas('reuniones');loadReuniones()">
+          <div class="mas-menu-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg></div>
+          <span>Reuniones</span>
+        </button>
+        <button class="mas-menu-item" id="mas-admin-btn" style="display:none" onclick="switchTabFromMas('admin')">
+          <div class="mas-menu-icon"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div>
+          <span>Admin</span>
+        </button>
+        <button class="mas-menu-item" onclick="handleLogout()">
+          <div class="mas-menu-icon" style="background:rgba(248,113,113,0.15)"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color:var(--danger)"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg></div>
+          <span style="color:var(--danger)">Salir</span>
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- FAB para admin -->
@@ -1985,6 +2102,42 @@
           <input type="text" id="ev-doc" placeholder="https://..." />
         </div>
         <button class="btn btn-primary" onclick="publishEvent()">Publicar Evento</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Editar Evento (admin) -->
+  <div class="modal-overlay" id="modal-edit-event">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <div class="modal-title">Editar Evento</div>
+        <button class="modal-close" onclick="closeModal('modal-edit-event')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="edit-ev-id" />
+        <div class="input-group">
+          <label class="input-label">Título del evento</label>
+          <input type="text" id="edit-ev-titulo" placeholder="Ej: Reunión mensual" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Descripción</label>
+          <textarea id="edit-ev-desc" placeholder="Describe el evento..."></textarea>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Fecha y hora</label>
+          <input type="datetime-local" id="edit-ev-fecha" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Dirección</label>
+          <input type="text" id="edit-ev-addr" placeholder="Calle, número, ciudad" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Documento adjunto (URL)</label>
+          <input type="text" id="edit-ev-doc" placeholder="https://..." />
+        </div>
+        <button class="btn btn-primary" onclick="saveEditedEvent()">💾 Guardar cambios</button>
+        <button class="btn btn-danger mt-8" onclick="deleteEvent()">🗑 Eliminar evento</button>
       </div>
     </div>
   </div>
@@ -2187,11 +2340,11 @@
 <!-- PWA INSTALL BANNER -->
 <div id="pwa-banner">
   <div id="pwa-banner-icon">
-    <img src="./1-192.png" alt="Logo" onerror="this.style.display='none'" />
+    <img src="./logo-aa.png" alt="Logo" onerror="this.style.display='none'" />
   </div>
   <div id="pwa-banner-text">
-    <strong>Instalar Nueva Vida</strong>
-    <span>Agrega la app a tu pantalla de inicio</span>
+    <strong>Instalar Nueva Vida AA</strong>
+    <span id="pwa-banner-sub">Agrega la app a tu pantalla de inicio</span>
   </div>
   <button id="pwa-install-btn" onclick="installPWA()">Instalar</button>
   <button id="pwa-dismiss-btn" onclick="dismissPWA()" aria-label="Cerrar">✕</button>
@@ -2533,7 +2686,9 @@ function showMainApp() {
 
   const isAdmin = currentUser.rol !== 'usuario';
   document.getElementById('fab-add').classList.toggle('hidden', !isAdmin);
-  document.getElementById('nav-admin').style.display = isAdmin ? 'flex' : 'none';
+  // Show admin in Más menu
+  const masAdmin = document.getElementById('mas-admin-btn');
+  if (masAdmin) masAdmin.style.display = isAdmin ? 'flex' : 'none';
 
   loadHomeTab();
   loadNotifBadge();
@@ -2548,11 +2703,12 @@ function showMainApp() {
 const TABS = ['home','pasos','biblioteca','eventos','telefonos','diario','sos','logros','reuniones','admin'];
 function switchTab(tab, navEl) {
   currentTab = tab;
+  closeMasMenu();
   TABS.forEach(t => {
     const el = document.getElementById('tab-'+t);
     if (el) el.style.display = (t===tab) ? (t==='diario'?'flex':'block') : 'none';
   });
-  document.querySelectorAll('.nav-item').forEach((el,i) => {
+  document.querySelectorAll('.nav-item').forEach((el) => {
     el.classList.remove('active');
   });
   if (navEl) navEl.classList.add('active');
@@ -2565,6 +2721,34 @@ function switchTab(tab, navEl) {
   if (tab==='biblioteca') loadBiblioteca();
   if (tab==='eventos') loadEventos();
   if (tab==='telefonos') loadTelefonos();
+  if (tab==='admin') loadAdminPanel();
+}
+
+// ===== MÁS MENU FUNCTIONS =====
+function toggleMasMenu() {
+  const menu = document.getElementById('mas-menu');
+  const overlay = document.getElementById('mas-menu-overlay');
+  const isOpen = menu.classList.contains('open');
+  if (isOpen) {
+    closeMasMenu();
+  } else {
+    menu.classList.add('open');
+    overlay.style.display = 'block';
+    document.getElementById('nav-mas-btn').classList.add('active');
+  }
+}
+
+function closeMasMenu() {
+  const menu = document.getElementById('mas-menu');
+  const overlay = document.getElementById('mas-menu-overlay');
+  menu.classList.remove('open');
+  overlay.style.display = 'none';
+  document.getElementById('nav-mas-btn')?.classList.remove('active');
+}
+
+function switchTabFromMas(tab) {
+  closeMasMenu();
+  switchTab(tab, null);
   if (tab==='admin') loadAdminPanel();
 }
 
@@ -2901,6 +3085,8 @@ async function loadEventos() {
   const asistMap = {};
   (asistencia||[]).forEach(a => asistMap[a.evento_id] = a.asiste);
 
+  const isAdmin = currentUser.rol !== 'usuario';
+
   if (!eventos || !eventos.length) {
     list.innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div><div class="empty-title">Sin eventos</div><div class="empty-sub">No hay eventos programados</div></div>';
     return;
@@ -2909,6 +3095,15 @@ async function loadEventos() {
   list.innerHTML = eventos.map(ev => {
     const fecha = ev.fecha_evento ? new Date(ev.fecha_evento).toLocaleString('es-CL', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
     const asiste = asistMap[ev.id];
+    const adminBar = isAdmin ? `
+      <div class="event-admin-bar">
+        <button class="btn-event-edit" onclick="openEditEvent(${ev.id},'${(ev.titulo||'').replace(/'/g,"\\'")}','${(ev.descripcion||'').replace(/'/g,"\\'")}','${ev.fecha_evento||''}','${(ev.direccion||'').replace(/'/g,"\\'")}','${(ev.documento_url||'').replace(/'/g,"\\'")}')">
+          ✏️ Editar
+        </button>
+        <button class="btn-event-delete" onclick="confirmDeleteEvent(${ev.id},'${(ev.titulo||'').replace(/'/g,"\\'")}')">
+          🗑 Eliminar
+        </button>
+      </div>` : '';
     return `<div class="event-card">
       <div class="event-date">${fecha}</div>
       <div class="event-title">${ev.titulo}</div>
@@ -2921,8 +3116,89 @@ async function loadEventos() {
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m0 0L9 7"/></svg>
           Navegar</button>`:''}
       </div>
+      ${adminBar}
     </div>`;
   }).join('');
+}
+      ${ev.direccion?`<div class="event-addr"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:14px;height:14px"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>${ev.direccion}</div>`:''}
+      <div class="event-actions">
+        <div class="attend-btn ${asiste===true?'yes':''}" onclick="setAsistencia(${ev.id},true,this.parentElement)">✓ Asistiré</div>
+        <div class="attend-btn ${asiste===false?'no':''}" onclick="setAsistencia(${ev.id},false,this.parentElement)">✗ No asistiré</div>
+        ${ev.direccion?`<button class="nav-map-btn" onclick="openMaps('${encodeURIComponent(ev.direccion)}')">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m0 0L9 7"/></svg>
+          Navegar</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ===== EDIT / DELETE EVENT (Admin) =====
+let editingEventId = null;
+
+function openEditEvent(id, titulo, desc, fecha, addr, doc) {
+  editingEventId = id;
+  document.getElementById('edit-ev-id').value = id;
+  document.getElementById('edit-ev-titulo').value = titulo;
+  document.getElementById('edit-ev-desc').value = desc;
+  // Convert fecha to datetime-local format
+  if (fecha) {
+    try {
+      const d = new Date(fecha);
+      const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0,16);
+      document.getElementById('edit-ev-fecha').value = local;
+    } catch(e) {
+      document.getElementById('edit-ev-fecha').value = '';
+    }
+  } else {
+    document.getElementById('edit-ev-fecha').value = '';
+  }
+  document.getElementById('edit-ev-addr').value = addr;
+  document.getElementById('edit-ev-doc').value = doc;
+  openModal('modal-edit-event');
+}
+
+async function saveEditedEvent() {
+  const id = editingEventId;
+  const titulo = document.getElementById('edit-ev-titulo').value.trim();
+  const desc = document.getElementById('edit-ev-desc').value.trim();
+  const fecha = document.getElementById('edit-ev-fecha').value;
+  const addr = document.getElementById('edit-ev-addr').value.trim();
+  const doc = document.getElementById('edit-ev-doc').value.trim();
+  if (!titulo) { showToast('El título no puede estar vacío'); return; }
+
+  requireAdminSecret('¿Guardar cambios en este evento?', async () => {
+    const { error } = await sb.from('eventos').update({
+      titulo,
+      descripcion: desc || null,
+      fecha_evento: fecha || null,
+      direccion: addr || null,
+      documento_url: doc || null,
+    }).eq('id', id);
+    if (error) { showToast('Error: ' + error.message); return; }
+    closeModal('modal-edit-event');
+    loadEventos();
+    showToast('✓ Evento actualizado');
+  });
+}
+
+function confirmDeleteEvent(id, titulo) {
+  editingEventId = id;
+  requireAdminSecret(`¿Eliminar el evento "${titulo}"? Esta acción no se puede deshacer.`, async () => {
+    await sb.from('eventos').delete().eq('id', id);
+    loadEventos();
+    showToast('Evento eliminado');
+  });
+}
+
+async function deleteEvent() {
+  const id = document.getElementById('edit-ev-id').value;
+  const titulo = document.getElementById('edit-ev-titulo').value;
+  requireAdminSecret(`¿Eliminar el evento "${titulo}"?`, async () => {
+    await sb.from('eventos').delete().eq('id', id);
+    closeModal('modal-edit-event');
+    loadEventos();
+    showToast('Evento eliminado');
+  });
 }
 
 function openMaps(addr) {
@@ -3094,15 +3370,25 @@ function openFabAction() {
 // ============================================================
 let deferredInstallPrompt = null;
 
+// Detectar iOS
+function isIOS() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+}
+
+// Detectar si ya está instalada como PWA
+function isPWAInstalled() {
+  return window.matchMedia('(display-mode: standalone)').matches || 
+         window.navigator.standalone === true;
+}
+
 // Captura el evento de instalación PWA (Chrome/Android/Edge)
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredInstallPrompt = e;
-  // Mostrar banner solo si no fue descartado antes
-  if (!localStorage.getItem('nvaa_pwa_dismissed')) {
+  if (!localStorage.getItem('nvaa_pwa_dismissed') && !isPWAInstalled()) {
     setTimeout(() => {
       document.getElementById('pwa-banner').classList.add('show');
-    }, 3000);
+    }, 2500);
   }
 });
 
@@ -3110,23 +3396,74 @@ window.addEventListener('beforeinstallprompt', (e) => {
 window.addEventListener('appinstalled', () => {
   document.getElementById('pwa-banner').classList.remove('show');
   deferredInstallPrompt = null;
+  localStorage.setItem('nvaa_pwa_dismissed', '1');
   showToast('✓ App instalada correctamente');
 });
 
 function installPWA() {
-  if (!deferredInstallPrompt) {
-    // iOS: mostrar instrucción manual
-    showToast('En iOS: toca Compartir → "Añadir a inicio"');
-    return;
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then((result) => {
+      if (result.outcome === 'accepted') {
+        showToast('¡Instalando app!');
+        localStorage.setItem('nvaa_pwa_dismissed', '1');
+      }
+      deferredInstallPrompt = null;
+      document.getElementById('pwa-banner').classList.remove('show');
+    });
+  } else if (isIOS()) {
+    // Mostrar instrucciones iOS
+    showIOSInstallInstructions();
+  } else {
+    showToast('Abre el menú del navegador y selecciona "Instalar aplicación"');
   }
-  deferredInstallPrompt.prompt();
-  deferredInstallPrompt.userChoice.then((result) => {
-    if (result.outcome === 'accepted') {
-      showToast('¡Instalando app!');
-    }
-    deferredInstallPrompt = null;
-    document.getElementById('pwa-banner').classList.remove('show');
-  });
+}
+
+function showIOSInstallInstructions() {
+  const existing = document.getElementById('ios-install-modal');
+  if (existing) { existing.remove(); }
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay open';
+  overlay.id = 'ios-install-modal';
+  overlay.innerHTML = `<div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">Instalar en iPhone/iPad</div>
+      <button class="modal-close" onclick="document.getElementById('ios-install-modal').remove()">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg3);border-radius:var(--radius-sm)">
+          <div style="font-size:28px">1️⃣</div>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:var(--text)">Toca el botón Compartir</div>
+            <div style="font-size:13px;color:var(--text3)">El ícono 📤 en la barra inferior de Safari</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg3);border-radius:var(--radius-sm)">
+          <div style="font-size:28px">2️⃣</div>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:var(--text)">Desplázate hacia abajo</div>
+            <div style="font-size:13px;color:var(--text3)">En el menú de opciones que aparece</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg3);border-radius:var(--radius-sm)">
+          <div style="font-size:28px">3️⃣</div>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:var(--text)">Toca "Añadir a pantalla de inicio"</div>
+            <div style="font-size:13px;color:var(--text3)">La app aparecerá en tu pantalla de inicio</div>
+          </div>
+        </div>
+        <div style="text-align:center;padding:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:var(--radius-sm)">
+          <div style="font-size:13px;font-weight:600;color:var(--accent-text)">⚠️ Debes usar Safari para instalar la app en iOS</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
+  document.getElementById('app').appendChild(overlay);
 }
 
 function dismissPWA() {
@@ -3178,6 +3515,13 @@ async function init() {
         });
       });
     }).catch(() => {});
+  }
+
+  // iOS: mostrar instrucción de instalación si no está instalada y es primera visita
+  if (isIOS() && !isPWAInstalled() && !localStorage.getItem('nvaa_pwa_dismissed')) {
+    setTimeout(() => {
+      document.getElementById('pwa-banner').classList.add('show');
+    }, 2500);
   }
 
   // Theme media query listener
@@ -4075,6 +4419,27 @@ function loadReuniones() {
       <div style="font-size:14px;font-weight:600;color:var(--accent-text);margin-bottom:4px">📡 Reuniones en tiempo real</div>
       <div style="font-size:12px;color:rgba(15,23,42,0.7)">Conéctate con compañeros AA de todo el mundo desde tu teléfono</div>
     </div>
+
+    <!-- Chile oficial -->
+    <div style="margin-bottom:12px">
+      <div class="section-label" style="margin-bottom:8px">🇨🇱 Alcohólicos Anónimos Chile</div>
+      <div class="card" style="padding:16px;margin-bottom:8px">
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px">Sitio Oficial AA Chile</div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:12px">Encuentra reuniones presenciales y virtuales en todo Chile, información oficial y recursos de recuperación.</div>
+        <a href="https://www.alcoholicosanonimos.cl/" target="_blank" rel="noopener" class="btn btn-primary" style="text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+          Abrir alcoholicosanonimos.cl
+        </a>
+      </div>
+      <div class="card" style="padding:16px;margin-bottom:8px">
+        <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:4px">📞 Central AA Chile</div>
+        <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:8px">+56 2 2781 4147</div>
+        <a href="tel:+56227814147" class="btn btn-secondary" style="text-decoration:none;width:auto;padding:10px 20px;font-size:14px">Llamar ahora</a>
+      </div>
+    </div>
+
+    <!-- Reuniones virtuales internacionales -->
+    <div class="section-label" style="margin-bottom:8px">🌐 Reuniones virtuales internacionales</div>
     ${VIRTUAL_MEETINGS.map(m => `
       <div class="meeting-card">
         <div class="meeting-time">${m.time}</div>
@@ -4086,9 +4451,10 @@ function loadReuniones() {
         </a>
       </div>`).join('')}
     <div class="card" style="margin-top:8px;text-align:center">
-      <div style="font-size:13px;color:var(--text2);margin-bottom:8px">Directorio completo de AA</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:8px">Directorio internacional AA</div>
       <a href="https://aa.org" target="_blank" rel="noopener" style="color:var(--accent);font-size:14px;font-weight:600">aa.org →</a>
     </div>`;
+}
 }
 
 // ============================================================
@@ -4124,7 +4490,8 @@ function showMainAppAnon() {
   document.getElementById('header-username').textContent = '👤 Modo Anónimo';
   document.getElementById('header-sede').textContent = 'Sin sede';
   document.getElementById('fab-add').classList.add('hidden');
-  document.getElementById('nav-admin').style.display = 'none';
+  const masAdmin = document.getElementById('mas-admin-btn');
+  if (masAdmin) masAdmin.style.display = 'none';
 
   // Show anon banner on home
   const anonBanner = `<div class="anon-banner">
@@ -4171,8 +4538,8 @@ async function setupDailyReminder() {
       try {
         new Notification('Nueva Vida AA 🌅', {
           body: '¿Cómo vas hoy? Abre la app y registra tu día.',
-          icon: './1-192.png',
-          badge: './1-192.png',
+          icon: './logo-aa.png',
+          badge: './logo-aa.png',
           tag: 'daily-reminder',
         });
       } catch(e) {}
