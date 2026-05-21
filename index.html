@@ -2690,6 +2690,7 @@ function buildCounterCard(a) {
     { label: '1 año', days: 365 },
   ];
 
+  const idx = (currentUser.adicciones || []).findIndex(x => x.tipo === a.tipo);
   return `<div class="counter-card">
     <div class="counter-header">
       <div class="counter-addiction">${a.tipo}</div>
@@ -2700,6 +2701,7 @@ function buildCounterCard(a) {
     <div class="counter-milestones">
       ${milestones.map(m=>`<div class="milestone-chip ${totalDays>=m.days?'achieved':''}">${m.label}</div>`).join('')}
     </div>
+    <button onclick="resetCounter(${idx})" style="margin-top:12px;width:100%;background:none;border:1.5px solid var(--danger);color:var(--danger);border-radius:var(--radius-sm);padding:9px;font-size:13px;cursor:pointer;font-weight:600;">🔄 Recaída — Reiniciar contador</button>
   </div>`;
 }
 
@@ -2770,6 +2772,35 @@ async function updateAddictionDate(idx, date) {
   await sb.from('usuarios').update({ adicciones: arr }).eq('id', currentUser.id);
   currentUser.adicciones = arr;
   renderCounters();
+}
+
+const RESET_MESSAGES = [
+  "Cada día es una nueva oportunidad. Lo importante es que estás aquí. ¡Vuelve a empezar con fuerza! 💪",
+  "Una recaída no borra todo lo que lograste. Conoces el camino, vuelve a él. Eres más fuerte de lo que crees.",
+  "El camino a la recuperación no es una línea recta. Lo que importa es que eliges levantarte. ¡Ánimo!",
+  "Hoy es el primer día del resto de tu recuperación. Tienes todo lo necesario para lograrlo. ¡Adelante!",
+  "No estás solo/a en esto. Cada paso, por pequeño que sea, cuenta. ¡Vuelve a empezar hoy! 🌟",
+  "La recaída es parte del proceso para muchos. Lo valioso es que sigues intentándolo. ¡No te rindas!",
+];
+async function resetCounter(idx) {
+  const tipo = (currentUser.adicciones || [])[idx]?.tipo || 'esta adicción';
+  const confirmMsg = `¿Confirmas que quieres reiniciar el contador de "${tipo}"?\n\nEsto pondrá la fecha de inicio en hoy.`;
+  if (!confirm(confirmMsg)) return;
+  const arr = [...(currentUser.adicciones || [])];
+  arr[idx].fecha_inicio = new Date().toISOString().split('T')[0];
+  await sb.from('usuarios').update({ adicciones: arr }).eq('id', currentUser.id);
+  currentUser.adicciones = arr;
+  renderCounters();
+  const msg = RESET_MESSAGES[Math.floor(Math.random() * RESET_MESSAGES.length)];
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px';
+  overlay.innerHTML = `<div style="background:var(--card-bg);border-radius:var(--radius);padding:28px 24px;max-width:340px;text-align:center">
+    <div style="font-size:40px;margin-bottom:12px">💙</div>
+    <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:12px">Contador reiniciado</div>
+    <div style="font-size:15px;color:var(--text2);line-height:1.5;margin-bottom:20px">${msg}</div>
+    <button onclick="this.closest('div[style*=fixed]').remove()" style="background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);padding:12px 28px;font-size:15px;font-weight:700;cursor:pointer">Continuar</button>
+  </div>`;
+  document.body.appendChild(overlay);
 }
 
 // ============================================================
