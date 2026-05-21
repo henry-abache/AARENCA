@@ -3008,23 +3008,62 @@ async function uploadLibItem() {
 // ============================================================
 // EVENTOS
 // ============================================================
-async function loadEventos() {
+// Cache para eventos: evita re-fetch innecesario si los datos son recientes
+const _eventosCache = { data: null, asistMap: null, ts: 0, sedeId: null, userId: null };
+const EVENTOS_CACHE_TTL = 60000; // 1 minuto
+
+async function loadEventos(forceRefresh) {
   const list = document.getElementById('events-list');
-  list.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><div class="loading-text">Cargando eventos...</div></div>';
-  const { data: eventos } = await sb.from('eventos').select('*').eq('sede_id', currentUser.sede_id).order('fecha_evento', {ascending:true});
-  const { data: asistencia } = await sb.from('asistencia_eventos').select('*').eq('usuario_id', currentUser.id);
-  const asistMap = {};
-  (asistencia||[]).forEach(a => asistMap[a.evento_id] = a.asiste);
+  const now = Date.now();
+  const cacheValid = !forceRefresh
+    && _eventosCache.data
+    && (now - _eventosCache.ts) < EVENTOS_CACHE_TTL
+    && _eventosCache.sedeId === currentUser.sede_id
+    && _eventosCache.userId === currentUser.id;
+
+  let eventos, asistMap;
+
+  if (cacheValid) {
+    eventos = _eventosCache.data;
+    asistMap = _eventosCache.asistMap;
+  } else {
+    // Mostrar spinner solo si la lista está vacía (primera carga)
+    if (!list.firstChild || list.querySelector('.loading-spinner')) {
+      list.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><div class="loading-text">Cargando eventos...</div></div>';
+    }
+
+    // Fetch paralelo: eventos + asistencia al mismo tiempo
+    const [evRes, asistRes] = await Promise.all([
+      sb.from('eventos').select('id,titulo,descripcion,fecha_evento,direccion,creado_por').eq('sede_id', currentUser.sede_id).order('fecha_evento', {ascending:true}),
+      sb.from('asistencia_eventos').select('evento_id,asiste').eq('usuario_id', currentUser.id)
+    ]);
+
+    eventos = evRes.data;
+    asistMap = {};
+    (asistRes.data||[]).forEach(a => asistMap[a.evento_id] = a.asiste);
+
+    // Guardar en caché
+    _eventosCache.data = eventos;
+    _eventosCache.asistMap = asistMap;
+    _eventosCache.ts = now;
+    _eventosCache.sedeId = currentUser.sede_id;
+    _eventosCache.userId = currentUser.id;
+  }
 
   if (!eventos || !eventos.length) {
     list.innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div><div class="empty-title">Sin eventos</div><div class="empty-sub">No hay eventos programados</div></div>';
     return;
   }
 
-  list.innerHTML = eventos.map(ev => {
-    const fecha = ev.fecha_evento ? new Date(ev.fecha_evento).toLocaleString('es-CL', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+  const isAdminUser = currentUser?.rol !== 'usuario';
+  const fmtOpts = {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'};
+
+  // Construir HTML con DocumentFragment para un solo reflow
+  const html = eventos.map(ev => {
+    const fecha = ev.fecha_evento ? new Date(ev.fecha_evento).toLocaleString('es-CL', fmtOpts) : '';
     const asiste = asistMap[ev.id];
-    const canDelete = isAdmin && (ev.creado_por === currentUser.id);
+    const canDelete = isAdminUser && (ev.creado_por === currentUser.id);
+    const addrEncoded = ev.direccion ? encodeURIComponent(ev.direccion) : '';
     return `<div class="event-card" id="ev-card-${ev.id}">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
         <div style="flex:1">
@@ -3038,12 +3077,14 @@ async function loadEventos() {
       <div class="event-actions">
         <div class="attend-btn ${asiste===true?'yes':''}" onclick="setAsistencia(${ev.id},true,this.parentElement)">✓ Asistiré</div>
         <div class="attend-btn ${asiste===false?'no':''}" onclick="setAsistencia(${ev.id},false,this.parentElement)">✗ No asistiré</div>
-        ${ev.direccion?`<button class="nav-map-btn" onclick="openMaps('${encodeURIComponent(ev.direccion)}')">
+        ${ev.direccion?`<button class="nav-map-btn" onclick="openMaps('${addrEncoded}')">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m0 0L9 7"/></svg>
           Navegar</button>`:''}
       </div>
     </div>`;
   }).join('');
+
+  list.innerHTML = html;
 }
 
 function openMaps(addr) {
@@ -3054,6 +3095,7 @@ async function deleteEvento(eventId) {
   if (!confirm('¿Eliminar este evento? Esta acción no se puede deshacer.')) return;
   const { error } = await sb.from('eventos').delete().eq('id', eventId).eq('creado_por', currentUser.id);
   if (error) { showToast('Error al eliminar evento'); return; }
+  _eventosCache.ts = 0; // Invalidar caché
   const card = document.getElementById('ev-card-' + eventId);
   if (card) card.remove();
   showToast('Evento eliminado');
@@ -3066,6 +3108,8 @@ async function setAsistencia(eventId, asiste, container) {
   } else {
     await sb.from('asistencia_eventos').insert({ evento_id: eventId, usuario_id: currentUser.id, asiste });
   }
+  // Actualizar caché local para evitar re-fetch
+  if (_eventosCache.asistMap) _eventosCache.asistMap[eventId] = asiste;
   container.querySelectorAll('.attend-btn').forEach(b => b.classList.remove('yes','no'));
   container.children[0].classList.toggle('yes', asiste===true);
   container.children[1].classList.toggle('no', asiste===false);
@@ -3103,7 +3147,8 @@ async function publishEvent() {
   });
 
   closeModal('modal-new-event');
-  loadEventos();
+  _eventosCache.ts = 0; // Invalidar caché para recargar con el nuevo evento
+  loadEventos(true);
   showToast('Evento publicado');
   ['ev-titulo','ev-desc','ev-fecha','ev-addr','ev-doc'].forEach(id=>document.getElementById(id).value='');
 }
