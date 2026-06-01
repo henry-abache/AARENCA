@@ -1810,11 +1810,22 @@
     .medal-card.earned .medal-label { color:var(--accent); }
     .medal-days { font-size:11px; color:var(--text3); }
     .medal-earned-badge { position:absolute; top:-6px; right:-6px; width:20px; height:20px; background:var(--success); border-radius:50%; font-size:11px; display:flex; align-items:center; justify-content:center; color:white; font-weight:700; border:2px solid var(--bg); }
-    .new-achievement-popup { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.5); background:var(--surface); border:3px solid var(--accent); border-radius:var(--radius-lg); padding:32px 24px; text-align:center; z-index:300; opacity:0; transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1); pointer-events:none; min-width:240px; }
-    .new-achievement-popup.show { opacity:1; transform:translate(-50%,-50%) scale(1); }
+    .new-achievement-popup { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0.5); background:var(--surface); border:3px solid var(--accent); border-radius:var(--radius-lg); padding:32px 24px; text-align:center; z-index:300; opacity:0; transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1); pointer-events:none; min-width:260px; max-width:320px; }
+    .new-achievement-popup.show { opacity:1; transform:translate(-50%,-50%) scale(1); pointer-events:auto; }
     .achievement-popup-icon { font-size:64px; }
     .achievement-popup-title { font-size:22px; font-weight:800; color:var(--accent); margin:8px 0 4px; }
     .achievement-popup-sub { font-size:15px; color:var(--text2); }
+    .achievement-popup-addiction { font-size:13px; color:var(--text3); margin-top:4px; font-style:italic; }
+    .achievement-popup-counter { font-size:12px; color:var(--text3); margin-top:10px; }
+    .achievement-popup-btn { margin-top:16px; background:var(--accent); color:var(--accent-text); border:none; border-radius:var(--radius-sm); padding:10px 28px; font-size:15px; font-weight:700; cursor:pointer; width:100%; }
+    .achievement-popup-overlay { position:fixed; inset:0; background:var(--overlay); z-index:299; opacity:0; transition:opacity 0.3s; pointer-events:none; }
+    .achievement-popup-overlay.show { opacity:1; pointer-events:auto; }
+
+    /* Frase motivacional en login */
+    .auth-quote-box { background:var(--surface2); border-left:3px solid var(--accent); border-radius:var(--radius-sm); padding:14px 16px; margin:16px 0 4px; text-align:left; }
+    .auth-quote-icon { font-size:16px; margin-bottom:6px; }
+    .auth-quote-text { font-size:14px; color:var(--text); line-height:1.55; font-style:italic; font-weight:500; }
+    .auth-quote-source { font-size:12px; color:var(--accent); margin-top:6px; font-weight:600; }
 
     /* ===== MEETINGS / REUNIONES ===== */
 
@@ -1838,11 +1849,17 @@
   <!-- ===== OFFLINE BANNER ===== -->
   <div id="offline-banner">📵 Sin conexión — la app funciona en modo offline</div>
 
+  <!-- ===== ACHIEVEMENT POPUP OVERLAY ===== -->
+  <div class="achievement-popup-overlay" id="achievement-popup-overlay" onclick="dismissAchievementPopup()"></div>
+
   <!-- ===== ACHIEVEMENT POPUP ===== -->
   <div class="new-achievement-popup" id="achievement-popup">
     <div class="achievement-popup-icon" id="achievement-popup-icon">🏅</div>
     <div class="achievement-popup-title" id="achievement-popup-title">¡Logro desbloqueado!</div>
     <div class="achievement-popup-sub" id="achievement-popup-sub">7 días de recuperación</div>
+    <div class="achievement-popup-addiction" id="achievement-popup-addiction"></div>
+    <div class="achievement-popup-counter" id="achievement-popup-counter"></div>
+    <button class="achievement-popup-btn" onclick="dismissAchievementPopup()">¡Gracias! 🎉</button>
   </div>
 
   <!-- ===== AUTH SCREEN ===== -->
@@ -1853,6 +1870,13 @@
       </div>
       <div class="auth-title">Nueva Vida</div>
       <div class="auth-subtitle">Apoyo para Alcohólicos Anónimos</div>
+
+      <!-- FRASE MOTIVACIONAL AA -->
+      <div class="auth-quote-box" id="auth-quote-box">
+        <div class="auth-quote-icon">📖</div>
+        <div class="auth-quote-text" id="auth-quote-text"></div>
+        <div class="auth-quote-source" id="auth-quote-source"></div>
+      </div>
 
       <div class="auth-tabs">
         <div class="auth-tab active" onclick="switchAuthTab('login')">Ya tengo usuario</div>
@@ -4521,6 +4545,9 @@ function dismissPWA() {
 async function init() {
   applyTheme(currentTheme);
 
+  // Mostrar frase motivacional AA en pantalla de login
+  showAuthQuote();
+
   // Cargar sedes
   const { data: sedesData } = await sb.from('sedes').select('*').order('nombre');
   sedes = sedesData || [];
@@ -5603,30 +5630,132 @@ const MEDALS = [
 
 const _shownAchievements = new Set(JSON.parse(localStorage.getItem('nvaa_shown_achievements') || '[]'));
 
+// Cola de logros pendientes para mostrar uno por uno
+let _achievementQueue = [];
+let _achievementShowing = false;
+
 function checkAchievements() {
   if (!currentUser) return;
   const addictions = currentUser.adicciones || [];
+  const today = new Date().toDateString();
+
   addictions.forEach(a => {
     const start = new Date(a.fecha_inicio);
     const days = Math.max(0, Math.floor((new Date() - start) / 86400000));
     MEDALS.forEach(m => {
       const key = `${a.tipo}_${m.days}`;
-      if (days >= m.days && !_shownAchievements.has(key)) {
+      // Solo mostrar si HOY se cumple exactamente el hito (±0 días de margen)
+      // y no se ha mostrado antes
+      if (days === m.days && !_shownAchievements.has(key)) {
         _shownAchievements.add(key);
         localStorage.setItem('nvaa_shown_achievements', JSON.stringify([..._shownAchievements]));
-        setTimeout(() => showAchievementPopup(m, a.tipo), 800);
+        _achievementQueue.push({ medal: m, tipo: a.tipo });
       }
     });
   });
+
+  // Filtrar logros que ya se cumplieron pero nunca se marcaron (primera ejecución)
+  // Para días >= hito y no marcados, solo marcar como visto sin mostrar popup
+  // (evitar mostrar todos los anteriores en bloque)
+  addictions.forEach(a => {
+    const start = new Date(a.fecha_inicio);
+    const days = Math.max(0, Math.floor((new Date() - start) / 86400000));
+    MEDALS.forEach(m => {
+      const key = `${a.tipo}_${m.days}`;
+      if (days > m.days && !_shownAchievements.has(key)) {
+        // Ya pasó ese hito antes, marcar como visto silenciosamente
+        _shownAchievements.add(key);
+      }
+    });
+  });
+  localStorage.setItem('nvaa_shown_achievements', JSON.stringify([..._shownAchievements]));
+
+  if (_achievementQueue.length > 0) {
+    setTimeout(_showNextAchievement, 1200);
+  }
 }
 
-function showAchievementPopup(medal, tipo) {
+function _showNextAchievement() {
+  if (_achievementQueue.length === 0) {
+    _achievementShowing = false;
+    return;
+  }
+  _achievementShowing = true;
+  const { medal, tipo } = _achievementQueue.shift();
+  const remaining = _achievementQueue.length;
+  showAchievementPopup(medal, tipo, remaining);
+}
+
+function showAchievementPopup(medal, tipo, remaining) {
   const popup = document.getElementById('achievement-popup');
+  const overlay = document.getElementById('achievement-popup-overlay');
   document.getElementById('achievement-popup-icon').textContent = medal.icon;
   document.getElementById('achievement-popup-title').textContent = '¡' + medal.label + ' sin ' + tipo + '!';
   document.getElementById('achievement-popup-sub').textContent = medal.desc;
+  document.getElementById('achievement-popup-addiction').textContent = '🌟 ' + tipo;
+  document.getElementById('achievement-popup-counter').textContent =
+    remaining > 0 ? `+ ${remaining} logro${remaining > 1 ? 's' : ''} más por ver` : '';
   popup.classList.add('show');
-  setTimeout(() => popup.classList.remove('show'), 4000);
+  overlay.classList.add('show');
+}
+
+function dismissAchievementPopup() {
+  const popup = document.getElementById('achievement-popup');
+  const overlay = document.getElementById('achievement-popup-overlay');
+  popup.classList.remove('show');
+  overlay.classList.remove('show');
+  // Mostrar el siguiente después de una pausa
+  setTimeout(_showNextAchievement, 500);
+}
+
+// ============================================================
+// FRASES MOTIVACIONALES AA
+// ============================================================
+const AA_QUOTES = [
+  { text: "Un día a la vez.", source: "Lema de AA" },
+  { text: "Fácil lo hace.", source: "Lema de AA" },
+  { text: "Primero lo primero.", source: "Lema de AA" },
+  { text: "Vive y deja vivir.", source: "Lema de AA" },
+  { text: "Que así sea.", source: "Oración de cierre de AA" },
+  { text: "Dios, concédeme serenidad para aceptar las cosas que no puedo cambiar, valor para cambiar las que puedo, y sabiduría para conocer la diferencia.", source: "Oración de la Serenidad" },
+  { text: "No somos perfectos, somos personas que intentan ser mejores.", source: "Literatura de AA" },
+  { text: "La recuperación es un proceso, no un evento.", source: "Literatura de AA" },
+  { text: "Lo que no puedo cambiar acepto con serenidad; lo que sí puedo, lo cambio con valor.", source: "Tradición de AA" },
+  { text: "El primer vaso lo toma el hombre; el segundo vaso toma al hombre.", source: "Literatura de AA" },
+  { text: "Admitir que somos impotentes ante el alcohol es el primer paso hacia la libertad.", source: "Paso 1 de AA" },
+  { text: "Llegamos a creer que un Poder superior a nosotros mismos podría devolvernos el sano juicio.", source: "Paso 2 de AA" },
+  { text: "Sin ayuda es demasiado para nosotros. Pero con un Dios como Él, todos podemos lograrlo.", source: "Alcohólicos Anónimos — El Libro Grande" },
+  { text: "No estamos solos. Somos una familia grande.", source: "Literatura de AA" },
+  { text: "El mañana nunca llega. Solo existe el hoy.", source: "Lema de AA" },
+  { text: "Mientras haya aliento hay esperanza.", source: "Literatura de AA" },
+  { text: "El camino de la recuperación lo construimos paso a paso, día a día.", source: "Literatura de AA" },
+  { text: "Cada día sin consumir es una victoria que merece ser celebrada.", source: "Tradición de AA" },
+  { text: "En la unión está la fuerza. Juntos lo logramos.", source: "Lema de AA" },
+  { text: "El resentimiento es el mayor destructor de los alcohólicos.", source: "Alcohólicos Anónimos — El Libro Grande" },
+  { text: "Nadie está tan bajo que no pueda levantarse.", source: "Literatura de AA" },
+  { text: "Nuestra serenidad es proporcional a nuestra aceptación.", source: "Literatura de AA" },
+  { text: "La honestidad con uno mismo es el comienzo de todo.", source: "Literatura de AA" },
+  { text: "La gratitud es la llave que abre la puerta de la recuperación.", source: "Tradición de AA" },
+  { text: "Cuando llegamos al final de nuestras fuerzas, comenzamos a encontrar las de Dios.", source: "Literatura de AA" },
+  { text: "La sobriedad no es el fin del camino, es el comienzo de una nueva vida.", source: "Literatura de AA" },
+  { text: "Si Dios lo puede hacer, y tú lo dejas hacerlo, lo hará.", source: "Alcohólicos Anónimos — El Libro Grande" },
+  { text: "Haz lo que puedas, con lo que tienes, donde estás.", source: "Lema de AA" },
+  { text: "No te rindas antes del milagro.", source: "Dicho popular de AA" },
+  { text: "Cada persona que conocemos es maestra de algo que necesitamos aprender.", source: "Literatura de AA" },
+];
+
+function showAuthQuote() {
+  const el = document.getElementById('auth-quote-text');
+  const src = document.getElementById('auth-quote-source');
+  if (!el || !src) return;
+  // Seleccionar frase aleatoria diferente a la anterior
+  const lastIdx = parseInt(sessionStorage.getItem('nvaa_last_quote') || '-1');
+  let idx;
+  do { idx = Math.floor(Math.random() * AA_QUOTES.length); } while (idx === lastIdx && AA_QUOTES.length > 1);
+  sessionStorage.setItem('nvaa_last_quote', idx);
+  const q = AA_QUOTES[idx];
+  el.textContent = '«' + q.text + '»';
+  src.textContent = '— ' + q.source;
 }
 
 function loadLogros() {
