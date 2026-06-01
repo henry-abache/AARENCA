@@ -2011,11 +2011,11 @@
     <div class="scroll-content" id="tab-biblioteca" style="display:none">
       <div class="category-tabs" id="lib-tabs">
         <div class="cat-tab active" onclick="filterLib('todos')">Todos</div>
-        <div class="cat-tab" onclick="filterLib('audiolibros')">Audiolibros</div>
-        <div class="cat-tab" onclick="filterLib('libros')">Libros</div>
+        <div class="cat-tab" onclick="filterLib('solo_aa')">⭐ Material AA</div>
         <div class="cat-tab" onclick="filterLib('videos')">Videos</div>
+        <div class="cat-tab" onclick="filterLib('libros')">Libros</div>
+        <div class="cat-tab" onclick="filterLib('audiolibros')">Audios</div>
         <div class="cat-tab" onclick="filterLib('documentos')">Documentos</div>
-        <div class="cat-tab" onclick="filterLib('solo_aa')">⭐ AA</div>
       </div>
       <div id="lib-list"></div>
     </div>
@@ -2326,9 +2326,9 @@
         <div class="input-group">
           <label class="input-label">Tipo de recurso</label>
           <select id="lib-cat">
-            <option value="audiolibros">Audiolibro</option>
-            <option value="libros">Libro</option>
             <option value="videos">Video</option>
+            <option value="libros">Libro</option>
+            <option value="audiolibros">Audio</option>
             <option value="documentos">Documento</option>
           </select>
         </div>
@@ -2370,9 +2370,9 @@
         <div class="input-group">
           <label class="input-label">Tipo de recurso</label>
           <select id="edit-lib-cat">
-            <option value="audiolibros">Audiolibro</option>
-            <option value="libros">Libro</option>
             <option value="videos">Video</option>
+            <option value="libros">Libro</option>
+            <option value="audiolibros">Audio</option>
             <option value="documentos">Documento</option>
           </select>
         </div>
@@ -3505,7 +3505,7 @@ async function loadBiblioteca() {
     // legacy
     material_aa: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`,
   };
-  const CAT_LABELS = { audiolibros: 'Audiolibro', libros: 'Libro', videos: 'Video', documentos: 'Documento', material_aa: 'Documento' };
+  const CAT_LABELS = { audiolibros: 'Audio', libros: 'Libro', videos: 'Video', documentos: 'Documento', material_aa: 'Documento' };
   list.innerHTML = data.map(item => {
     const catKey = item.categoria || 'libros';
     const isAA = item.is_aa === true;
@@ -3580,7 +3580,7 @@ async function loadBiblioteca() {
 function filterLib(cat) {
   currentLibFilter = cat;
   document.querySelectorAll('.cat-tab').forEach((el,i) => {
-    const cats = ['todos','audiolibros','libros','videos','documentos','solo_aa'];
+    const cats = ['todos','solo_aa','videos','libros','audiolibros','documentos'];
     el.classList.toggle('active', cats[i]===cat);
   });
   loadBiblioteca();
