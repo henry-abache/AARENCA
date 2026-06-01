@@ -4273,7 +4273,10 @@ async function loadAdminPanel() {
 
   let html = '';
 
-  // === PENDING USERS ===
+  // === ROL BADGE ===
+  html += `<div style="margin-bottom:16px;padding:10px 14px;border-radius:var(--radius-sm);background:${isPrincipal ? 'rgba(251,191,36,0.12)' : 'rgba(96,165,250,0.1)'};border:1px solid ${isPrincipal ? 'rgba(251,191,36,0.3)' : 'rgba(96,165,250,0.25)'};color:${isPrincipal ? 'var(--accent)' : 'var(--info)'};font-size:13px;font-weight:600">
+    ${isPrincipal ? '⭐ Admin Principal — Acceso completo' : '🔹 Admin Adjunto — Puedes agregar personas y crear eventos en tu sede'}
+  </div>`;
   html += `<div class="admin-section">
     <div class="admin-section-title">⏳ Solicitudes de ingreso (${(pendingUsers||[]).length})</div>`;
   
@@ -4380,8 +4383,9 @@ async function loadAdminPanel() {
     <div class="admin-section-title">➕ Crear</div>
     <button class="btn btn-secondary" style="margin-bottom:10px" onclick="openNewUserModal()">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
-      Crear nuevo usuario
+      Agregar persona a la sede
     </button>
+    ${isPrincipal ? `
     <button class="btn btn-secondary" style="margin-bottom:10px" onclick="openModal('modal-new-sede')">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
       Crear nueva sede
@@ -4389,7 +4393,7 @@ async function loadAdminPanel() {
     <button class="btn btn-secondary" onclick="openModal('modal-new-adiccion')">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
       Agregar adicción al catálogo
-    </button>
+    </button>` : ''}
   </div>`;
 
   body.innerHTML = html;
@@ -4437,9 +4441,11 @@ async function openManageUser(userId) {
   const ROL_LABELS = { admin_principal: 'Admin Principal', admin_adjunto: 'Admin Adjunto', usuario: 'Usuario' };
   document.getElementById('manage-user-title').textContent = u.nombre;
 
+  const iAmPrincipal = currentUser?.rol === 'admin_principal';
   let html = `
     <div class="admin-section">
       <div class="admin-section-title">Rol actual: ${ROL_LABELS[u.rol]||u.rol}</div>
+      ${iAmPrincipal ? `
       <div class="input-group">
         <label class="input-label">Cambiar rol</label>
         <select id="manage-rol-select">
@@ -4447,7 +4453,9 @@ async function openManageUser(userId) {
         </select>
       </div>
       <button class="btn btn-primary" onclick="saveUserRole('${u.id}')">Guardar rol</button>
+      ` : `<p style="color:var(--text3);font-size:13px">Solo el Admin Principal puede cambiar roles.</p>`}
     </div>
+    ${iAmPrincipal ? `
     <div class="divider"></div>
     <div class="admin-section">
       <div class="admin-section-title">Traslado de sede</div>
@@ -4462,13 +4470,14 @@ async function openManageUser(userId) {
     <div class="divider"></div>
     <button class="btn btn-danger mt-8" onclick="toggleUserActive('${u.id}',${u.activo})">
       ${u.activo ? '🚫 Desactivar usuario' : '✅ Reactivar usuario'}
-    </button>`;
+    </button>` : ''}`;
 
   document.getElementById('manage-user-body').innerHTML = html;
   openModal('modal-manage-user');
 }
 
 async function saveUserRole(userId) {
+  if (currentUser?.rol !== 'admin_principal') { showToast('Sin permisos para cambiar roles'); return; }
   const newRol = document.getElementById('manage-rol-select').value;
   requireAdminSecret(`¿Cambiar el rol de este usuario a ${newRol}?`, async () => {
     // Si se va a hacer admin_principal, quitar ese rol al actual
@@ -4487,6 +4496,7 @@ async function saveUserRole(userId) {
 }
 
 async function transferUserDirect(userId) {
+  if (currentUser?.rol !== 'admin_principal') { showToast('Sin permisos para trasladar usuarios'); return; }
   const sedeDestinoId = parseInt(document.getElementById('manage-sede-select').value);
   requireAdminSecret('¿Trasladar directamente a este usuario?', async () => {
     const sedeDestino = sedes.find(s=>s.id===sedeDestinoId);
@@ -4506,6 +4516,7 @@ async function transferUserDirect(userId) {
 }
 
 async function toggleUserActive(userId, isActive) {
+  if (currentUser?.rol !== 'admin_principal') { showToast('Sin permisos para activar/desactivar usuarios'); return; }
   requireAdminSecret(isActive ? '¿Desactivar este usuario?' : '¿Reactivar este usuario?', async () => {
     await sb.from('usuarios').update({ activo: !isActive }).eq('id', userId);
     showToast(isActive ? 'Usuario desactivado' : 'Usuario reactivado');
@@ -4748,6 +4759,7 @@ async function enviarSolicitudSede() {
 }
 
 async function adminCreateSede() {
+  if (currentUser?.rol !== 'admin_principal') { showToast('Solo el Admin Principal puede crear sedes'); return; }
   const nombre = document.getElementById('sede-nombre').value.trim();
   const ciudad = document.getElementById('sede-ciudad').value.trim();
   const direccion = document.getElementById('sede-direccion').value.trim();
@@ -4769,6 +4781,7 @@ async function adminCreateSede() {
 }
 
 async function adminCreateAdiccion() {
+  if (currentUser?.rol !== 'admin_principal') { showToast('Solo el Admin Principal puede agregar adicciones'); return; }
   const nombre = document.getElementById('add-nombre').value.trim();
   const errEl = document.getElementById('add-error');
   if (!nombre) { errEl.textContent = 'Ingresa el nombre'; return; }
