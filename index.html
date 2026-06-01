@@ -871,6 +871,26 @@
     .lib-info { flex: 1; overflow: hidden; }
     .lib-title { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .lib-desc { font-size: 12px; color: var(--text3); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .lib-badges {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .lib-aa-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      background: var(--accent);
+      color: var(--accent-text);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 20px;
+      white-space: nowrap;
+      letter-spacing: 0.2px;
+    }
     .lib-cat-badge {
       font-size: 11px;
       padding: 2px 8px;
@@ -1453,6 +1473,7 @@
     .dot-libros { color: #34d399; }
     .dot-videos { color: #f87171; }
     .dot-material_aa { color: var(--accent); }
+    .dot-documentos { color: var(--text2); }
 
     input[type="date"]::-webkit-calendar-picker-indicator {
       filter: invert(0.5);
@@ -1977,7 +1998,8 @@
         <div class="cat-tab" onclick="filterLib('audiolibros')">Audiolibros</div>
         <div class="cat-tab" onclick="filterLib('libros')">Libros</div>
         <div class="cat-tab" onclick="filterLib('videos')">Videos</div>
-        <div class="cat-tab" onclick="filterLib('material_aa')">Material AA</div>
+        <div class="cat-tab" onclick="filterLib('documentos')">Documentos</div>
+        <div class="cat-tab" onclick="filterLib('solo_aa')">⭐ AA</div>
       </div>
       <div id="lib-list"></div>
     </div>
@@ -2274,13 +2296,17 @@
           <input type="text" id="lib-desc" placeholder="Breve descripción" />
         </div>
         <div class="input-group">
-          <label class="input-label">Categoría</label>
+          <label class="input-label">Tipo de recurso</label>
           <select id="lib-cat">
-            <option value="audiolibros">Audiolibros</option>
-            <option value="libros">Libros</option>
-            <option value="videos">Videos</option>
-            <option value="material_aa">Material AA</option>
+            <option value="audiolibros">Audiolibro</option>
+            <option value="libros">Libro</option>
+            <option value="videos">Video</option>
+            <option value="documentos">Documento</option>
           </select>
+        </div>
+        <div class="input-group" style="display:flex;align-items:center;gap:10px;background:var(--bg3);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:16px">
+          <input type="checkbox" id="lib-is-aa" style="width:20px;height:20px;accent-color:var(--accent);cursor:pointer;flex-shrink:0" />
+          <label for="lib-is-aa" style="font-size:14px;font-weight:600;color:var(--text);cursor:pointer;line-height:1.3">⭐ Material oficial de AA<br><span style="font-size:12px;font-weight:400;color:var(--text2)">Marcar si es contenido de Alcohólicos Anónimos</span></label>
         </div>
         <div class="input-group" id="lib-url-wrap">
           <label class="input-label">URL del recurso</label>
@@ -2314,13 +2340,17 @@
           <input type="text" id="edit-lib-desc-input" placeholder="Breve descripción" />
         </div>
         <div class="input-group">
-          <label class="input-label">Categoría</label>
+          <label class="input-label">Tipo de recurso</label>
           <select id="edit-lib-cat">
-            <option value="audiolibros">Audiolibros</option>
-            <option value="libros">Libros</option>
-            <option value="videos">Videos</option>
-            <option value="material_aa">Material AA</option>
+            <option value="audiolibros">Audiolibro</option>
+            <option value="libros">Libro</option>
+            <option value="videos">Video</option>
+            <option value="documentos">Documento</option>
           </select>
+        </div>
+        <div class="input-group" style="display:flex;align-items:center;gap:10px;background:var(--bg3);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:16px">
+          <input type="checkbox" id="edit-lib-is-aa" style="width:20px;height:20px;accent-color:var(--accent);cursor:pointer;flex-shrink:0" />
+          <label for="edit-lib-is-aa" style="font-size:14px;font-weight:600;color:var(--text);cursor:pointer;line-height:1.3">⭐ Material oficial de AA<br><span style="font-size:12px;font-weight:400;color:var(--text2)">Marcar si es contenido de Alcohólicos Anónimos</span></label>
         </div>
         <button class="btn btn-primary" onclick="saveLibCat()">Guardar cambios</button>
         <button class="btn btn-danger mt-8" onclick="deleteLibItem()">Eliminar material</button>
@@ -2517,15 +2547,13 @@
     <div class="modal-sheet">
       <div class="modal-handle"></div>
       <div class="modal-header">
-        <div class="modal-title">✏️ Editar Sede</div>
+        <div class="modal-title" id="modal-dir-edit-sede-title">✏️ Editar Sede</div>
         <button class="modal-close" onclick="closeModal('modal-dir-edit-sede')">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
       <div class="modal-body">
-        <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:16px;font-size:13px;color:var(--text2)">
-          ⚠️ Esta sede no tiene Administrador Principal. Puedes editar sus datos.
-        </div>
+        <div id="modal-dir-edit-sede-notice" style="border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:16px;font-size:13px"></div>
         <input type="hidden" id="dir-edit-sede-id" />
         <div class="input-group">
           <label class="input-label">Nombre de la sede *</label>
@@ -3212,7 +3240,12 @@ async function loadBiblioteca() {
   const list = document.getElementById('lib-list');
   list.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><div class="loading-text">Cargando biblioteca...</div></div>';
   let query = sb.from('biblioteca').select('*').eq('sede_id', currentUser.sede_id).order('created_at', { ascending: false });
-  if (currentLibFilter !== 'todos') query = query.eq('categoria', currentLibFilter);
+  // Filtro especial: solo material AA (is_aa = true)
+  if (currentLibFilter === 'solo_aa') {
+    query = query.eq('is_aa', true);
+  } else if (currentLibFilter !== 'todos') {
+    query = query.eq('categoria', currentLibFilter);
+  }
   const { data } = await query;
   if (!data || !data.length) {
     list.innerHTML = '<div class="empty-state"><div class="empty-icon">📚</div><div class="empty-title">Sin material</div><div class="empty-sub">No hay material en esta categoría aún</div></div>';
@@ -3223,18 +3256,28 @@ async function loadBiblioteca() {
     audiolibros: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>`,
     libros: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>`,
     videos: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>`,
+    documentos: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`,
+    // legacy
     material_aa: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`,
   };
-  const CAT_LABELS = { audiolibros: 'Audiolibro', libros: 'Libro', videos: 'Video', material_aa: 'Material AA' };
-  list.innerHTML = data.map(item => `
-    <div class="lib-item" data-lib-id="${item.id}" data-desc="${(item.descripcion||'').replace(/"/g,'&quot;')}" data-url="${item.url||''}" data-path="${item.archivo_path||''}" data-is-admin="${isAdmin}" data-cat="${item.categoria}" data-titulo="${item.titulo.replace(/"/g,'&quot;')}">
-      <div class="lib-icon dot-${item.categoria}">${CAT_ICONS[item.categoria]||CAT_ICONS.libros}</div>
+  const CAT_LABELS = { audiolibros: 'Audiolibro', libros: 'Libro', videos: 'Video', documentos: 'Documento', material_aa: 'Documento' };
+  list.innerHTML = data.map(item => {
+    const catKey = item.categoria || 'libros';
+    const isAA = item.is_aa === true;
+    const aaBadge = isAA ? `<span class="lib-aa-badge">⭐ AA</span>` : '';
+    return `
+    <div class="lib-item" data-lib-id="${item.id}" data-desc="${(item.descripcion||'').replace(/"/g,'&quot;')}" data-url="${item.url||''}" data-path="${item.archivo_path||''}" data-is-admin="${isAdmin}" data-cat="${catKey}" data-is-aa="${isAA}" data-titulo="${item.titulo.replace(/"/g,'&quot;')}">
+      <div class="lib-icon dot-${catKey}">${CAT_ICONS[catKey]||CAT_ICONS.libros}</div>
       <div class="lib-info">
         <div class="lib-title">${item.titulo}</div>
         <div class="lib-desc">${item.descripcion||''}</div>
       </div>
-      <div class="lib-cat-badge">${CAT_LABELS[item.categoria]||item.categoria}</div>
-    </div>`).join('');
+      <div class="lib-badges">
+        <div class="lib-cat-badge">${CAT_LABELS[catKey]||catKey}</div>
+        ${aaBadge}
+      </div>
+    </div>`;
+  }).join('');
 
   // Attach long-press listeners after rendering
   document.querySelectorAll('.lib-item').forEach(el => {
@@ -3253,11 +3296,13 @@ async function loadBiblioteca() {
           const cat = el.dataset.cat;
           const titulo = el.dataset.titulo;
           const desc = el.dataset.desc || '';
+          const isAA = el.dataset.isAa === 'true';
           libEditingId = id;
           document.getElementById('edit-lib-name').textContent = titulo;
           document.getElementById('edit-lib-titulo-input').value = titulo;
           document.getElementById('edit-lib-cat').value = cat;
           document.getElementById('edit-lib-desc-input').value = desc;
+          document.getElementById('edit-lib-is-aa').checked = isAA;
           openModal('modal-edit-lib');
         }
       }, 600);
@@ -3290,7 +3335,7 @@ async function loadBiblioteca() {
 function filterLib(cat) {
   currentLibFilter = cat;
   document.querySelectorAll('.cat-tab').forEach((el,i) => {
-    const cats = ['todos','audiolibros','libros','videos','material_aa'];
+    const cats = ['todos','audiolibros','libros','videos','documentos','solo_aa'];
     el.classList.toggle('active', cats[i]===cat);
   });
   loadBiblioteca();
@@ -3306,6 +3351,7 @@ function openLibItem(id, url, path, isAdmin, cat, titulo) {
     // Load description from data attribute stored on the element
     const itemEl = document.querySelector(`[data-lib-id="${id}"]`);
     document.getElementById('edit-lib-desc-input').value = itemEl ? (itemEl.dataset.desc || '') : '';
+    document.getElementById('edit-lib-is-aa').checked = itemEl ? (itemEl.dataset.isAa === 'true') : false;
     openModal('modal-edit-lib');
   } else {
     const finalUrl = url || (path ? `${SUPABASE_URL}/storage/v1/object/public/biblioteca/${path}` : null);
@@ -3317,8 +3363,9 @@ async function saveLibCat() {
   const cat = document.getElementById('edit-lib-cat').value;
   const titulo = document.getElementById('edit-lib-titulo-input').value.trim();
   const desc = document.getElementById('edit-lib-desc-input').value.trim();
+  const isAA = document.getElementById('edit-lib-is-aa').checked;
   if (!titulo) { showToast('El título no puede estar vacío'); return; }
-  await sb.from('biblioteca').update({ categoria: cat, titulo, descripcion: desc }).eq('id', libEditingId);
+  await sb.from('biblioteca').update({ categoria: cat, titulo, descripcion: desc, is_aa: isAA }).eq('id', libEditingId);
   closeModal('modal-edit-lib');
   loadBiblioteca();
   showToast('Material actualizado');
@@ -3365,7 +3412,8 @@ async function uploadLibItem() {
   await sb.from('biblioteca').insert({
     sede_id: currentUser.sede_id,
     titulo, descripcion: desc, categoria: cat, tipo: libType,
-    url, archivo_path, archivo_nombre, subido_por: currentUser.id
+    url, archivo_path, archivo_nombre, subido_por: currentUser.id,
+    is_aa: document.getElementById('lib-is-aa').checked
   });
 
   // Notificar
@@ -3382,6 +3430,7 @@ async function uploadLibItem() {
   document.getElementById('lib-titulo').value='';
   document.getElementById('lib-desc').value='';
   document.getElementById('lib-url').value='';
+  document.getElementById('lib-is-aa').checked=false;
 }
 
 // ============================================================
@@ -3746,7 +3795,7 @@ function renderDirSedes() {
     const total  = users.length;
     const conTel = users.filter(u => u.telefono).length;
     const hasAdm = !!_dirAdmines[sede.id];
-    const canEdit = isAdminPrincipal && !hasAdm && !isOwn; // puede editar si es admin y la sede no tiene admin
+    const canEdit = isAdminPrincipal && (isOwn || !hasAdm); // puede editar su propia sede O sedes sin admin
 
     if (isOwn) {
       html += `<div class="dir-own-label">⭐ Tu sede</div>`;
@@ -3762,7 +3811,12 @@ function renderDirSedes() {
 
     // Right-side element: edit btn (admin) | "Mi Sede" badge | no-admin badge | chevron
     let rightHtml = '';
-    if (canEdit) {
+    if (isOwn && isAdminPrincipal) {
+      // Admin principal ve su sede: badge + botón editar
+      rightHtml = `
+        <span class="dir-sede-badge">Mi Sede</span>
+        <button class="dir-sede-edit-btn" onclick="event.stopPropagation();openDirEditSede(${sede.id})" title="Editar mi sede">${_EDIT_ICON}</button>`;
+    } else if (canEdit && !isOwn) {
       rightHtml = `
         <span class="dir-no-admin-badge">Sin admin</span>
         <button class="dir-sede-edit-btn" onclick="event.stopPropagation();openDirEditSede(${sede.id})" title="Editar sede">${_EDIT_ICON}</button>`;
@@ -3829,7 +3883,7 @@ function _renderDirMiembros(users, sede, isOwn, hasAdm) {
   const ROL_ORDER = { admin_principal: 0, admin_adjunto: 1, usuario: 2 };
   const ROL_LABELS = { admin_principal: 'Admin', admin_adjunto: 'Adjunto' };
   const isAdminPrincipal = currentUser?.rol === 'admin_principal';
-  const canEdit = isAdminPrincipal && !hasAdm && !isOwn && sede.id != null;
+  const canEdit = isAdminPrincipal && (isOwn || (!hasAdm && sede.id != null));
 
   const sorted = [...users].sort((a,b) => (ROL_ORDER[a.rol]||2) - (ROL_ORDER[b.rol]||2));
   const conTel = sorted.filter(u => u.telefono).length;
@@ -3853,7 +3907,7 @@ function _renderDirMiembros(users, sede, isOwn, hasAdm) {
   }).join('') : `<div class="empty-state" style="padding:24px"><div class="empty-icon">👤</div><div class="empty-title">Sin miembros registrados</div><div class="empty-sub">Nadie se ha unido a esta sede todavía</div></div>`;
 
   const editBtn = canEdit
-    ? `<button class="btn btn-secondary" style="margin-top:12px;font-size:13px" onclick="openDirEditSede(${sede.id})">✏️ Editar datos de esta sede</button>`
+    ? `<button class="btn btn-secondary" style="margin-top:12px;font-size:13px" onclick="openDirEditSede(${sede.id})">✏️ ${isOwn ? 'Editar datos de mi sede' : 'Editar datos de esta sede'}</button>`
     : '';
 
   const noAdminAlert = !hasAdm && sede.id != null
@@ -3875,10 +3929,30 @@ function _renderDirMiembros(users, sede, isOwn, hasAdm) {
     <div class="sede-section" style="margin-top:12px">${membersHtml}</div>`;
 }
 
-// ---- Editar sede desde el directorio (solo admin_principal sobre sedes sin admin) ----
+// ---- Editar sede desde el directorio (admin_principal: su propia sede o sedes sin admin) ----
 function openDirEditSede(sedeId) {
   const sede = sedes.find(s => s.id === sedeId);
   if (!sede) return;
+  const isOwnSede = sedeId === currentUser?.sede_id;
+  // Seguridad: solo admin_principal puede abrir esto
+  if (currentUser?.rol !== 'admin_principal') return;
+  // Si no es su sede, verificar que no tenga admin
+  if (!isOwnSede && _dirAdmines[sedeId]) {
+    showToast('Esta sede ya tiene administrador principal.');
+    return;
+  }
+  // Título y aviso contextual
+  const noticeEl = document.getElementById('modal-dir-edit-sede-notice');
+  const titleEl  = document.getElementById('modal-dir-edit-sede-title');
+  if (isOwnSede) {
+    titleEl.textContent = '✏️ Editar Mi Sede';
+    noticeEl.style.cssText = 'background:rgba(251,191,36,0.12);border:1px solid var(--accent);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:16px;font-size:13px;color:var(--accent)';
+    noticeEl.textContent = '⭐ Estás editando los datos de tu sede. Solo tú, como Administrador Principal, puedes hacer esto.';
+  } else {
+    titleEl.textContent = '✏️ Editar Sede';
+    noticeEl.style.cssText = 'background:var(--bg3);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:16px;font-size:13px;color:var(--text2)';
+    noticeEl.textContent = '⚠️ Esta sede no tiene Administrador Principal. Puedes editar sus datos.';
+  }
   document.getElementById('dir-edit-sede-id').value    = sedeId;
   document.getElementById('dir-edit-sede-nombre').value = sede.nombre || '';
   document.getElementById('dir-edit-sede-ciudad').value = sede.ciudad || '';
@@ -3897,9 +3971,14 @@ async function saveDirEditSede() {
 
   if (!nombre) { errEl.textContent = 'El nombre es obligatorio.'; return; }
 
-  // Verificar de nuevo que sigue sin admin (seguridad)
   if (currentUser?.rol !== 'admin_principal') { errEl.textContent = 'Sin permisos.'; return; }
-  if (_dirAdmines[sedeId]) { errEl.textContent = 'Esta sede ya tiene administrador principal.'; return; }
+
+  // Puede editar si es su propia sede O si la sede no tiene admin
+  const isOwnSede = sedeId === currentUser?.sede_id;
+  if (!isOwnSede && _dirAdmines[sedeId]) {
+    errEl.textContent = 'Esta sede ya tiene administrador principal.';
+    return;
+  }
 
   const updates = { nombre, ciudad: ciudad || null, direccion: dir || null };
   const { error } = await sb.from('sedes').update(updates).eq('id', sedeId);
