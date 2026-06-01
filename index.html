@@ -3049,14 +3049,57 @@ function loginUser(user) {
   localStorage.setItem('nvaa_user_id', user.id);
   applyTheme(user.tema || currentTheme);
   currentTheme = user.tema || currentTheme;
+  // Restaurar datos del padrino desde localStorage
+  _restorePadrinoFromLS(user.id);
   // Recargar adicciones filtrando por sede del usuario
   sb.from('adicciones_catalogo')
     .select('*')
     .or(`sede_id.is.null,sede_id.eq.${user.sede_id}`)
     .order('nombre')
     .then(({ data }) => { if (data) addictions_catalog = data; });
+  // Intentar cargar padrino desde Supabase en background
+  _loadPadrinoFromSupabase(user.id);
   showMainApp();
 }
+
+// Restaura datos del padrino desde localStorage al objeto currentUser
+function _restorePadrinoFromLS(userId) {
+  if (!currentUser) return;
+  if (currentUser.padrino_tel) return; // Ya tiene datos desde Supabase
+  try {
+    const saved = localStorage.getItem(`nvaa_padrino_${userId}`);
+    if (saved) {
+      const p = JSON.parse(saved);
+      currentUser.padrino_id      = p.id      || null;
+      currentUser.padrino_nombre  = p.nombre  || null;
+      currentUser.padrino_prefijo = p.prefijo || '+56';
+      currentUser.padrino_tel     = p.tel     || null;
+    }
+  } catch(e) {}
+}
+
+// Intenta cargar padrino desde tabla padrinos_usuarios (si existe en Supabase)
+async function _loadPadrinoFromSupabase(userId) {
+  if (!currentUser || currentUser.isAnonymous) return;
+  try {
+    const { data } = await sb.from('padrinos_usuarios')
+      .select('*').eq('usuario_id', userId).maybeSingle();
+    if (data) {
+      currentUser.padrino_id      = data.padrino_ref_id  || null;
+      currentUser.padrino_nombre  = data.padrino_nombre  || null;
+      currentUser.padrino_prefijo = data.padrino_prefijo || '+56';
+      currentUser.padrino_tel     = data.padrino_tel     || null;
+      // Mantener localStorage sincronizado
+      localStorage.setItem(`nvaa_padrino_${userId}`, JSON.stringify({
+        id: currentUser.padrino_id, nombre: currentUser.padrino_nombre,
+        prefijo: currentUser.padrino_prefijo, tel: currentUser.padrino_tel,
+      }));
+    }
+  } catch(e) {
+    // Tabla aún no creada — los datos del localStorage son suficientes
+  }
+}
+
 
 async function autoLogin() {
   const savedId = localStorage.getItem('nvaa_user_id');
@@ -3070,12 +3113,16 @@ async function autoLogin() {
   if (data && (data.activo || data.estado === 'aprobado')) {
     currentUser = data;
     applyTheme(data.tema || currentTheme);
+    // Restaurar datos del padrino desde localStorage si no vienen de Supabase
+    _restorePadrinoFromLS(data.id);
     // Recargar adicciones por sede
     const { data: addData } = await sb.from('adicciones_catalogo')
       .select('*')
       .or(`sede_id.is.null,sede_id.eq.${data.sede_id}`)
       .order('nombre');
     if (addData) addictions_catalog = addData;
+    // Intentar cargar padrino desde tabla dedicada
+    _loadPadrinoFromSupabase(data.id);
     return true;
   }
   if (data && data.estado === 'pendiente') {
@@ -5970,48 +6017,62 @@ async function savePadrinoContact() {
   const sedeSelectEl = document.getElementById('padrino-sede-select');
   const sedeVal = sedeSelectEl ? sedeSelectEl.value : '';
 
+  let padrinoData = null; // { id, nombre, prefijo, tel }
+
   if (sedeVal && sedeVal !== '__manual__' && sedeVal !== '') {
-    // Padrino de la sede
+    // Padrino seleccionado de la sede
     const padrino = _dirUsuarios.find(u => u.id == sedeVal);
-    if (!padrino) { showToast('No se encontró el padrino'); return; }
-
-    if (currentUser.isAnonymous) {
-      currentUser.padrino_id = sedeVal;
-      currentUser.padrino_nombre = padrino.nombre;
-      currentUser.padrino_prefijo = padrino.prefijo_pais || '+56';
-      currentUser.padrino_tel = padrino.telefono;
-      localStorage.setItem('nvaa_anon_padrino', JSON.stringify({ nombre: padrino.nombre, prefijo: padrino.prefijo_pais||'+56', tel: padrino.telefono }));
-    } else {
-      await sb.from('usuarios').update({
-        padrino_id: sedeVal,
-        padrino_nombre: padrino.nombre,
-        padrino_prefijo: padrino.prefijo_pais || '+56',
-        padrino_tel: padrino.telefono,
-      }).eq('id', currentUser.id).catch(()=>{});
-      currentUser.padrino_id = sedeVal;
-      currentUser.padrino_nombre = padrino.nombre;
-      currentUser.padrino_prefijo = padrino.prefijo_pais || '+56';
-      currentUser.padrino_tel = padrino.telefono;
-    }
+    if (!padrino) { showToast('No se encontró el padrino en el directorio'); return; }
+    padrinoData = {
+      id:     String(padrino.id),
+      nombre: padrino.nombre,
+      prefijo: padrino.prefijo_pais || '+56',
+      tel:    padrino.telefono || '',
+    };
   } else {
-    // Padrino manual
-    const nombre = document.getElementById('padrino-nombre').value.trim();
-    const prefijo = document.getElementById('padrino-prefijo').value;
-    const tel = document.getElementById('padrino-tel').value.trim();
-    if (!tel) { showToast('Ingresa el teléfono'); return; }
+    // Padrino ingresado manualmente
+    const nombre = (document.getElementById('padrino-nombre')?.value || '').trim();
+    const prefijo = document.getElementById('padrino-prefijo')?.value || '+56';
+    const tel    = (document.getElementById('padrino-tel')?.value || '').trim();
+    if (!tel) { showToast('Ingresa el teléfono del padrino'); return; }
+    padrinoData = { id: null, nombre, prefijo, tel };
+  }
 
-    if (currentUser.isAnonymous) {
-      currentUser.padrino_id = null;
-      currentUser.padrino_nombre = nombre;
-      currentUser.padrino_prefijo = prefijo;
-      currentUser.padrino_tel = tel;
-      localStorage.setItem('nvaa_anon_padrino', JSON.stringify({ nombre, prefijo, tel }));
-    } else {
-      await sb.from('usuarios').update({ padrino_id: null, padrino_nombre: nombre, padrino_prefijo: prefijo, padrino_tel: tel }).eq('id', currentUser.id).catch(()=>{});
-      currentUser.padrino_id = null;
-      currentUser.padrino_nombre = nombre;
-      currentUser.padrino_prefijo = prefijo;
-      currentUser.padrino_tel = tel;
+  // 1. Guardar SIEMPRE en localStorage (funciona offline y sin columnas extra)
+  const lsKey = `nvaa_padrino_${currentUser?.id || '__anon__'}`;
+  localStorage.setItem(lsKey, JSON.stringify(padrinoData));
+
+  // 2. Actualizar currentUser en memoria
+  currentUser.padrino_id     = padrinoData.id;
+  currentUser.padrino_nombre = padrinoData.nombre;
+  currentUser.padrino_prefijo = padrinoData.prefijo;
+  currentUser.padrino_tel    = padrinoData.tel;
+
+  // 3. Intentar guardar en Supabase (tabla padrinos_usuarios, creada si no existe)
+  if (!currentUser.isAnonymous) {
+    try {
+      // Upsert en tabla dedicada padrinos_usuarios
+      const { error } = await sb.from('padrinos_usuarios').upsert({
+        usuario_id:      currentUser.id,
+        padrino_ref_id:  padrinoData.id || null,
+        padrino_nombre:  padrinoData.nombre || null,
+        padrino_prefijo: padrinoData.prefijo,
+        padrino_tel:     padrinoData.tel,
+        updated_at:      new Date().toISOString(),
+      }, { onConflict: 'usuario_id' });
+
+      if (error) {
+        // Si falla (tabla no existe aún), intentar en columnas de usuarios
+        await sb.from('usuarios').update({
+          padrino_id:      padrinoData.id || null,
+          padrino_nombre:  padrinoData.nombre || null,
+          padrino_prefijo: padrinoData.prefijo,
+          padrino_tel:     padrinoData.tel,
+        }).eq('id', currentUser.id).catch(() => {});
+      }
+    } catch(e) {
+      // Guardado en localStorage ya fue exitoso, no bloquear al usuario
+      console.warn('[padrino] Error Supabase, datos guardados localmente:', e);
     }
   }
 
