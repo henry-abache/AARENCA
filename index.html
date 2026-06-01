@@ -3873,13 +3873,23 @@ async function loadTelefonos() {
   const list = document.getElementById('phones-list');
   list.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><div class="loading-text">Cargando directorio...</div></div>';
 
-  // Traer TODOS los usuarios activos (con o sin teléfono)
-  const { data: usuarios } = await sb.from('usuarios')
-    .select('id,nombre,rol,sede_id,telefono,prefijo_pais,activo,padrino_id,direccion')
+  // Traer TODOS los usuarios activos y aprobados (con o sin teléfono)
+  const { data: usuarios, error: dirError } = await sb.from('usuarios')
+    .select('id,nombre,rol,sede_id,telefono,prefijo_pais,activo,estado,padrino_id,direccion')
     .eq('activo', true)
+    .eq('estado', 'aprobado')
     .order('rol');
 
-  _dirUsuarios = usuarios || [];
+  if (dirError) {
+    // Si falla el filtro por estado (columna no existe), intentar sin él
+    const { data: usuariosFallback } = await sb.from('usuarios')
+      .select('id,nombre,rol,sede_id,telefono,prefijo_pais,activo,padrino_id,direccion')
+      .eq('activo', true)
+      .order('rol');
+    _dirUsuarios = usuariosFallback || [];
+  } else {
+    _dirUsuarios = usuarios || [];
+  }
 
   // Construir mapa: sede_id → tiene admin_principal?
   _dirAdmines = {};
@@ -3896,6 +3906,7 @@ function renderDirSedes() {
   const list = document.getElementById('phones-list');
   const mySedId = currentUser?.sede_id;
   const isAdminPrincipal = currentUser?.rol === 'admin_principal';
+  const isAdmin = currentUser?.rol === 'admin_principal' || currentUser?.rol === 'admin_adjunto';
 
   // Mapa de usuarios por sede
   const bySede = {};
@@ -3923,7 +3934,7 @@ function renderDirSedes() {
     const total  = users.length;
     const conTel = users.filter(u => u.telefono).length;
     const hasAdm = !!_dirAdmines[sede.id];
-    const canEdit = isAdminPrincipal && (isOwn || !hasAdm); // puede editar su propia sede O sedes sin admin
+    const canEdit = isAdmin && isOwn || (isAdminPrincipal && !hasAdm); // admin puede editar su sede; admin_principal también las sin admin
 
     if (isOwn) {
       html += `<div class="dir-own-label">⭐ Tu sede</div>`;
@@ -3939,12 +3950,12 @@ function renderDirSedes() {
 
     // Right-side element: edit btn (admin) | "Mi Sede" badge | no-admin badge | chevron
     let rightHtml = '';
-    if (isOwn && isAdminPrincipal) {
-      // Admin principal ve su sede: badge + botón editar
+    if (isOwn && isAdmin) {
+      // Admin (principal o adjunto) ve su sede: badge + botón editar
       rightHtml = `
         <span class="dir-sede-badge">Mi Sede</span>
         <button class="dir-sede-edit-btn" onclick="event.stopPropagation();openDirEditSede(${sede.id})" title="Editar mi sede">${_EDIT_ICON}</button>`;
-    } else if (canEdit && !isOwn) {
+    } else if (isAdminPrincipal && !isOwn && !hasAdm) {
       rightHtml = `
         <span class="dir-no-admin-badge">Sin admin</span>
         <button class="dir-sede-edit-btn" onclick="event.stopPropagation();openDirEditSede(${sede.id})" title="Editar sede">${_EDIT_ICON}</button>`;
@@ -4011,7 +4022,8 @@ function _renderDirMiembros(users, sede, isOwn, hasAdm) {
   const ROL_ORDER = { admin_principal: 0, admin_adjunto: 1, usuario: 2 };
   const ROL_LABELS = { admin_principal: 'Admin', admin_adjunto: 'Adjunto' };
   const isAdminPrincipal = currentUser?.rol === 'admin_principal';
-  const canEdit = isAdminPrincipal && (isOwn || (!hasAdm && sede.id != null));
+  const isAdmin = currentUser?.rol === 'admin_principal' || currentUser?.rol === 'admin_adjunto';
+  const canEdit = (isAdmin && isOwn) || (isAdminPrincipal && !hasAdm && sede.id != null);
 
   const sorted = [...users].sort((a,b) => (ROL_ORDER[a.rol]||2) - (ROL_ORDER[b.rol]||2));
   const conTel = sorted.filter(u => u.telefono).length;
@@ -4062,8 +4074,11 @@ function openDirEditSede(sedeId) {
   const sede = sedes.find(s => s.id === sedeId);
   if (!sede) return;
   const isOwnSede = sedeId === currentUser?.sede_id;
-  // Seguridad: solo admin_principal puede abrir esto
-  if (currentUser?.rol !== 'admin_principal') return;
+  const isAdminPrincipal = currentUser?.rol === 'admin_principal';
+  const isAdmin = currentUser?.rol === 'admin_principal' || currentUser?.rol === 'admin_adjunto';
+  // Seguridad: solo admins pueden abrir esto, y solo su sede o (admin_principal) sedes sin admin
+  if (!isAdmin) return;
+  if (!isOwnSede && !isAdminPrincipal) { showToast('Solo el administrador principal puede editar otras sedes.'); return; }
   // Si no es su sede, verificar que no tenga admin
   if (!isOwnSede && _dirAdmines[sedeId]) {
     showToast('Esta sede ya tiene administrador principal.');
@@ -4099,10 +4114,14 @@ async function saveDirEditSede() {
 
   if (!nombre) { errEl.textContent = 'El nombre es obligatorio.'; return; }
 
-  if (currentUser?.rol !== 'admin_principal') { errEl.textContent = 'Sin permisos.'; return; }
+  if (currentUser?.rol !== 'admin_principal' && currentUser?.rol !== 'admin_adjunto') { errEl.textContent = 'Sin permisos.'; return; }
 
-  // Puede editar si es su propia sede O si la sede no tiene admin
-  const isOwnSede = sedeId === currentUser?.sede_id;
+  // admin_adjunto solo puede editar su propia sede
+  const isOwnSede2 = sedeId === currentUser?.sede_id;
+  if (currentUser?.rol === 'admin_adjunto' && !isOwnSede2) { errEl.textContent = 'Sin permisos para editar esta sede.'; return; }
+
+  // Puede editar si es su propia sede O si la sede no tiene admin (solo admin_principal)
+  const isOwnSede = isOwnSede2;
   if (!isOwnSede && _dirAdmines[sedeId]) {
     errEl.textContent = 'Esta sede ya tiene administrador principal.';
     return;
@@ -5637,8 +5656,23 @@ async function savePerfil() {
     direccion: direccion || null,
   };
 
-  const { error } = await sb.from('usuarios').update(updates).eq('id', currentUser.id);
-  if (error) { errEl.textContent = 'Error al guardar: ' + error.message; return; }
+  try {
+    const { data: updatedRows, error } = await sb.from('usuarios')
+      .update(updates)
+      .eq('id', currentUser.id)
+      .select();
+
+    if (error) {
+      errEl.textContent = 'Error al guardar: ' + (error.message || 'Intenta de nuevo');
+      return;
+    }
+
+    // Si no retorna filas actualizadas, igual actualizamos el objeto local
+    // (puede pasar con RLS configurada de cierta manera)
+  } catch(e) {
+    errEl.textContent = 'Error al guardar: ' + (e.message || 'Sin conexión');
+    return;
+  }
 
   currentUser.nombre = nombre;
   currentUser.prefijo_pais = prefijo;
