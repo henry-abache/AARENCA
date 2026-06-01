@@ -2645,9 +2645,8 @@
           <textarea id="admin-edit-sede-desc" placeholder="Ej: Nos reunimos los lunes y jueves..." style="min-height:70px"></textarea>
         </div>
         <div class="input-group">
-          <label class="input-label">Teléfono de contacto <span style="font-weight:400;color:var(--text3)">(se usa el del administrador principal)</span></label>
+          <label class="input-label">Teléfono de contacto <span style="font-weight:400;color:var(--text3)">(del administrador principal — no editable aquí)</span></label>
           <div id="admin-edit-sede-tel-info" style="padding:10px 14px;background:var(--bg3);border-radius:var(--radius-sm);font-size:14px;color:var(--text2)">Se cargará automáticamente</div>
-          <input type="hidden" id="admin-edit-sede-tel" />
         </div>
         <div class="divider" style="margin:16px 0"></div>
         <div class="section-label" style="margin-bottom:4px">ADMINISTRADOR PRINCIPAL</div>
@@ -4287,9 +4286,7 @@ async function openAdminEditSede(sedeId) {
   const adminTel       = adminRef?.telefono ? `${adminRef.prefijo_pais || '+56'} ${adminRef.telefono}` : null;
   const adminTelVal    = adminRef?.telefono ? `${adminRef.prefijo_pais || '+56'}${adminRef.telefono}` : '';
   const telInfoEl      = document.getElementById('admin-edit-sede-tel-info');
-  const telHiddenEl    = document.getElementById('admin-edit-sede-tel');
   if (telInfoEl) telInfoEl.textContent = adminTel ? `📞 ${adminRef.nombre}: ${adminTel}` : 'Sin administrador con teléfono registrado';
-  if (telHiddenEl) telHiddenEl.value = adminTelVal;
 
   const adminActual = (miembros||[]).find(u => u.rol === 'admin_principal');
   document.getElementById('admin-edit-sede-current-admin').textContent =
@@ -4315,7 +4312,6 @@ async function saveAdminEditSede() {
   const ciudad   = document.getElementById('admin-edit-sede-ciudad').value.trim();
   const dir      = document.getElementById('admin-edit-sede-dir').value.trim();
   const desc     = document.getElementById('admin-edit-sede-desc').value.trim();
-  const tel      = document.getElementById('admin-edit-sede-tel').value.trim();
   const newAdminId = document.getElementById('admin-edit-sede-new-admin').value;
   const errEl    = document.getElementById('admin-edit-sede-error');
   errEl.textContent = '';
@@ -4323,13 +4319,13 @@ async function saveAdminEditSede() {
   if (!nombre) { errEl.textContent = 'El nombre es obligatorio.'; return; }
   if (currentUser?.rol !== 'admin_principal') { errEl.textContent = 'Sin permisos.'; return; }
 
-  // 1. Actualizar datos de la sede — fallback si columnas no existen en Supabase
-  const updates = { nombre, ciudad: ciudad||null, direccion: dir||null,
-                    descripcion: desc||null, telefono: tel||null };
-  let { error: errSede } = await sb.from('sedes').update(updates).eq('id', sedeId);
-  if (errSede && (errSede.message.includes('descripcion') || errSede.message.includes('schema cache') || errSede.message.includes('horario'))) {
-    const updatesSafe = { nombre, ciudad: ciudad||null, direccion: dir||null, telefono: tel||null };
-    const retry = await sb.from('sedes').update(updatesSafe).eq('id', sedeId);
+  // 1. Actualizar datos de la sede — solo columnas que existen en Supabase
+  // El teléfono de contacto NO se guarda en sedes, se lee dinámicamente del admin principal
+  const updates = { nombre, ciudad: ciudad||null, direccion: dir||null };
+  // Intentar también guardar descripcion si existe la columna
+  let { error: errSede } = await sb.from('sedes').update({ ...updates, descripcion: desc||null }).eq('id', sedeId);
+  if (errSede && (errSede.message.includes('descripcion') || errSede.message.includes('schema cache'))) {
+    const retry = await sb.from('sedes').update(updates).eq('id', sedeId);
     errSede = retry.error || null;
   }
   if (errSede) { errEl.textContent = 'Error: ' + errSede.message; return; }
@@ -4352,7 +4348,7 @@ async function saveAdminEditSede() {
 
   // 3. Actualizar caché local
   const idx = sedes.findIndex(s => s.id == sedeId);
-  if (idx >= 0) Object.assign(sedes[idx], updates);
+  if (idx >= 0) Object.assign(sedes[idx], { nombre, ciudad: ciudad||null, direccion: dir||null });
 
   // Si es la sede propia, actualizar el header
   if (sedeId == currentUser?.sede_id) {
