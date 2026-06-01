@@ -1821,26 +1821,11 @@
     .achievement-popup-overlay { position:fixed; inset:0; background:var(--overlay); z-index:299; opacity:0; transition:opacity 0.3s; pointer-events:none; }
     .achievement-popup-overlay.show { opacity:1; pointer-events:auto; }
 
-    /* Frase motivacional en login y contadores */
+    /* Frase motivacional en login */
     .auth-quote-box { background:var(--surface2); border-left:3px solid var(--accent); border-radius:var(--radius-sm); padding:14px 16px; margin:16px 0 4px; text-align:left; }
     .auth-quote-icon { font-size:16px; margin-bottom:6px; }
     .auth-quote-text { font-size:14px; color:var(--text); line-height:1.55; font-style:italic; font-weight:500; }
     .auth-quote-source { font-size:12px; color:var(--accent); margin-top:6px; font-weight:600; }
-
-    /* Animación fade-in para frases */
-    @keyframes quoteFadeIn {
-      from { opacity:0; transform:translateY(6px); }
-      to   { opacity:1; transform:translateY(0); }
-    }
-    .auth-quote-box { animation: quoteFadeIn 0.5s ease both; }
-
-    /* Botón "nueva frase" en login */
-    .quote-refresh-btn { position:absolute; top:8px; right:8px; background:none; border:none; cursor:pointer; opacity:0.45; padding:4px; color:var(--text2); border-radius:50%; transition:opacity 0.2s,background 0.2s; }
-    .quote-refresh-btn:hover { opacity:1; background:var(--bg3); }
-
-    /* Frase encima de contadores */
-    .counter-quote-wrap { margin-bottom:14px; }
-    .counter-quote-wrap .auth-quote-box { margin:0; border-left-color:var(--accent); background:linear-gradient(135deg,var(--surface2) 0%,var(--bg2) 100%); }
 
     /* ===== AUTODIAGNÓSTICO ===== */
     .diag-overlay { position:fixed; inset:0; background:var(--overlay); z-index:400; display:flex; flex-direction:column; overflow:hidden; }
@@ -1922,13 +1907,10 @@
       <div class="auth-subtitle">Apoyo para Alcohólicos Anónimos</div>
 
       <!-- FRASE MOTIVACIONAL AA -->
-      <div class="auth-quote-box" id="auth-quote-box" style="position:relative">
+      <div class="auth-quote-box" id="auth-quote-box">
         <div class="auth-quote-icon">📖</div>
         <div class="auth-quote-text" id="auth-quote-text"></div>
         <div class="auth-quote-source" id="auth-quote-source"></div>
-        <button class="quote-refresh-btn" onclick="showAuthQuote()" title="Nueva frase" aria-label="Mostrar otra frase">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-        </button>
       </div>
 
       <!-- BOTÓN AUTODIAGNÓSTICO -->
@@ -3329,20 +3311,7 @@ async function loadHomeTab() {
   renderCounters();
 }
 
-async function loadDailyMessage() {
-  const { data } = await sb.from('mensajes_diarios').select('*').eq('activo', true);
-  if (!data || !data.length) return;
-  const msg = data[Math.floor(Math.random() * data.length)];
-  const homeQuoteWrap = document.getElementById('home-quote-wrap');
-  if (homeQuoteWrap) {
-    homeQuoteWrap.innerHTML = `
-      <div class="auth-quote-box" style="margin:0 0 12px 0">
-        <div class="auth-quote-icon">📖</div>
-        <div class="auth-quote-text">${msg.mensaje}</div>
-        <div class="auth-quote-source">— ${msg.autor}</div>
-      </div>`;
-  }
-}
+// loadDailyMessage definida más abajo (versión offline-safe con AA_MESSAGES_OFFLINE)
 
 function renderCounters() {
   const list = document.getElementById('counters-list');
@@ -4337,8 +4306,7 @@ async function saveAdminEditSede() {
   if (!nombre) { errEl.textContent = 'El nombre es obligatorio.'; return; }
   if (currentUser?.rol !== 'admin_principal') { errEl.textContent = 'Sin permisos.'; return; }
 
-  // 1. Actualizar datos de la sede — solo columnas seguras
-  // El teléfono de contacto NO se guarda en sedes; se lee del admin_principal dinámicamente
+  // 1. Actualizar datos de la sede — solo columnas seguras (telefono NO existe en sedes, se lee del admin_principal)
   const updates = { nombre, ciudad: ciudad||null, direccion: dir||null };
   let { error: errSede } = await sb.from('sedes').update({ ...updates, descripcion: desc||null }).eq('id', sedeId);
   if (errSede && (errSede.message.includes('descripcion') || errSede.message.includes('schema cache'))) {
@@ -5649,15 +5617,13 @@ async function loadDailyMessage() {
   const homeQuoteWrap = document.getElementById('home-quote-wrap');
   if (homeQuoteWrap) {
     homeQuoteWrap.innerHTML = `
-      <div class="counter-quote-wrap">
-        <div class="auth-quote-box" style="position:relative">
-          <div class="auth-quote-icon">📖</div>
-          <div class="auth-quote-text">${msg.mensaje}</div>
-          <div class="auth-quote-source">— ${msg.autor}</div>
-          <button onclick="loadDailyMessage()" title="Nueva frase" aria-label="Nueva frase aleatoria" class="quote-refresh-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-          </button>
-        </div>
+      <div class="auth-quote-box" style="margin:0 0 12px 0;position:relative">
+        <div class="auth-quote-icon">📖</div>
+        <div class="auth-quote-text">${msg.mensaje}</div>
+        <div class="auth-quote-source">— ${msg.autor}</div>
+        <button onclick="loadDailyMessage()" title="Nueva frase" style="position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;opacity:0.5;padding:4px;color:var(--text2)" aria-label="Nueva frase aleatoria">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        </button>
       </div>`;
   }
 }
@@ -5881,9 +5847,8 @@ const AA_QUOTES = [
 ];
 
 function showAuthQuote() {
-  const el  = document.getElementById('auth-quote-text');
+  const el = document.getElementById('auth-quote-text');
   const src = document.getElementById('auth-quote-source');
-  const box = document.getElementById('auth-quote-box');
   if (!el || !src) return;
   // Seleccionar frase aleatoria diferente a la anterior
   const lastIdx = parseInt(sessionStorage.getItem('nvaa_last_quote') || '-1');
@@ -5891,9 +5856,7 @@ function showAuthQuote() {
   do { idx = Math.floor(Math.random() * AA_QUOTES.length); } while (idx === lastIdx && AA_QUOTES.length > 1);
   sessionStorage.setItem('nvaa_last_quote', idx);
   const q = AA_QUOTES[idx];
-  // Animación de fade al cambiar
-  if (box) { box.style.animation = 'none'; box.offsetHeight; box.style.animation = 'quoteFadeIn 0.5s ease both'; }
-  el.textContent  = '«' + q.text + '»';
+  el.textContent = '«' + q.text + '»';
   src.textContent = '— ' + q.source;
 }
 
