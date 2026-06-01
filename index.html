@@ -2565,18 +2565,21 @@ async function handleRegister() {
 
   const userId = makeId(nombre, sede.nombre);
 
-  // Verificar duplicado: solo usuarios activos, aprobados o pendientes (no los rechazados/inactivos)
-  const { data: existing } = await sb.from('usuarios')
+  // Verificar duplicado: solo usuarios activos/pendientes/aprobados en ESA sede (excluir rechazados)
+  const { data: existing, error: existErr } = await sb.from('usuarios')
     .select('id,estado,activo')
     .eq('id', userId)
-    .not('estado', 'eq', 'rechazado')
-    .single();
+    .eq('sede_id', sedeId)
+    .in('estado', ['aprobado', 'pendiente'])
+    .maybeSingle();
+  if (existErr && existErr.code !== 'PGRST116') { errEl.textContent = 'Error al verificar usuario.'; return; }
   if (existing) { errEl.textContent = 'Ya existe un usuario con ese nombre en esa sede.'; return; }
 
-  // Verificar si existe un registro rechazado/inactivo con ese mismo ID para reutilizarlo
+  // Verificar si existe un registro rechazado en esa sede para reutilizarlo
   const { data: rejected } = await sb.from('usuarios')
     .select('id')
     .eq('id', userId)
+    .eq('sede_id', sedeId)
     .eq('estado', 'rechazado')
     .maybeSingle();
 
@@ -4245,16 +4248,29 @@ async function adminCreateUser() {
   if (!sede) { errEl.textContent = 'Selecciona una sede'; return; }
 
   const userId = makeId(nombre, sede.nombre);
-  const { data: existing } = await sb.from('usuarios').select('id').eq('id', userId).single();
-  if (existing) { errEl.textContent = 'Ya existe ese usuario en esa sede.'; return; }
+  // Solo bloquear si existe un usuario activo/pendiente/aprobado en esa misma sede
+  const { data: existing, error: existErr } = await sb.from('usuarios')
+    .select('id,estado')
+    .eq('id', userId)
+    .eq('sede_id', sedeId)
+    .in('estado', ['aprobado', 'pendiente'])
+    .maybeSingle();
+  if (existErr && existErr.code !== 'PGRST116') { errEl.textContent = 'Error al verificar usuario.'; return; }
+  if (existing) { errEl.textContent = 'Ya existe ese usuario activo en esa sede.'; return; }
 
   requireAdminSecret(`¿Crear usuario "${nombre}" como ${rol}?`, async () => {
-    const { error } = await sb.from('usuarios').insert({
+    // Reutilizar registro rechazado si existe en esa sede
+    const { data: rejectedAdmin } = await sb.from('usuarios')
+      .select('id').eq('id', userId).eq('sede_id', sedeId).eq('estado', 'rechazado').maybeSingle();
+    const userData = {
       id: userId, nombre, sede_id: sedeId, rol,
       estado: 'aprobado', activo: true,
       telefono: tel || null, prefijo_pais: prefijo,
       adicciones: [], paso_actual: 1, pasos_completados: [], tema: 'auto'
-    });
+    };
+    const { error } = rejectedAdmin
+      ? await sb.from('usuarios').update(userData).eq('id', userId).eq('sede_id', sedeId)
+      : await sb.from('usuarios').insert(userData);
     if (error) { showToast('Error: ' + error.message); return; }
     await sb.from('notificaciones').insert({
       sede_id: sedeId, tipo: 'nuevo_usuario',
