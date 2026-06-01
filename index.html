@@ -5523,7 +5523,7 @@ function openPerfil() {
   document.getElementById('perfil-sede-display').value = sede ? sede.nombre : '';
   buildPrefijoOptions('perfil-prefijo', currentUser.prefijo_pais || '+56');
   document.getElementById('perfil-telefono').value = currentUser.telefono || '';
-  document.getElementById('perfil-direccion').value = currentUser.direccion || '';
+  document.getElementById('perfil-direccion').value = currentUser.direccion || localStorage.getItem('nvaa_direccion_' + currentUser.id) || '';
   document.getElementById('perfil-error').textContent = '';
   _perfilSelectedNewAddType = null;
 
@@ -5600,26 +5600,40 @@ async function savePerfil() {
   const nombre = document.getElementById('perfil-nombre').value.trim();
   const prefijo = document.getElementById('perfil-prefijo').value;
   const telefono = document.getElementById('perfil-telefono').value.trim();
-  const direccion = document.getElementById('perfil-direccion').value.trim();
+  const direccionEl = document.getElementById('perfil-direccion');
+  const direccion = direccionEl ? direccionEl.value.trim() : null;
   const errEl = document.getElementById('perfil-error');
   errEl.textContent = '';
 
   if (!nombre) { errEl.textContent = 'El nombre es obligatorio.'; return; }
 
+  // Guardar campos base siempre
   const updates = {
     nombre,
     prefijo_pais: prefijo,
     telefono: telefono || null,
-    direccion: direccion || null,
   };
 
-  const { error } = await sb.from('usuarios').update(updates).eq('id', currentUser.id);
+  // Intentar guardar con direccion primero
+  let { error } = await sb.from('usuarios').update({ ...updates, direccion: direccion || null }).eq('id', currentUser.id);
+
+  // Si falla por columna inexistente en Supabase, guardar sin direccion
+  if (error && (error.message.includes('direccion') || error.message.includes('schema cache'))) {
+    const result2 = await sb.from('usuarios').update(updates).eq('id', currentUser.id);
+    error = result2.error;
+    // Guardar direccion solo localmente
+    if (!error && direccion) {
+      currentUser.direccion = direccion;
+      localStorage.setItem('nvaa_direccion_' + currentUser.id, direccion);
+    }
+  }
+
   if (error) { errEl.textContent = 'Error al guardar: ' + error.message; return; }
 
   currentUser.nombre = nombre;
   currentUser.prefijo_pais = prefijo;
   currentUser.telefono = telefono || null;
-  currentUser.direccion = direccion || null;
+  if (direccion !== null) currentUser.direccion = direccion;
 
   // Update header
   document.getElementById('header-username').textContent = nombre;
