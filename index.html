@@ -3615,7 +3615,7 @@ async function loadEventos(forceRefresh) {
   }
 
   // Separar: propios primero, luego otros
-  const propios = eventos.filter(ev => ev.sede_id === currentUser.sede_id);
+  const propios = eventos.filter(ev => ev.sede_id == currentUser.sede_id);
   const otros   = eventos.filter(ev => ev.sede_id !== currentUser.sede_id);
 
   const isAdminUser = currentUser?.rol !== 'usuario';
@@ -3875,7 +3875,7 @@ async function loadTelefonos() {
 
   // Traer TODOS los usuarios activos (con o sin teléfono)
   const { data: usuarios } = await sb.from('usuarios')
-    .select('id,nombre,rol,sede_id,telefono,prefijo_pais,activo,padrino_id')
+    .select('id,nombre,rol,sede_id,telefono,prefijo_pais,activo,padrino_id,direccion')
     .eq('activo', true)
     .order('rol');
 
@@ -3907,8 +3907,8 @@ function renderDirSedes() {
 
   // Ordenar sedes: mi sede primero, luego alfabético
   const sedesOrdenadas = [...sedes].sort((a, b) => {
-    if (a.id === mySedId) return -1;
-    if (b.id === mySedId) return 1;
+    if (a.id == mySedId) return -1;
+    if (b.id == mySedId) return 1;
     return a.nombre.localeCompare(b.nombre, 'es');
   });
 
@@ -3919,7 +3919,7 @@ function renderDirSedes() {
 
   sedesOrdenadas.forEach(sede => {
     const users  = bySede[sede.id] || [];
-    const isOwn  = sede.id === mySedId;
+    const isOwn  = sede.id == mySedId;
     const total  = users.length;
     const conTel = users.filter(u => u.telefono).length;
     const hasAdm = !!_dirAdmines[sede.id];
@@ -3993,10 +3993,10 @@ function renderDirSedes() {
 }
 
 function renderDirDetalle(sedeId) {
-  const sede = sedes.find(s => s.id === sedeId);
+  const sede = sedes.find(s => s.id == sedeId);
   if (!sede) return;
-  const isOwn = sedeId === currentUser?.sede_id;
-  const users = _dirUsuarios.filter(u => u.sede_id === sedeId);
+  const isOwn = sedeId == currentUser?.sede_id;
+  const users = _dirUsuarios.filter(u => u.sede_id == sedeId);
   const hasAdm = !!_dirAdmines[sedeId];
   _renderDirMiembros(users, sede, isOwn, hasAdm);
 }
@@ -4059,9 +4059,9 @@ function _renderDirMiembros(users, sede, isOwn, hasAdm) {
 
 // ---- Editar sede desde el directorio (admin_principal: su propia sede o sedes sin admin) ----
 function openDirEditSede(sedeId) {
-  const sede = sedes.find(s => s.id === sedeId);
+  const sede = sedes.find(s => s.id == sedeId);
   if (!sede) return;
-  const isOwnSede = sedeId === currentUser?.sede_id;
+  const isOwnSede = sedeId == currentUser?.sede_id;
   // Seguridad: solo admin_principal puede abrir esto
   if (currentUser?.rol !== 'admin_principal') return;
   // Si no es su sede, verificar que no tenga admin
@@ -4102,7 +4102,7 @@ async function saveDirEditSede() {
   if (currentUser?.rol !== 'admin_principal') { errEl.textContent = 'Sin permisos.'; return; }
 
   // Puede editar si es su propia sede O si la sede no tiene admin
-  const isOwnSede = sedeId === currentUser?.sede_id;
+  const isOwnSede = sedeId == currentUser?.sede_id;
   if (!isOwnSede && _dirAdmines[sedeId]) {
     errEl.textContent = 'Esta sede ya tiene administrador principal.';
     return;
@@ -4113,7 +4113,7 @@ async function saveDirEditSede() {
   if (error) { errEl.textContent = 'Error: ' + error.message; return; }
 
   // Actualizar caché local
-  const idx = sedes.findIndex(s => s.id === sedeId);
+  const idx = sedes.findIndex(s => s.id == sedeId);
   if (idx >= 0) Object.assign(sedes[idx], updates);
 
   closeModal('modal-dir-edit-sede');
@@ -4424,7 +4424,7 @@ async function loadAdminBadge() {
     const { data: arData } = await sb.from('solicitudes_asistencia_evento')
       .select('id, eventos(sede_id)')
       .eq('estado', 'pendiente');
-    ac = (arData||[]).filter(r => r.eventos && r.eventos.sede_id === currentUser.sede_id).length;
+    ac = (arData||[]).filter(r => r.eventos && r.eventos.sede_id == currentUser.sede_id).length;
   } catch(e) {}
 
   const total = (count || 0) + (tc || 0) + ac;
@@ -4471,7 +4471,7 @@ async function loadAdminPanel() {
       .select('*, eventos(titulo,sede_id), usuarios(nombre,sede_id)')
       .eq('estado', 'pendiente');
     // Filtrar solo los de eventos de esta sede
-    attendanceRequests = (ar||[]).filter(r => r.eventos && r.eventos.sede_id === currentUser.sede_id);
+    attendanceRequests = (ar||[]).filter(r => r.eventos && r.eventos.sede_id == currentUser.sede_id);
   } catch(e) {}
 
   const ROL_LABELS = { admin_principal: 'Admin Principal', admin_adjunto: 'Admin Adjunto', usuario: 'Usuario' };
@@ -4737,7 +4737,7 @@ async function toggleUserActive(userId, isActive) {
 // ============================================================
 async function requestTransfer() {
   const sedeDestinoId = parseInt(document.getElementById('transfer-sede-select').value);
-  if (!sedeDestinoId || sedeDestinoId === currentUser.sede_id) {
+  if (!sedeDestinoId || sedeDestinoId == currentUser.sede_id) {
     showToast('Selecciona una sede diferente'); return;
   }
   try {
@@ -5541,7 +5541,7 @@ let _perfilSelectedNewAddType = null;
 
 function openPerfil() {
   if (!currentUser || currentUser.isAnonymous) { showToast('No disponible en modo anónimo'); return; }
-  const sede = sedes.find(s => s.id === currentUser.sede_id);
+  const sede = sedes.find(s => s.id == currentUser.sede_id);
 
   document.getElementById('perfil-nombre').value = currentUser.nombre || '';
   document.getElementById('perfil-sede-display').value = sede ? sede.nombre : '';
@@ -5634,6 +5634,7 @@ async function savePerfil() {
     nombre,
     prefijo_pais: prefijo,
     telefono: telefono || null,
+    direccion: direccion || null,
   };
 
   const { error } = await sb.from('usuarios').update(updates).eq('id', currentUser.id);
@@ -5642,6 +5643,7 @@ async function savePerfil() {
   currentUser.nombre = nombre;
   currentUser.prefijo_pais = prefijo;
   currentUser.telefono = telefono || null;
+  currentUser.direccion = direccion || null;
 
   // Update header
   document.getElementById('header-username').textContent = nombre;
@@ -5720,7 +5722,7 @@ function openSosPadrinoModal() {
 
   // Miembros de la sede con teléfono (excluir al propio usuario)
   const miembrosSede = _dirUsuarios.filter(u =>
-    u.sede_id === currentUser.sede_id &&
+    u.sede_id == currentUser.sede_id &&
     u.id !== currentUser.id &&
     u.telefono
   );
@@ -5844,7 +5846,7 @@ async function loadSOSWithDir() {
   if (!_dirUsuarios.length && !currentUser?.isAnonymous) {
     try {
       const { data: usuarios } = await sb.from('usuarios')
-        .select('id,nombre,rol,sede_id,telefono,prefijo_pais,activo,padrino_id')
+        .select('id,nombre,rol,sede_id,telefono,prefijo_pais,activo,padrino_id,direccion')
         .eq('activo', true).order('rol');
       _dirUsuarios = usuarios || [];
     } catch(e) {}
