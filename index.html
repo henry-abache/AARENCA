@@ -2546,6 +2546,67 @@
   </div>
 
 
+  <!-- Modal: Editar sede completa (admin_principal desde panel admin) -->
+  <div class="modal-overlay" id="modal-admin-edit-sede">
+    <div class="modal-sheet" style="max-height:90vh;overflow-y:auto">
+      <div class="modal-handle"></div>
+      <div class="modal-header" style="position:sticky;top:0;background:var(--surface);z-index:1;border-bottom:1px solid var(--border)">
+        <div class="modal-title" id="admin-edit-sede-title">🏛️ Editar Sede</div>
+        <button class="modal-close" onclick="closeModal('modal-admin-edit-sede')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="admin-edit-sede-id" />
+        <div style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:18px;font-size:13px;color:var(--text2);line-height:1.5">
+          ⭐ Los cambios se reflejan de inmediato para <strong style="color:var(--text)">todos los miembros</strong> de esta sede.
+        </div>
+
+        <div class="section-label" style="margin-bottom:10px">DATOS GENERALES</div>
+
+        <div class="input-group">
+          <label class="input-label">Nombre de la sede *</label>
+          <input type="text" id="admin-edit-sede-nombre" placeholder="Ej: Grupo Serenidad" autocapitalize="words" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Ciudad</label>
+          <input type="text" id="admin-edit-sede-ciudad" placeholder="Ej: Santiago" autocapitalize="words" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Dirección física</label>
+          <input type="text" id="admin-edit-sede-dir" placeholder="Ej: Av. Principal 123, Piso 2" autocapitalize="words" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Descripción / notas</label>
+          <textarea id="admin-edit-sede-desc" placeholder="Ej: Nos reunimos los lunes y jueves..." style="min-height:70px"></textarea>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Horario de reuniones</label>
+          <input type="text" id="admin-edit-sede-horario" placeholder="Ej: Lunes 19:00 · Jueves 20:30" />
+        </div>
+        <div class="input-group">
+          <label class="input-label">Teléfono de contacto</label>
+          <input type="tel" id="admin-edit-sede-tel" placeholder="Ej: +56 9 8765 4321" />
+        </div>
+
+        <div class="divider" style="margin:16px 0"></div>
+        <div class="section-label" style="margin-bottom:4px">ADMINISTRADOR PRINCIPAL</div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Solo puede haber un Administrador Principal por sede. Al asignar uno nuevo, el anterior pasa a ser Admin Adjunto.</div>
+        <div class="input-group">
+          <label class="input-label">Administrador Principal actual</label>
+          <div id="admin-edit-sede-current-admin" style="padding:10px 14px;background:var(--bg3);border-radius:var(--radius-sm);font-size:14px;color:var(--text);font-weight:600"></div>
+        </div>
+        <div class="input-group">
+          <label class="input-label">Cambiar a otro miembro (opcional)</label>
+          <select id="admin-edit-sede-new-admin">
+            <option value="">— Mantener administrador actual —</option>
+          </select>
+        </div>
+
+        <div id="admin-edit-sede-error" class="error-msg" style="margin-bottom:12px"></div>
+        <button class="btn btn-primary" onclick="saveAdminEditSede()">💾 Guardar todos los cambios</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal: Editar sede desde Directorio (admin_principal) -->
   <div class="modal-overlay" id="modal-dir-edit-sede">
     <div class="modal-sheet">
@@ -4057,6 +4118,118 @@ function _renderDirMiembros(users, sede, isOwn, hasAdm) {
     <div class="sede-section" style="margin-top:12px">${membersHtml}</div>`;
 }
 
+// ============================================================
+// GESTIÓN COMPLETA DE SEDE (admin_principal desde panel admin)
+// ============================================================
+async function openAdminEditSede(sedeId) {
+  if (currentUser?.rol !== 'admin_principal') return;
+  const sede = sedes.find(s => s.id == sedeId);
+  if (!sede) { showToast('Sede no encontrada'); return; }
+
+  document.getElementById('admin-edit-sede-id').value = sedeId;
+  document.getElementById('admin-edit-sede-title').textContent = '🏛️ ' + sede.nombre;
+  document.getElementById('admin-edit-sede-nombre').value  = sede.nombre || '';
+  document.getElementById('admin-edit-sede-ciudad').value  = sede.ciudad || '';
+  document.getElementById('admin-edit-sede-dir').value     = sede.direccion || '';
+  document.getElementById('admin-edit-sede-desc').value    = sede.descripcion || '';
+  document.getElementById('admin-edit-sede-horario').value = sede.horario || '';
+  document.getElementById('admin-edit-sede-tel').value     = sede.telefono || '';
+  document.getElementById('admin-edit-sede-error').textContent = '';
+
+  // Cargar miembros de esta sede para el select de admin
+  const { data: miembros } = await sb.from('usuarios')
+    .select('id,nombre,rol').eq('sede_id', sedeId).eq('activo', true).order('nombre');
+
+  const currentAdminEl = document.getElementById('admin-edit-sede-current-admin');
+  const selectEl = document.getElementById('admin-edit-sede-new-admin');
+  const adminActual = (miembros||[]).find(u => u.rol === 'admin_principal');
+  currentAdminEl.textContent = adminActual ? `${adminActual.nombre} (Admin Principal)` : 'Sin administrador asignado';
+
+  // Llenar select con todos los miembros excepto el admin actual
+  selectEl.innerHTML = '<option value="">— Mantener administrador actual —</option>';
+  (miembros||[])
+    .filter(u => u.rol !== 'admin_principal')
+    .forEach(u => {
+      const opt = document.createElement('option');
+      opt.value = u.id;
+      opt.textContent = `${u.nombre} (${ROL_LABELS[u.rol]||u.rol})`;
+      selectEl.appendChild(opt);
+    });
+
+  openModal('modal-admin-edit-sede');
+}
+
+async function saveAdminEditSede() {
+  const sedeId  = parseInt(document.getElementById('admin-edit-sede-id').value);
+  const nombre  = document.getElementById('admin-edit-sede-nombre').value.trim();
+  const ciudad  = document.getElementById('admin-edit-sede-ciudad').value.trim();
+  const dir     = document.getElementById('admin-edit-sede-dir').value.trim();
+  const desc    = document.getElementById('admin-edit-sede-desc').value.trim();
+  const horario = document.getElementById('admin-edit-sede-horario').value.trim();
+  const tel     = document.getElementById('admin-edit-sede-tel').value.trim();
+  const newAdminId = document.getElementById('admin-edit-sede-new-admin').value;
+  const errEl   = document.getElementById('admin-edit-sede-error');
+  errEl.textContent = '';
+
+  if (!nombre) { errEl.textContent = 'El nombre de la sede es obligatorio.'; return; }
+  if (currentUser?.rol !== 'admin_principal') { errEl.textContent = 'Sin permisos.'; return; }
+
+  // 1. Actualizar datos de la sede
+  const sedeUpdates = {
+    nombre,
+    ciudad: ciudad || null,
+    direccion: dir || null,
+    descripcion: desc || null,
+    horario: horario || null,
+    telefono: tel || null,
+  };
+  const { error: errSede } = await sb.from('sedes').update(sedeUpdates).eq('id', sedeId);
+  if (errSede) { errEl.textContent = 'Error al guardar la sede: ' + errSede.message; return; }
+
+  // 2. Cambiar admin principal si se seleccionó uno nuevo
+  if (newAdminId) {
+    // Bajar al admin actual a admin_adjunto
+    const { error: e1 } = await sb.from('usuarios')
+      .update({ rol: 'admin_adjunto' })
+      .eq('sede_id', sedeId)
+      .eq('rol', 'admin_principal');
+    if (e1) { errEl.textContent = 'Error al cambiar admin: ' + e1.message; return; }
+    // Subir al nuevo admin
+    const { error: e2 } = await sb.from('usuarios')
+      .update({ rol: 'admin_principal' })
+      .eq('id', newAdminId);
+    if (e2) { errEl.textContent = 'Error al asignar nuevo admin: ' + e2.message; return; }
+    // Notificar al nuevo admin
+    const { data: nuevoAdmin } = await sb.from('usuarios').select('nombre,sede_id').eq('id', newAdminId).maybeSingle();
+    if (nuevoAdmin) {
+      await sb.from('notificaciones').insert({
+        sede_id: sedeId,
+        usuario_destino: newAdminId,
+        tipo: 'mensaje',
+        titulo: '⭐ Nuevo rol: Administrador Principal',
+        cuerpo: `${nuevoAdmin.nombre}, ahora eres el Administrador Principal de la sede ${nombre}. ¡Felicitaciones!`,
+      }).catch(()=>{});
+    }
+  }
+
+  // 3. Actualizar caché local
+  const idx = sedes.findIndex(s => s.id == sedeId);
+  if (idx >= 0) Object.assign(sedes[idx], sedeUpdates);
+
+  // Si el nombre de la propia sede del usuario cambió, actualizar header
+  if (sedeId === currentUser?.sede_id) {
+    const subEl = document.querySelector('.topbar-sub');
+    if (subEl) subEl.textContent = nombre;
+  }
+
+  closeModal('modal-admin-edit-sede');
+  showToast('✓ Sede actualizada correctamente');
+  loadAdminPanel();
+  // Refrescar directorio si está visible
+  const tabDir = document.getElementById('tab-telefonos');
+  if (tabDir && tabDir.style.display !== 'none') loadTelefonos();
+}
+
 // ---- Editar sede desde el directorio (admin_principal: su propia sede o sedes sin admin) ----
 function openDirEditSede(sedeId) {
   const sede = sedes.find(s => s.id == sedeId);
@@ -4566,6 +4739,32 @@ async function loadAdminPanel() {
       </div>`;
     }).join('');
     html += '</div>';
+  }
+
+  // === GESTIÓN DE SEDES (solo admin_principal) ===
+  if (isPrincipal) {
+    const sedesOrdenadas = [...sedes].sort((a,b) => {
+      if (a.id === currentUser.sede_id) return -1;
+      if (b.id === currentUser.sede_id) return 1;
+      return a.nombre.localeCompare(b.nombre,'es');
+    });
+    html += `<div class="admin-section">
+      <div class="admin-section-title">🏛️ Gestión de todas las sedes</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Como Administrador Principal puedes editar los datos de cualquier sede.</div>
+      ${sedesOrdenadas.map(s => {
+        const isOwn = s.id === currentUser.sede_id;
+        return `<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--bg3);border-radius:var(--radius-sm);margin-bottom:8px;border:1px solid ${isOwn?'var(--accent)':'var(--border)'}">
+          <div style="flex-shrink:0;width:36px;height:36px;border-radius:50%;background:${isOwn?'var(--accent)':'var(--surface)'};display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:${isOwn?'var(--accent-text)':'var(--text)'}">
+            ${s.nombre.charAt(0).toUpperCase()}
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:700;color:var(--text);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.nombre}${isOwn?' ⭐':''}</div>
+            <div style="font-size:12px;color:var(--text3)">${s.ciudad||'Sin ciudad'}${s.direccion?' · '+s.direccion:''}</div>
+          </div>
+          <button onclick="openAdminEditSede(${s.id})" style="flex-shrink:0;padding:7px 14px;border-radius:var(--radius-sm);background:transparent;border:1.5px solid var(--accent);color:var(--accent);font-size:12px;font-weight:700;cursor:pointer">✏️ Editar</button>
+        </div>`;
+      }).join('')}
+    </div>`;
   }
 
   // === MANAGE USERS ===
