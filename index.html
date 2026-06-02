@@ -1974,6 +1974,14 @@
             <select id="reg-prefijo"></select>
             <input type="tel" id="reg-telefono" placeholder="912345678" />
           </div>
+          <div style="margin-top:8px">
+            <label class="input-label" style="margin-bottom:4px">¿Quién puede ver tu número?</label>
+            <select id="reg-tel-vis" style="font-size:13px;padding:8px 10px">
+              <option value="sede">Solo mi sede</option>
+              <option value="todas">Todas las sedes</option>
+              <option value="admins">Solo administradores</option>
+            </select>
+          </div>
         </div>
 
         <div class="input-group">
@@ -2755,7 +2763,15 @@
             <select id="perfil-prefijo"></select>
             <input type="tel" id="perfil-telefono" placeholder="912345678" />
           </div>
-          <div style="font-size:12px;color:var(--text3);margin-top:4px">Si lo agregas, aparecerá en el directorio de tu sede para que te contacten por WhatsApp.</div>
+          <div style="margin-top:8px">
+            <label class="input-label" style="margin-bottom:4px">¿Quién puede ver tu número?</label>
+            <select id="perfil-tel-vis" style="font-size:13px;padding:8px 10px">
+              <option value="sede">Solo mi sede</option>
+              <option value="todas">Todas las sedes</option>
+              <option value="admins">Solo administradores</option>
+            </select>
+          </div>
+          <div style="font-size:12px;color:var(--text3);margin-top:6px">Si lo agregas, aparecerá en el directorio según tu preferencia.</div>
         </div>
 
         <div class="input-group">
@@ -3045,6 +3061,7 @@ async function handleRegister() {
   const sedeId = parseInt(document.getElementById('reg-sede').value);
   const prefijo = document.getElementById('reg-prefijo').value;
   const tel = document.getElementById('reg-telefono').value.trim();
+  const telVis = document.getElementById('reg-tel-vis').value || 'sede';
   const secret = document.getElementById('reg-secret').value.trim();
   const fechaBase = document.getElementById('reg-date').value;
   const errEl = document.getElementById('reg-error');
@@ -3102,6 +3119,7 @@ async function handleRegister() {
     estado: estado,
     telefono: tel || null,
     prefijo_pais: prefijo,
+    telefono_visibilidad: tel ? telVis : null,
     adicciones: addictions,
     paso_actual: 1,
     pasos_completados: [],
@@ -3264,6 +3282,9 @@ function showMainApp() {
   loadHomeTab();
   loadNotifBadge();
   if (isAdmin) loadAdminBadge();
+
+  // Pre-cargar eventos en background para que estén listos al abrir la pestaña
+  setTimeout(() => loadEventos(), 800);
 
   // Mostrar botón Mis Apadrinados después de cargar directorio
   _checkPadrinoButton();
@@ -3801,9 +3822,14 @@ async function loadEventos(forceRefresh) {
       list.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><div class="loading-text">Cargando eventos...</div></div>';
     }
 
-    // Fetch TODOS los eventos + asistencia + solicitudes de asistencia
+    // Fetch eventos (solo futuros o últimos 7 días) + asistencia + solicitudes en paralelo
+    const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     const [evRes, asistRes, reqRes] = await Promise.all([
-      sb.from('eventos').select('id,titulo,descripcion,fecha_evento,direccion,creado_por,sede_id').order('fecha_evento', {ascending:true}),
+      sb.from('eventos')
+        .select('id,titulo,descripcion,fecha_evento,direccion,creado_por,sede_id')
+        .or(`fecha_evento.gte.${cutoff},fecha_evento.is.null`)
+        .order('fecha_evento', {ascending:true})
+        .limit(60),
       sb.from('asistencia_eventos').select('evento_id,asiste').eq('usuario_id', currentUser.id),
       sb.from('solicitudes_asistencia_evento').select('evento_id,estado').eq('usuario_id', currentUser.id).catch(() => ({ data: [] }))
     ]);
@@ -4087,7 +4113,7 @@ async function loadTelefonos() {
 
   // Traer TODOS los usuarios activos (con o sin teléfono)
   const { data: usuarios } = await sb.from('usuarios')
-    .select('id,nombre,rol,sede_id,telefono,prefijo_pais,activo,padrino_id,direccion')
+    .select('id,nombre,rol,sede_id,telefono,prefijo_pais,telefono_visibilidad,activo,padrino_id,direccion')
     .eq('activo', true)
     .order('rol');
 
@@ -4232,7 +4258,18 @@ function _renderDirMiembros(users, sede, isOwn, hasAdm) {
   const membersHtml = sorted.length ? sorted.map(u => {
     const isA  = u.rol !== 'usuario';
     const init = (u.nombre||'?').charAt(0).toUpperCase();
-    const hasTel = u.telefono && u.telefono.trim();
+    const rawTel = u.telefono && u.telefono.trim();
+    // Aplicar visibilidad del teléfono
+    const vis = u.telefono_visibilidad || 'sede';
+    const isSelf = u.id === currentUser?.id;
+    const isAdmin = currentUser?.rol !== 'usuario';
+    const isSameSede = u.sede_id === currentUser?.sede_id;
+    let canSeeTel = false;
+    if (isSelf) canSeeTel = true;
+    else if (vis === 'todas') canSeeTel = true;
+    else if (vis === 'sede' && isSameSede) canSeeTel = true;
+    else if (vis === 'admins' && isAdmin && isSameSede) canSeeTel = true;
+    const hasTel = rawTel && canSeeTel;
     const telFull = hasTel ? `${(u.prefijo_pais||'+56').replace(/^\+/,'')}${u.telefono.trim()}` : '';
     return `<div class="phone-item">
       <div class="phone-avatar ${isA?'admin-av':''}">${init}</div>
@@ -4240,7 +4277,9 @@ function _renderDirMiembros(users, sede, isOwn, hasAdm) {
         <div class="phone-name">${u.nombre||'Sin nombre'} ${isA?`<span class="admin-badge">${ROL_LABELS[u.rol]||u.rol}</span>`:''}</div>
         ${hasTel
           ? `<div class="phone-num">${u.prefijo_pais||'+56'} ${u.telefono}</div>`
-          : `<div class="phone-no-tel">Sin teléfono registrado</div>`}
+          : rawTel && !canSeeTel
+            ? `<div class="phone-no-tel" title="Número privado">🔒 Número privado</div>`
+            : `<div class="phone-no-tel">Sin teléfono registrado</div>`}
       </div>
       ${hasTel ? `<a href="https://wa.me/${telFull}" target="_blank" class="phone-call" style="background:#25D366" title="WhatsApp">${_WA_ICON}</a>` : ''}
     </div>`;
@@ -6071,6 +6110,7 @@ function openPerfil() {
   document.getElementById('perfil-sede-display').value = sede ? sede.nombre : '';
   buildPrefijoOptions('perfil-prefijo', currentUser.prefijo_pais || '+56');
   document.getElementById('perfil-telefono').value = currentUser.telefono || '';
+  document.getElementById('perfil-tel-vis').value = currentUser.telefono_visibilidad || 'sede';
   document.getElementById('perfil-direccion').value = currentUser.direccion || '';
   document.getElementById('perfil-error').textContent = '';
   _perfilSelectedNewAddType = null;
@@ -6148,6 +6188,7 @@ async function savePerfil() {
   const nombre = document.getElementById('perfil-nombre').value.trim();
   const prefijo = document.getElementById('perfil-prefijo').value;
   const telefono = document.getElementById('perfil-telefono').value.trim();
+  const telVis = document.getElementById('perfil-tel-vis').value || 'sede';
   const direccion = document.getElementById('perfil-direccion').value.trim();
   const errEl = document.getElementById('perfil-error');
   errEl.textContent = '';
@@ -6158,6 +6199,7 @@ async function savePerfil() {
     nombre,
     prefijo_pais: prefijo,
     telefono: telefono || null,
+    telefono_visibilidad: telefono ? telVis : null,
     direccion: direccion || null,
   };
 
@@ -6167,6 +6209,7 @@ async function savePerfil() {
   currentUser.nombre = nombre;
   currentUser.prefijo_pais = prefijo;
   currentUser.telefono = telefono || null;
+  currentUser.telefono_visibilidad = telefono ? telVis : null;
   currentUser.direccion = direccion || null;
 
   // Update header
@@ -6384,7 +6427,7 @@ async function loadSOSWithDir() {
   if (!_dirUsuarios.length && !currentUser?.isAnonymous) {
     try {
       const { data: usuarios } = await sb.from('usuarios')
-        .select('id,nombre,rol,sede_id,telefono,prefijo_pais,activo,padrino_id,direccion')
+        .select('id,nombre,rol,sede_id,telefono,prefijo_pais,telefono_visibilidad,activo,padrino_id,direccion')
         .eq('activo', true).order('rol');
       _dirUsuarios = usuarios || [];
     } catch(e) {}
