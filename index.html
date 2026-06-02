@@ -528,8 +528,10 @@
     /* ===== SPLASH / AUTH SCREEN ===== */
     #screen-auth {
       background: var(--bg);
-      justify-content: center;
-      align-items: center;
+      justify-content: flex-start;
+      align-items: flex-start;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
     .auth-container {
       width: 100%;
@@ -538,6 +540,7 @@
       display: flex;
       flex-direction: column;
       gap: 0;
+      margin: 0 auto;
     }
     .auth-logo {
       width: 72px;
@@ -1966,7 +1969,7 @@
           <select id="reg-sede"></select>
           <div style="margin-top:8px;font-size:13px;color:var(--text2)">
             ¿Tu sede no está en la lista?
-            <span onclick="openSolicitarSede()" style="color:var(--primary);font-weight:600;cursor:pointer;text-decoration:underline">Solicitar crearla</span>
+            <span onclick="openSolicitarSede()" style="color:var(--accent);font-weight:600;cursor:pointer;text-decoration:underline">Solicitar crearla</span>
           </div>
         </div>
         <div class="input-group">
@@ -3039,11 +3042,17 @@ document.querySelectorAll('.modal-overlay').forEach(o => {
 // ============================================================
 function buildSedeOptions(selId, selected=null) {
   const sel = document.getElementById(selId);
-  sel.innerHTML = sedes.map(s => `<option value="${s.id}" ${selected==s.id?'selected':''}>${s.nombre}</option>`).join('');
+  if (!sel) return;
+  if (!sedes.length) {
+    sel.innerHTML = '<option value="">— Sin conexión, recarga la página —</option>';
+    return;
+  }
+  sel.innerHTML = sedes.map(s => `<option value="${s.id}" ${selected==s.id?'selected':''}>${esc(s.nombre)}</option>`).join('');
 }
 
 function buildPrefijoOptions(selId, defaultPref='+56') {
   const sel = document.getElementById(selId);
+  if (!sel) return;
   sel.innerHTML = PAISES.map(p => `<option value="${p.code}" ${p.code===defaultPref?'selected':''}>${p.code} ${p.name}</option>`).join('');
 }
 
@@ -3226,8 +3235,9 @@ async function handleRegister() {
 }
 
 function makeId(nombre, sedeNombre) {
-  const n = nombre.trim().toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_áéíóúñü]/g,'');
-  const s = sedeNombre.trim().toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_áéíóúñü]/g,'');
+  const normalize = str => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const n = normalize(nombre).trim().toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
+  const s = normalize(sedeNombre).trim().toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
   return `${n}_${s}`;
 }
 
@@ -3721,7 +3731,7 @@ async function resetCounter(idx) {
     <div style="font-size:40px;margin-bottom:12px">💙</div>
     <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:12px">Contador reiniciado</div>
     <div style="font-size:15px;color:var(--text2);line-height:1.5;margin-bottom:20px">${msg}</div>
-    <button onclick="this.closest('div[style*=fixed]').remove()" style="background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);padding:12px 28px;font-size:15px;font-weight:700;cursor:pointer">Continuar</button>
+    <button onclick="this.closest('div[style*=fixed]').remove()" style="background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:12px 28px;font-size:15px;font-weight:700;cursor:pointer">Continuar</button>
   </div>`;
   document.body.appendChild(overlay);
 }
@@ -5141,6 +5151,8 @@ async function init() {
   } catch(e) {
     console.error('[init] Supabase error:', e);
     sedesRes = { data: [] }; addRes = { data: [] };
+    const errEl = document.getElementById('login-error');
+    if (errEl) errEl.textContent = '⚠️ Sin conexión al servidor. Recarga la página.';
   }
   sedes = sedesRes?.data || [];
   addictions_catalog = addRes?.data || [];
@@ -5888,7 +5900,7 @@ async function enviarSolicitudSede() {
     <div style="font-size:40px;margin-bottom:12px">✅</div>
     <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:12px">Solicitud enviada</div>
     <div style="font-size:14px;color:var(--text2);line-height:1.5;margin-bottom:20px">Los administradores han sido notificados. Cuando creen tu sede, serás el primer miembro.</div>
-    <button onclick="this.closest('div[style*=fixed]').remove()" style="background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);padding:12px 28px;font-size:15px;font-weight:700;cursor:pointer">Entendido</button>
+    <button onclick="this.closest('div[style*=fixed]').remove()" style="background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);padding:12px 28px;font-size:15px;font-weight:700;cursor:pointer">Entendido</button>
   </div>`;
   document.body.appendChild(overlay);
 }
