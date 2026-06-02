@@ -2642,6 +2642,20 @@
   </div>
 
 
+  <!-- Modal: Ver asistencia por evento (solo admins) -->
+  <div class="modal-overlay" id="modal-asistencia-evento">
+    <div class="modal-sheet" style="max-height:88vh;display:flex;flex-direction:column">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <div class="modal-title" id="asist-modal-title">Asistencia</div>
+        <button class="modal-close" onclick="closeModal('modal-asistencia-evento')"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+      </div>
+      <div class="modal-body" id="asist-modal-body" style="overflow-y:auto;flex:1;padding-top:0">
+        <div class="loading-spinner"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal: Editar sede completa (admin_principal desde panel admin) -->
   <div class="modal-overlay" id="modal-admin-edit-sede">
     <div class="modal-sheet" style="max-height:90vh;overflow-y:auto">
@@ -3937,6 +3951,7 @@ async function loadEventos(forceRefresh) {
         ${ev.direccion?`<button class="nav-map-btn" onclick="openMaps('${addrEncoded}')">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m0 0L9 7"/></svg>
           Navegar</button>`:''}
+        ${isOwn && isAdminUser ? `<button onclick="verAsistenciaEvento(${ev.id},'${ev.titulo.replace(/'/g,"\'")}')" style="padding:6px 12px;border-radius:var(--radius-sm);background:transparent;border:1.5px solid var(--info);color:var(--info);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">👥 Asistencia</button>` : ''}
       </div>
     </div>`;
   };
@@ -3957,6 +3972,86 @@ async function loadEventos(forceRefresh) {
 
 function openMaps(addr) {
   window.open(`https://maps.google.com/?q=${addr}`, '_blank');
+}
+
+// ── Ver asistencia por evento (solo admins) ──────────────────────────────────
+async function verAsistenciaEvento(eventoId, eventoTitulo) {
+  document.getElementById('asist-modal-title').textContent = '👥 ' + eventoTitulo;
+  document.getElementById('asist-modal-body').innerHTML =
+    '<div class="loading-spinner"><div class="spinner"></div><div class="loading-text">Cargando...</div></div>';
+  openModal('modal-asistencia-evento');
+
+  try {
+    // 1. Todos los miembros activos de la sede
+    const { data: miembros, error: errM } = await sb.from('usuarios')
+      .select('id,nombre,rol')
+      .eq('sede_id', currentUser.sede_id)
+      .eq('activo', true)
+      .order('nombre');
+    if (errM) throw new Error(errM.message);
+
+    // 2. Respuestas de asistencia para este evento
+    const { data: respuestas } = await sb.from('asistencia_eventos')
+      .select('usuario_id,asiste')
+      .eq('evento_id', eventoId);
+
+    const respMap = {};
+    (respuestas || []).forEach(r => { respMap[r.usuario_id] = r.asiste; });
+
+    const van    = (miembros || []).filter(u => respMap[u.id] === true);
+    const noVan  = (miembros || []).filter(u => respMap[u.id] === false);
+    const sinRep = (miembros || []).filter(u => respMap[u.id] === undefined);
+
+    const ROL_LABELS = { admin_principal: 'Admin', admin_adjunto: 'Adjunto' };
+    const fila = (u, color) => `
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+        <div style="width:36px;height:36px;border-radius:50%;background:${color}22;border:2px solid ${color};display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:${color};flex-shrink:0">
+          ${(u.nombre||'?').charAt(0).toUpperCase()}
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+            ${u.nombre}${u.rol !== 'usuario' ? ` <span style="font-size:10px;background:var(--accent);color:var(--accent-text);padding:1px 5px;border-radius:4px;font-weight:700">${ROL_LABELS[u.rol]||u.rol}</span>` : ''}
+          </div>
+        </div>
+      </div>`;
+
+    const seccion = (emoji, titulo, lista, color, vacio) => lista.length === 0 ? '' : `
+      <div style="margin-top:16px">
+        <div style="font-size:13px;font-weight:700;color:${color};margin-bottom:4px;display:flex;align-items:center;gap:6px">
+          ${emoji} ${titulo} <span style="background:${color}22;color:${color};border-radius:10px;padding:1px 8px;font-size:12px">${lista.length}</span>
+        </div>
+        ${lista.map(u => fila(u, color)).join('')}
+      </div>`;
+
+    const resumen = `
+      <div style="display:flex;gap:8px;margin-bottom:4px;flex-wrap:wrap">
+        <div style="flex:1;min-width:80px;text-align:center;background:var(--success)22;border:1.5px solid var(--success);border-radius:var(--radius-sm);padding:10px 6px">
+          <div style="font-size:22px;font-weight:800;color:var(--success)">${van.length}</div>
+          <div style="font-size:11px;color:var(--success);font-weight:600">Asistirán</div>
+        </div>
+        <div style="flex:1;min-width:80px;text-align:center;background:var(--danger)22;border:1.5px solid var(--danger);border-radius:var(--radius-sm);padding:10px 6px">
+          <div style="font-size:22px;font-weight:800;color:var(--danger)">${noVan.length}</div>
+          <div style="font-size:11px;color:var(--danger);font-weight:600">No asistirán</div>
+        </div>
+        <div style="flex:1;min-width:80px;text-align:center;background:var(--text3)22;border:1.5px solid var(--text3);border-radius:var(--radius-sm);padding:10px 6px">
+          <div style="font-size:22px;font-weight:800;color:var(--text3)">${sinRep.length}</div>
+          <div style="font-size:11px;color:var(--text3);font-weight:600">Sin responder</div>
+        </div>
+      </div>`;
+
+    document.getElementById('asist-modal-body').innerHTML =
+      resumen +
+      seccion('✅', 'Asistirán', van, 'var(--success)') +
+      seccion('❌', 'No asistirán', noVan, 'var(--danger)') +
+      seccion('⏳', 'Sin responder', sinRep, 'var(--text3)') +
+      (van.length + noVan.length + sinRep.length === 0
+        ? '<div class="empty-state" style="padding:24px"><div class="empty-icon">👥</div><div class="empty-title">Sin miembros</div></div>'
+        : '');
+
+  } catch(err) {
+    document.getElementById('asist-modal-body').innerHTML =
+      `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Error</div><div class="empty-sub">${err.message}</div></div>`;
+  }
 }
 
 async function deleteEvento(eventId) {
