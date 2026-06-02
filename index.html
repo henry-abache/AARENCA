@@ -2912,6 +2912,7 @@
 const SUPABASE_URL = 'https://xzkuywsitdwikzksiesf.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6a3V5d3NpdGR3aWt6a3NpZXNmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMTI0NjksImV4cCI6MjA5NDU4ODQ2OX0.FnVWzAQ1jJXTIR7A4SKEaANyfrbZ8EvuCT-kjhucAg8';
 const SECRET_WORD = 'felices24';
+const RENCA_SEDE_ID = 2; // ID fijo sede 2605 San Jos00e9 de Renca
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // PAÍSES PREFIJOS (lista principal)
@@ -3158,15 +3159,12 @@ async function handleRegister() {
     if (sedesinAdmin) {
       estado = 'aprobado';
       // Notificar al admin de San José de Renca que hay una sede sin admin
-      const { data: sedeRenca } = await sb.from('sedes').select('id').eq('nombre', '⭐San José de Renca').maybeSingle();
-      if (sedeRenca) {
-        await sb.from('notificaciones').insert({
-          sede_id: sedeRenca.id,
+      await sb.from('notificaciones').insert({
+          sede_id: RENCA_SEDE_ID,
           tipo: 'sede_sin_admin',
           titulo: '⚠️ Sede sin administrador',
           cuerpo: `"${sede.nombre}" no tiene administrador. ${nombre} acaba de registrarse. La sede necesita un administrador.`,
         });
-      }
     }
   }
 
@@ -3446,7 +3444,7 @@ async function loadHomeAdminPanel() {
   wrap.innerHTML = `<div style="font-size:12px;color:var(--text3);padding:4px 0 8px 2px">Cargando panel...</div>`;
 
   const miSede = sedes.find(s => s.id == currentUser.sede_id);
-  const isRenca = miSede && miSede.nombre === '⭐San José de Renca';
+  const isRenca = miSede && miSede.id == RENCA_SEDE_ID;
 
   // --- Solicitudes de ingreso pendientes ---
   const { data: pendingUsers } = await sb.from('usuarios')
@@ -4700,19 +4698,10 @@ async function solicitarAdminSede(sedeId, sedeNombre) {
   btn.disabled = true;
   btn.textContent = 'Enviando...';
 
-  // Buscar la sede San José de Renca para enviarle la notificación
-  const { data: sedeRenca } = await sb.from('sedes').select('id').eq('nombre', '⭐San José de Renca').maybeSingle();
-  if (!sedeRenca) {
-    showToast('Error: no se encontró la sede central');
-    btn.disabled = false;
-    btn.textContent = '🙋 Solicito ser el administrador de esta sede';
-    return;
-  }
-
-  // Insertar solicitud
+  // Insertar solicitud usando ID fijo de Renca (robusto, no depende del nombre)
   try {
     await sb.from('notificaciones').insert({
-      sede_id: sedeRenca.id,
+      sede_id: RENCA_SEDE_ID,
       tipo: 'solicitud_admin_sede',
       titulo: '🙋 Solicitud de administrador',
       cuerpo: `${currentUser.nombre} solicita ser el administrador principal de la sede "${sedeNombre}" (ID: ${sedeId}) (UID: ${currentUser.id}). Revisa el panel de Admin para aprobar o rechazar.`,
@@ -5264,7 +5253,7 @@ async function loadAdminPanel() {
 
   // Detectar si este admin es de la sede San José de Renca
   const miSede = sedes.find(s => s.id == currentUser.sede_id);
-  const isRenca = isPrincipal && miSede && miSede.nombre === '⭐San José de Renca';
+  const isRenca = isPrincipal && miSede && miSede.id == RENCA_SEDE_ID;
 
   // Load pending users
   const { data: pendingUsers } = await sb.from('usuarios')
