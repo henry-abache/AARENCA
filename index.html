@@ -3351,6 +3351,7 @@ function showMainApp() {
 
   // New features init
   if (typeof initNewFeatures === 'function') initNewFeatures();
+  iniciarRealtimeSOS();
 }
 
 async function _checkPadrinoButton() {
@@ -5991,6 +5992,66 @@ const EMERGENCY_NUMBERS = [
   { name: 'CONACE / Crisis', num: '+5613800001', country: 'CL' },
   { name: 'Línea de Crisis (MX)', num: '+525554596666', country: 'MX' },
 ];
+
+// ============================================================
+// SOS — REALTIME: escuchar alertas de compañeros
+// ============================================================
+let _realtimeSOSChannel = null;
+
+function iniciarRealtimeSOS() {
+  if (!currentUser || currentUser.isAnonymous || !currentUser.sede_id) return;
+  if (_realtimeSOSChannel) {
+    try { sb.removeChannel(_realtimeSOSChannel); } catch(e) {}
+  }
+
+  _realtimeSOSChannel = sb
+    .channel('sos-sede-' + currentUser.sede_id)
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'notificaciones',
+      filter: 'sede_id=eq.' + currentUser.sede_id,
+    }, payload => {
+      const n = payload.new;
+      if (!n || n.tipo !== 'sos_crisis') return;
+
+      // No mostrarse a uno mismo
+      const miNombre = currentUser.nombre || '';
+      if (n.titulo && n.titulo.includes(miNombre) && miNombre.length > 2) return;
+
+      // Notificación nativa del navegador
+      if (Notification.permission === 'granted') {
+        try {
+          new Notification(n.titulo || '🆘 Un compañero necesita ayuda', {
+            body: n.cuerpo || 'Alguien de tu sede activó el botón de crisis.',
+            icon: './1-192.png',
+            badge: './1-192.png',
+            tag: 'sos-crisis',
+            requireInteraction: true,
+          });
+        } catch(e) {}
+      }
+
+      // Banner in-app rojo
+      mostrarBannerSOS(n.titulo, n.cuerpo);
+      loadNotifBadge();
+    })
+    .subscribe();
+}
+
+function mostrarBannerSOS(titulo, cuerpo) {
+  const viejo = document.getElementById('sos-crisis-banner');
+  if (viejo) viejo.remove();
+
+  const banner = document.createElement('div');
+  banner.id = 'sos-crisis-banner';
+  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(135deg,#dc2626,#b91c1c);color:white;padding:16px 20px 14px;box-shadow:0 4px 32px rgba(220,38,38,0.6);cursor:pointer;';
+  banner.innerHTML = '<div style="font-size:16px;font-weight:800;margin-bottom:4px">' + (titulo || '🆘 Un compañero necesita ayuda') + '</div><div style="font-size:13px;opacity:0.92;line-height:1.4">' + (cuerpo || '') + '</div><div style="font-size:11px;opacity:0.7;margin-top:6px">Toca para cerrar</div>';
+  banner.onclick = () => banner.remove();
+  document.body.appendChild(banner);
+  setTimeout(() => { if (banner.parentNode) banner.remove(); }, 15000);
+  window.navigator.vibrate && navigator.vibrate([400, 100, 400, 100, 400]);
+}
 
 // ============================================================
 // SOS — ALERTA A TODA LA SEDE
