@@ -3844,7 +3844,11 @@ async function loadEventos(forceRefresh) {
 
       const [evRes, asistRes, reqRes] = await Promise.all([evPromise, asistPromise, reqPromise]);
 
-      if (evRes.error) throw evRes.error;
+      if (evRes.error) {
+        const e = evRes.error;
+        const detail = [e.message, e.code ? 'code: '+e.code : '', e.hint ? 'hint: '+e.hint : '', e.details ? 'details: '+e.details : ''].filter(Boolean).join(' | ');
+        throw new Error(detail || JSON.stringify(e));
+      }
 
       eventos = evRes.data || [];
       asistMap = {};
@@ -3860,11 +3864,13 @@ async function loadEventos(forceRefresh) {
     } catch(err) {
       console.error('[Eventos] Error al cargar:', err);
       const esOffline = !navigator.onLine || (err?.message || '').toLowerCase().includes('failed to fetch');
+      const errMsg = err?.message || err?.code || JSON.stringify(err) || 'Error desconocido';
       list.innerHTML = `
         <div class="empty-state">
           <div class="empty-icon">${esOffline ? '📡' : '⚠️'}</div>
           <div class="empty-title">${esOffline ? 'Sin conexión' : 'Error al cargar eventos'}</div>
           <div class="empty-sub">${esOffline ? 'Conecta a internet y vuelve a intentarlo.' : 'Ocurrió un problema al obtener los eventos. Intenta de nuevo.'}</div>
+          <div style="margin-top:12px;padding:10px 12px;background:var(--bg3);border-radius:var(--radius-sm);font-size:11px;color:var(--danger);font-family:monospace;text-align:left;word-break:break-all;border:1px solid var(--border)">${errMsg}</div>
           <button class="btn btn-secondary btn-sm" style="margin-top:16px;width:auto" onclick="loadEventos(true)">🔄 Reintentar</button>
         </div>`;
       return;
@@ -4701,12 +4707,18 @@ async function init() {
   showAuthQuote();
 
   // Cargar sedes y adicciones en paralelo (más rápido)
-  const [sedesRes, addRes] = await Promise.all([
-    sb.from('sedes').select('*').order('nombre'),
-    sb.from('adicciones_catalogo').select('*').or('sede_id.is.null,sede_id.eq.-1').order('nombre')
-  ]);
-  sedes = sedesRes.data || [];
-  addictions_catalog = addRes.data || [];
+  let sedesRes, addRes;
+  try {
+    [sedesRes, addRes] = await Promise.all([
+      sb.from('sedes').select('*').order('nombre'),
+      sb.from('adicciones_catalogo').select('*').or('sede_id.is.null,sede_id.eq.-1').order('nombre')
+    ]);
+  } catch(e) {
+    console.error('[init] Supabase error:', e);
+    sedesRes = { data: [] }; addRes = { data: [] };
+  }
+  sedes = sedesRes?.data || [];
+  addictions_catalog = addRes?.data || [];
 
   // Poblar selects de auth
   buildSedeOptions('login-sede');
