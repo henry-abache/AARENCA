@@ -10,6 +10,9 @@
   <meta name="theme-color" content="#0f172a" id="theme-color-meta" />
   <link rel="manifest" href="./manifest.json" />
   <link rel="apple-touch-icon" href="./1-192.png" />
+  <!-- Preconexión anticipada a Supabase para reducir latencia de red -->
+  <link rel="preconnect" href="https://unpkg.com" crossorigin />
+  <link rel="dns-prefetch" href="https://unpkg.com" />
   <title>Nueva Vida AA</title>
 
   <style>
@@ -2099,6 +2102,10 @@
             <div class="diary-pin-dot" id="sd3"></div>
           </div>
           <div class="diary-pin-error" id="diary-setup-error"></div>
+          <div id="diary-hint-field" style="display:none;margin:10px 0 4px;width:100%;max-width:280px">
+            <div style="font-size:12px;color:var(--text3);margin-bottom:5px;text-align:center">💡 Pista para recordar tu PIN (opcional)<br><span style="font-size:11px;color:var(--text3)">Una palabra o frase que solo tú entiendas</span></div>
+            <input type="text" id="diary-hint-input" placeholder="Ej: año de mi boda, color favorito..." maxlength="60" style="font-size:14px;text-align:center;padding:9px 12px" />
+          </div>
           <div class="diary-pin-keypad">
             <button class="diary-pin-key" onclick="diarySetupKey('1')">1</button>
             <button class="diary-pin-key" onclick="diarySetupKey('2')">2</button>
@@ -2129,6 +2136,10 @@
             <div class="diary-pin-dot" id="ld3"></div>
           </div>
           <div class="diary-pin-error" id="diary-lock-error"></div>
+          <div id="diary-lock-hint-box" style="display:none;margin:6px 0 2px;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);border-radius:10px;padding:8px 14px;text-align:center;font-size:13px;color:var(--text2);max-width:260px">
+            💡 <strong>Pista:</strong> <span id="diary-lock-hint-text"></span>
+          </div>
+          <button onclick="diaryShowHint()" id="diary-hint-btn" style="background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;padding:4px 8px;margin-top:2px;text-decoration:underline">¿Olvidaste tu PIN?</button>
           <div class="diary-pin-keypad">
             <button class="diary-pin-key" onclick="diaryLockKey('1')">1</button>
             <button class="diary-pin-key" onclick="diaryLockKey('2')">2</button>
@@ -4626,16 +4637,13 @@ async function init() {
   // Mostrar frase motivacional AA en pantalla de login
   showAuthQuote();
 
-  // Cargar sedes
-  const { data: sedesData } = await sb.from('sedes').select('*').order('nombre');
-  sedes = sedesData || [];
-
-  // Cargar catálogo adicciones (globales + de esta sede, se actualiza tras login)
-  const { data: addData } = await sb.from('adicciones_catalogo')
-    .select('*')
-    .or('sede_id.is.null,sede_id.eq.-1')
-    .order('nombre');
-  addictions_catalog = addData || [];
+  // Cargar sedes y adicciones en paralelo (más rápido)
+  const [sedesRes, addRes] = await Promise.all([
+    sb.from('sedes').select('*').order('nombre'),
+    sb.from('adicciones_catalogo').select('*').or('sede_id.is.null,sede_id.eq.-1').order('nombre')
+  ]);
+  sedes = sedesRes.data || [];
+  addictions_catalog = addRes.data || [];
 
   // Poblar selects de auth
   buildSedeOptions('login-sede');
@@ -5371,6 +5379,7 @@ function openTransferRequest() {
 const DIARY_PIN_KEY   = 'nvaa_diary_pin';
 const DIARY_DATA_KEY  = 'nvaa_diary_entries';
 const DIARY_UNLOCKED_KEY = 'nvaa_diary_session';
+const DIARY_HINT_KEY  = 'nvaa_diary_hint';
 
 let diarySetupBuffer = '';
 let diarySetupConfirmBuffer = '';
@@ -5384,6 +5393,9 @@ function diaryOpen() {
     diarySetupBuffer = '';
     diarySetupConfirmBuffer = '';
     diarySetupPhase = 1;
+    document.getElementById('diary-hint-field').style.display = 'none';
+    const hi = document.getElementById('diary-hint-input');
+    if (hi) hi.value = '';
     document.getElementById('diary-setup-step-label').textContent = 'Paso 1: Elige tu PIN de 4 dígitos';
     document.getElementById('diary-setup-error').textContent = '';
     diaryUpdateSetupDots();
@@ -5396,6 +5408,10 @@ function diaryOpen() {
     // Pedir PIN
     diaryLockBuffer = '';
     document.getElementById('diary-lock-error').textContent = '';
+    const hb = document.getElementById('diary-lock-hint-box');
+    if (hb) hb.style.display = 'none';
+    const dhb = document.getElementById('diary-hint-btn');
+    if (dhb) dhb.style.display = '';
     diaryUpdateLockDots();
     _diaryShow('diary-lock');
   }
@@ -5432,6 +5448,7 @@ function diarySetupKey(digit) {
         diarySetupConfirmBuffer = '';
         document.getElementById('diary-setup-step-label').textContent = 'Paso 2: Confirma tu PIN';
         document.getElementById('diary-setup-error').textContent = '';
+        document.getElementById('diary-hint-field').style.display = 'block';
         diaryUpdateSetupDots();
       }, 200);
     }
@@ -5442,6 +5459,9 @@ function diarySetupKey(digit) {
       setTimeout(() => {
         if (diarySetupBuffer === diarySetupConfirmBuffer) {
           localStorage.setItem(DIARY_PIN_KEY, diarySetupBuffer);
+          const hint = (document.getElementById('diary-hint-input').value || '').trim();
+          if (hint) localStorage.setItem(DIARY_HINT_KEY, hint);
+          else localStorage.removeItem(DIARY_HINT_KEY);
           sessionStorage.setItem(DIARY_UNLOCKED_KEY, '1');
           _diaryShow('diary-open');
           diaryRenderEntries();
@@ -5450,6 +5470,8 @@ function diarySetupKey(digit) {
           diarySetupPhase = 1;
           diarySetupBuffer = '';
           diarySetupConfirmBuffer = '';
+          document.getElementById('diary-hint-field').style.display = 'none';
+          document.getElementById('diary-hint-input').value = '';
           document.getElementById('diary-setup-step-label').textContent = 'Paso 1: Elige tu PIN de 4 dígitos';
           document.getElementById('diary-setup-error').textContent = 'Los PINs no coinciden, inténtalo de nuevo';
           diaryUpdateSetupDots();
@@ -5501,11 +5523,29 @@ function diaryLockDel() {
   diaryUpdateLockDots();
 }
 
+function diaryShowHint() {
+  const hint = localStorage.getItem(DIARY_HINT_KEY);
+  const hintBox = document.getElementById('diary-lock-hint-box');
+  const hintText = document.getElementById('diary-lock-hint-text');
+  const hintBtn  = document.getElementById('diary-hint-btn');
+  if (!hint) {
+    document.getElementById('diary-lock-error').textContent = 'No guardaste una pista para este PIN.';
+    return;
+  }
+  hintText.textContent = hint;
+  hintBox.style.display = 'block';
+  if (hintBtn) hintBtn.style.display = 'none';
+}
+
 // --- Diario abierto ---
 function diaryLock() {
   sessionStorage.removeItem(DIARY_UNLOCKED_KEY);
   diaryLockBuffer = '';
   document.getElementById('diary-lock-error').textContent = '';
+  const hb = document.getElementById('diary-lock-hint-box');
+  if (hb) hb.style.display = 'none';
+  const dhb = document.getElementById('diary-hint-btn');
+  if (dhb) dhb.style.display = '';
   diaryUpdateLockDots();
   _diaryShow('diary-lock');
 }
