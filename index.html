@@ -2041,6 +2041,9 @@
           </button>
         </div>
       </div>
+      <!-- Panel de administrador en el inicio — solo visible para admin_principal -->
+      <div id="home-admin-panel" style="display:none;margin-bottom:16px"></div>
+
       <div class="counters-section">
         <div class="counters-title">Mis Contadores</div>
         <div id="counters-list"></div>
@@ -3433,6 +3436,132 @@ function switchTab(tab, navEl) {
 async function loadHomeTab() {
   loadDailyMessage();
   renderCounters();
+  if (currentUser?.rol === 'admin_principal') loadHomeAdminPanel();
+}
+
+async function loadHomeAdminPanel() {
+  const wrap = document.getElementById('home-admin-panel');
+  if (!wrap) return;
+  wrap.style.display = 'block';
+  wrap.innerHTML = `<div style="font-size:12px;color:var(--text3);padding:4px 0 8px 2px">Cargando panel...</div>`;
+
+  const miSede = sedes.find(s => s.id == currentUser.sede_id);
+  const isRenca = miSede && miSede.nombre === '⭐San José de Renca';
+
+  // --- Solicitudes de ingreso pendientes ---
+  const { data: pendingUsers } = await sb.from('usuarios')
+    .select('id,nombre,telefono,prefijo_pais')
+    .eq('sede_id', currentUser.sede_id)
+    .eq('estado', 'pendiente');
+  const pending = pendingUsers || [];
+
+  // --- Solicitudes de administrador de sede (solo Renca) ---
+  let solicitudesAdmin = [];
+  if (isRenca) {
+    try {
+      const { data: solNot } = await sb.from('notificaciones')
+        .select('*')
+        .eq('sede_id', currentUser.sede_id)
+        .eq('tipo', 'solicitud_admin_sede')
+        .order('created_at', { ascending: false });
+      solicitudesAdmin = solNot || [];
+    } catch(e) {}
+  }
+
+  // Si no hay nada que mostrar, ocultar el panel
+  if (!pending.length && !solicitudesAdmin.length && !isRenca) {
+    wrap.style.display = 'none';
+    return;
+  }
+
+  // Siempre mostrar el panel para admin_principal aunque esté vacío (para que Renca vea su sección)
+  let html = `<div style="
+    border-radius:var(--radius);
+    border:1.5px solid rgba(251,191,36,0.25);
+    background:rgba(251,191,36,0.06);
+    overflow:hidden;
+    margin-bottom:4px;
+  ">`;
+
+  // Cabecera
+  html += `<div style="
+    padding:10px 16px;
+    background:rgba(251,191,36,0.12);
+    border-bottom:1px solid rgba(251,191,36,0.15);
+    font-size:12px;font-weight:700;
+    color:var(--accent);
+    letter-spacing:0.04em;
+    display:flex;align-items:center;gap:6px
+  ">⭐ Panel de Administrador</div>`;
+
+  // — Sección: Solicitudes de ingreso —
+  html += `<div style="padding:12px 16px;border-bottom:1px solid var(--border)">
+    <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:0.05em;margin-bottom:8px;text-transform:uppercase">
+      ⏳ Solicitudes de ingreso
+      <span style="margin-left:6px;background:${pending.length ? 'var(--accent)' : 'var(--bg3)'};color:${pending.length ? 'var(--accent-text)' : 'var(--text3)'};padding:1px 7px;border-radius:20px;font-size:10px">${pending.length}</span>
+    </div>`;
+
+  if (!pending.length) {
+    html += `<div style="text-align:center;color:var(--text3);font-size:13px;padding:8px 0">Sin solicitudes pendientes</div>`;
+  } else {
+    html += pending.map(u => `
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:var(--text);flex-shrink:0">${u.nombre.charAt(0).toUpperCase()}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;font-size:14px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${u.nombre}</div>
+          <div style="font-size:12px;color:var(--text3)">${u.telefono ? (u.prefijo_pais||'+56')+' '+u.telefono : 'Sin teléfono'}</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button onclick="approveUser('${u.id}');loadHomeAdminPanel()" style="width:34px;height:34px;border-radius:50%;background:var(--success);border:none;color:white;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">✓</button>
+          <button onclick="rejectUser('${u.id}');loadHomeAdminPanel()" style="width:34px;height:34px;border-radius:50%;background:var(--danger);border:none;color:white;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">✗</button>
+        </div>
+      </div>`).join('');
+  }
+  html += `<button onclick="switchTab('admin',null)" style="width:100%;margin-top:10px;padding:8px;border-radius:var(--radius-sm);background:transparent;border:1px solid var(--border);color:var(--text2);font-size:12px;cursor:pointer">Ver panel completo →</button>`;
+  html += `</div>`;
+
+  // — Sección: Solicitudes de administrador (solo Renca) —
+  if (isRenca) {
+    html += `<div style="padding:12px 16px">
+      <div style="font-size:11px;font-weight:700;color:var(--text3);letter-spacing:0.05em;margin-bottom:8px;text-transform:uppercase">
+        🙋 Solicitudes de administrador de sede
+        <span style="margin-left:6px;background:${solicitudesAdmin.length ? 'var(--accent)' : 'var(--bg3)'};color:${solicitudesAdmin.length ? 'var(--accent-text)' : 'var(--text3)'};padding:1px 7px;border-radius:20px;font-size:10px">${solicitudesAdmin.length}</span>
+      </div>`;
+
+    if (!solicitudesAdmin.length) {
+      html += `<div style="text-align:center;color:var(--text3);font-size:13px;padding:8px 0">Sin solicitudes pendientes</div>`;
+    } else {
+      html += solicitudesAdmin.map(sol => {
+        const sedeNomMatch = sol.cuerpo?.match(/"([^"]+)"/);
+        const sedeIdMatch  = sol.cuerpo?.match(/\(ID: (\d+)\)/);
+        const uidMatch     = sol.cuerpo?.match(/\(UID: ([^)]+)\)/);
+        const solSedeNom   = sedeNomMatch ? sedeNomMatch[1] : 'Desconocida';
+        const solSedeId    = sedeIdMatch  ? parseInt(sedeIdMatch[1]) : null;
+        const solUid       = uidMatch     ? uidMatch[1] : sol.usuario_origen || null;
+        const solicitante  = sol.cuerpo?.split(' solicita')[0] || '?';
+        const fecha        = sol.created_at ? new Date(sol.created_at).toLocaleDateString('es-CL') : '';
+        return `
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+          <div style="width:36px;height:36px;border-radius:50%;background:rgba(251,191,36,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🙋</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:14px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${solicitante}</div>
+            <div style="font-size:12px;color:var(--text3)">Sede: ${solSedeNom}</div>
+            <div style="font-size:11px;color:var(--text3)">${fecha}</div>
+          </div>
+          <div style="display:flex;gap:6px;flex-shrink:0">
+            ${solSedeId && solUid
+              ? `<button onclick="aprobarSolicitudAdmin('${sol.id}','${solUid}',${solSedeId});setTimeout(loadHomeAdminPanel,800)" style="width:34px;height:34px;border-radius:50%;background:var(--success);border:none;color:white;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">✓</button>
+                 <button onclick="rechazarSolicitudAdmin('${sol.id}','${solUid}');setTimeout(loadHomeAdminPanel,800)" style="width:34px;height:34px;border-radius:50%;background:var(--danger);border:none;color:white;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">✗</button>`
+              : `<span style="font-size:11px;color:var(--danger)">Sin datos</span>`}
+          </div>
+        </div>`;
+      }).join('');
+    }
+    html += `</div>`;
+  }
+
+  html += `</div>`;
+  wrap.innerHTML = html;
 }
 
 // loadDailyMessage definida más abajo (versión offline-safe con AA_MESSAGES_OFFLINE)
@@ -4586,7 +4715,7 @@ async function solicitarAdminSede(sedeId, sedeNombre) {
       sede_id: sedeRenca.id,
       tipo: 'solicitud_admin_sede',
       titulo: '🙋 Solicitud de administrador',
-      cuerpo: `${currentUser.nombre} solicita ser el administrador principal de la sede "${sedeNombre}" (ID: ${sedeId}). Revisa el panel de Admin para aprobar o rechazar.`,
+      cuerpo: `${currentUser.nombre} solicita ser el administrador principal de la sede "${sedeNombre}" (ID: ${sedeId}) (UID: ${currentUser.id}). Revisa el panel de Admin para aprobar o rechazar.`,
       usuario_origen: currentUser.id,
       sede_solicitada_id: sedeId,
     });
