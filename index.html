@@ -5996,94 +5996,21 @@ const EMERGENCY_NUMBERS = [
 // SOS — ALERTA A TODA LA SEDE
 // ============================================================
 let _sosAlertaSent = false; // evitar doble envío por doble-tap
-let _sosConfirmTimeout = null;
 
-function activarSosAlerta() {
-  // Vibración inmediata de retroalimentación
+async function activarSosAlerta() {
+  // Vibración inmediata
   window.navigator.vibrate && navigator.vibrate([200, 100, 200, 100, 200]);
 
-  // Si es anónimo o sin sede, solo vibrar (igual que antes)
+  // Si es anónimo o sin sede, solo vibrar
   if (!currentUser || currentUser.isAnonymous || !currentUser.sede_id) return;
 
-  // Mostrar modal de confirmación para evitar activaciones accidentales
-  const ya = document.getElementById('modal-sos-alerta');
-  if (ya) ya.remove();
-
-  const modal = document.createElement('div');
-  modal.id = 'modal-sos-alerta';
-  modal.style.cssText = `
-    position:fixed;inset:0;z-index:9999;
-    background:rgba(0,0,0,0.75);
-    display:flex;align-items:center;justify-content:center;
-    padding:24px;
-    animation:fadeIn 0.15s ease;
-  `;
-
-  const sedeName = (sedes.find(s => s.id === currentUser.sede_id) || {}).nombre || 'tu sede';
-  const userName = currentUser.nombre || 'Un compañero';
-
-  modal.innerHTML = `
-    <div style="
-      background:var(--surface);
-      border-radius:var(--radius-lg);
-      padding:28px 22px;
-      max-width:340px;
-      width:100%;
-      text-align:center;
-      border:2px solid #dc2626;
-      box-shadow:0 8px 48px rgba(220,38,38,0.4);
-    ">
-      <div style="font-size:48px;margin-bottom:8px">🆘</div>
-      <div style="font-size:19px;font-weight:800;color:var(--text);margin-bottom:8px;line-height:1.3">
-        ¿Enviar alerta de crisis<br>a tu sede?
-      </div>
-      <div style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:22px">
-        Se notificará a todos los miembros de <strong>${sedeName}</strong> que necesitas apoyo ahora mismo.
-        <br><br>
-        <span style="color:var(--text3);font-size:12px">Tu nombre aparecerá en la alerta.</span>
-      </div>
-      <button onclick="enviarAlertaSede()" style="
-        width:100%;padding:16px;background:linear-gradient(135deg,#dc2626,#b91c1c);
-        color:white;border:none;border-radius:var(--radius-sm);
-        font-size:17px;font-weight:800;cursor:pointer;
-        margin-bottom:10px;letter-spacing:0.5px;
-      ">🆘 SÍ, NECESITO AYUDA AHORA</button>
-      <button onclick="cerrarModalSos()" style="
-        width:100%;padding:12px;background:var(--surface2);
-        color:var(--text2);border:1.5px solid var(--border);
-        border-radius:var(--radius-sm);font-size:15px;font-weight:600;cursor:pointer;
-      ">Cancelar (fue sin querer)</button>
-    </div>
-  `;
-
-  document.body.appendChild(modal);
-  modal.addEventListener('click', e => { if (e.target === modal) cerrarModalSos(); });
-
-  // Auto-cancelar a los 30 seg si no confirma
-  _sosConfirmTimeout = setTimeout(cerrarModalSos, 30000);
-}
-
-function cerrarModalSos() {
-  clearTimeout(_sosConfirmTimeout);
-  const m = document.getElementById('modal-sos-alerta');
-  if (m) m.remove();
-  _sosAlertaSent = false;
-}
-
-async function enviarAlertaSede() {
-  if (_sosAlertaSent) return; // evitar doble envío
+  if (_sosAlertaSent) return;
   _sosAlertaSent = true;
-
-  cerrarModalSos();
 
   const userName = currentUser.nombre || 'Un compañero/a';
   const sedeId = currentUser.sede_id;
   const sedeName = (sedes.find(s => s.id === sedeId) || {}).nombre || 'la sede';
 
-  // Vibración de confirmación
-  window.navigator.vibrate && navigator.vibrate([400, 100, 400]);
-
-  // Toast inmediato
   showToast('🆘 Alerta enviada a ' + sedeName);
 
   try {
@@ -6095,10 +6022,8 @@ async function enviarAlertaSede() {
     });
   } catch (e) {
     console.warn('[SOS] Error al enviar alerta:', e);
-    // No bloqueamos — el usuario ya recibió el toast
   }
 
-  // Resetear para permitir reenvío si fuera necesario
   setTimeout(() => { _sosAlertaSent = false; }, 10000);
 }
 
