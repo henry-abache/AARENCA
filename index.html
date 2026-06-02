@@ -4141,15 +4141,38 @@ async function loadTelefonos() {
   const list = document.getElementById('phones-list');
   list.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><div class="loading-text">Cargando directorio...</div></div>';
 
-  // Traer TODOS los usuarios activos (con o sin teléfono)
-  const { data: usuarios } = await sb.from('usuarios')
+  // Intentar traer TODOS los usuarios activos
+  let { data: usuarios, error: errDir } = await sb.from('usuarios')
     .select('id,nombre,rol,sede_id,telefono,prefijo_pais,telefono_visibilidad,activo,padrino_id,direccion')
     .eq('activo', true)
-    .order('rol');
+    .order('nombre');
 
-  _dirUsuarios = usuarios || [];
+  // Si la query global falla o devuelve vacío (ej: RLS solo permite ver propia sede),
+  // hacer fallback: traer solo los de la propia sede
+  if (errDir || !usuarios || usuarios.length === 0) {
+    console.warn('[Directorio] Query global sin datos, fallback a sede propia:', errDir?.message || 'sin datos');
+    const { data: fallback, error: errFallback } = await sb.from('usuarios')
+      .select('id,nombre,rol,sede_id,telefono,prefijo_pais,telefono_visibilidad,activo,padrino_id,direccion')
+      .eq('sede_id', currentUser?.sede_id)
+      .eq('activo', true)
+      .order('nombre');
 
-  // Construir mapa: sede_id → tiene admin_principal?
+    if (errFallback) {
+      console.error('[Directorio] Error en fallback:', errFallback.message);
+      list.innerHTML = `<div class="empty-state">
+        <div class="empty-icon">\u26a0\ufe0f</div>
+        <div class="empty-title">Error al cargar directorio</div>
+        <div class="empty-sub">${errFallback.message}</div>
+        <button class="btn btn-secondary btn-sm" style="margin-top:16px;width:auto" onclick="loadTelefonos()">\ud83d\udd04 Reintentar</button>
+      </div>`;
+      return;
+    }
+    usuarios = fallback || [];
+  }
+
+  _dirUsuarios = usuarios;
+
+  // Construir mapa: sede_id \u2192 tiene admin_principal?
   _dirAdmines = {};
   _dirUsuarios.forEach(u => {
     if (u.rol === 'admin_principal' && u.sede_id != null) {
