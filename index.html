@@ -3140,12 +3140,31 @@ async function handleRegister() {
   const isAdmin = document.getElementById('reg-admin-wrap').classList.contains('show') && secret === SECRET_WORD;
 
   if (isAdmin) {
-    // ¿Ya hay admin principal en la sede?
-    const { data: admins } = await sb.from('usuarios').select('id').eq('sede_id', sedeId).eq('rol', 'admin_principal').eq('activo', true);
-    rol = (admins && admins.length > 0) ? 'admin_adjunto' : 'admin_principal';
-    estado = 'aprobado'; // admins entran directo
+    // Con clave correcta siempre entra como admin_adjunto (solo el admin de San José de Renca puede asignar admin_principal)
+    rol = 'admin_adjunto';
+    estado = 'aprobado';
   } else if (document.getElementById('reg-admin-wrap').classList.contains('show') && secret !== '' && secret !== SECRET_WORD) {
     errEl.textContent = 'Clave de administrador incorrecta.'; return;
+  }
+
+  // Si la sede no tiene admin_principal, el usuario entra aprobado automáticamente
+  if (estado === 'pendiente') {
+    const { data: admins } = await sb.from('usuarios')
+      .select('id').eq('sede_id', sedeId).eq('rol', 'admin_principal').eq('activo', true);
+    const sedesinAdmin = !admins || admins.length === 0;
+    if (sedesinAdmin) {
+      estado = 'aprobado';
+      // Notificar al admin de San José de Renca que hay una sede sin admin
+      const { data: sedeRenca } = await sb.from('sedes').select('id').eq('nombre', '⭐San José de Renca').maybeSingle();
+      if (sedeRenca) {
+        await sb.from('notificaciones').insert({
+          sede_id: sedeRenca.id,
+          tipo: 'sede_sin_admin',
+          titulo: '⚠️ Sede sin administrador',
+          cuerpo: `"${sede.nombre}" no tiene administrador. ${nombre} acaba de registrarse. La sede necesita un administrador.`,
+        });
+      }
+    }
   }
 
   // Construir adicciones
@@ -3183,19 +3202,20 @@ async function handleRegister() {
       titulo: '⏳ Solicitud de ingreso',
       cuerpo: `${nombre} solicita unirse a la sede ${sede.nombre}. Revisa el panel de Admin.`,
     });
-    // Mostrar mensaje y volver a login
     errEl.style.color = 'var(--success)';
     errEl.textContent = '✓ Solicitud enviada. Un administrador debe aprobar tu ingreso.';
     setTimeout(() => switchAuthTab('login'), 3000);
     return;
   }
 
-  // Notificar a la sede (admin que entró directo)
+  // Notificar ingreso
   await sb.from('notificaciones').insert({
     sede_id: sedeId,
     tipo: 'nuevo_usuario',
-    titulo: 'Nuevo administrador',
-    cuerpo: `${nombre} se ha unido como administrador a la sede ${sede.nombre}.`,
+    titulo: rol === 'admin_adjunto' ? 'Nuevo administrador' : 'Nuevo miembro (sede sin admin)',
+    cuerpo: rol === 'admin_adjunto'
+      ? `${nombre} se ha unido como administrador adjunto a la sede ${sede.nombre}.`
+      : `${nombre} se registró en la sede ${sede.nombre} (sin administrador — acceso automático).`,
   });
 
   loginUser(newUser);
@@ -3637,20 +3657,16 @@ async function loadBiblioteca() {
   const list = document.getElementById('lib-list');
   list.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><div class="loading-text">Cargando biblioteca...</div></div>';
 
-  // Siempre traemos TODOS los items de la sede y filtramos en el cliente.
-  // Así: un video marcado AA aparece tanto en "Videos" como en "⭐ AA".
-  let query = sb.from('biblioteca').select('*').eq('sede_id', currentUser.sede_id).order('created_at', { ascending: false });
+  // Biblioteca GLOBAL: traemos de TODAS las sedes
+  let query = sb.from('biblioteca').select('*, usuarios!subido_por(nombre, sede_id)').order('created_at', { ascending: false });
   const { data: allData } = await query;
 
   let data = allData || [];
 
-  // Filtrado en cliente para permitir que un item aparezca en múltiples categorías
+  // Filtrado en cliente
   if (currentLibFilter === 'solo_aa') {
-    // Mostrar todos los marcados como AA (cualquier categoría)
     data = data.filter(item => item.is_aa === true);
   } else if (currentLibFilter !== 'todos') {
-    // Mostrar los de esa categoría + los marcados AA de esa categoría
-    // (un item marcado AA que además es Video aparece en "Videos")
     data = data.filter(item => item.categoria === currentLibFilter);
   }
 
@@ -3664,20 +3680,32 @@ async function loadBiblioteca() {
     libros: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>`,
     videos: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>`,
     documentos: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`,
-    // legacy
     material_aa: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`,
   };
   const CAT_LABELS = { audiolibros: 'Audio', libros: 'Libro', videos: 'Video', documentos: 'Documento', material_aa: 'Documento' };
+
+  // Mapa de nombres de sedes para la etiqueta
+  const sedeMap = {};
+  sedes.forEach(s => { sedeMap[s.id] = s.nombre; });
+
   list.innerHTML = data.map(item => {
     const catKey = item.categoria || 'libros';
     const isAA = item.is_aa === true;
     const aaBadge = isAA ? `<span class="lib-aa-badge">⭐ AA</span>` : '';
+    // Etiqueta de autor y sede
+    const autorNombre = item.usuarios?.nombre || 'Desconocido';
+    const autorSedeId = item.usuarios?.sede_id || item.sede_id;
+    const autorSede = sedeMap[autorSedeId] || 'Otra sede';
+    const autorBadge = `<span style="font-size:10px;color:var(--text3);display:block;margin-top:3px">📌 ${autorNombre} · ${autorSede}</span>`;
+    // Solo puede editar/eliminar el admin de la sede que lo subió
+    const canManage = isAdmin && (item.sede_id == currentUser.sede_id);
     return `
-    <div class="lib-item" data-lib-id="${item.id}" data-desc="${(item.descripcion||'').replace(/"/g,'&quot;')}" data-url="${item.url||''}" data-path="${item.archivo_path||''}" data-is-admin="${isAdmin}" data-cat="${catKey}" data-is-aa="${isAA}" data-titulo="${item.titulo.replace(/"/g,'&quot;')}">
+    <div class="lib-item" data-lib-id="${item.id}" data-desc="${(item.descripcion||'').replace(/"/g,'&quot;')}" data-url="${item.url||''}" data-path="${item.archivo_path||''}" data-is-admin="${canManage}" data-cat="${catKey}" data-is-aa="${isAA}" data-titulo="${item.titulo.replace(/"/g,'&quot;')}">
       <div class="lib-icon dot-${catKey}">${CAT_ICONS[catKey]||CAT_ICONS.libros}</div>
       <div class="lib-info">
         <div class="lib-title">${esc(item.titulo)}</div>
         <div class="lib-desc">${esc(item.descripcion||'')}</div>
+        ${autorBadge}
       </div>
       <div class="lib-badges">
         <div class="lib-cat-badge">${CAT_LABELS[catKey]||catKey}</div>
@@ -3784,6 +3812,14 @@ async function saveLibCat() {
 
 async function deleteLibItem() {
   if (!confirm('¿Eliminar este material?')) return;
+  // Verificar que el admin sea de la sede que subió el material
+  const { data: item } = await sb.from('biblioteca').select('sede_id,titulo').eq('id', libEditingId).single();
+  if (!item) { showToast('Material no encontrado'); return; }
+  if (item.sede_id != currentUser.sede_id) {
+    showToast('❌ Solo el administrador de la sede que subió este material puede eliminarlo');
+    closeModal('modal-edit-lib');
+    return;
+  }
   await sb.from('biblioteca').delete().eq('id', libEditingId);
   closeModal('modal-edit-lib');
   loadBiblioteca();
@@ -4499,8 +4535,15 @@ function _renderDirMiembros(users, sede, isOwn, hasAdm) {
     ? `<button class="btn btn-secondary" style="margin-top:12px;font-size:13px" onclick="openDirEditSede(${sede.id})">✏️ ${isOwn ? 'Editar datos de mi sede' : 'Editar datos de esta sede'}</button>`
     : '';
 
+  const isOwnSede = sede.id == currentUser?.sede_id;
+  const alreadyRequestedAdmin = !!(currentUser?.solicito_admin_sede_id && currentUser.solicito_admin_sede_id == sede.id);
   const noAdminAlert = !hasAdm && sede.id != null
-    ? `<div style="background:rgba(248,113,113,0.12);border:1px solid var(--danger);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--danger)">⚠️ Esta sede no tiene Administrador Principal</div>`
+    ? `<div style="background:rgba(248,113,113,0.12);border:1px solid var(--danger);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:12px;font-size:13px;color:var(--danger)">
+        ⚠️ Esta sede aún no tiene Administrador Principal. Puedes usarla normalmente, pero algunas funciones de grupo no estarán disponibles hasta que se designe un administrador.
+        ${!alreadyRequestedAdmin
+          ? `<br/><button onclick="solicitarAdminSede(${sede.id},'${sede.nombre.replace(/'/g,"\\'")}')" style="margin-top:10px;width:100%;padding:10px 0;border-radius:var(--radius-sm);background:var(--accent);color:var(--accent-text);border:none;font-weight:700;font-size:13px;cursor:pointer">🙋 Solicito ser el administrador de esta sede</button>`
+          : `<br/><div style="margin-top:8px;font-size:12px;color:var(--success);font-weight:600">✓ Ya enviaste una solicitud para ser administrador. El admin de ⭐San José de Renca la revisará.</div>`}
+      </div>`
     : '';
 
   list.innerHTML = `
@@ -4516,6 +4559,47 @@ function _renderDirMiembros(users, sede, isOwn, hasAdm) {
     ${noAdminAlert}
     ${editBtn}
     <div class="sede-section" style="margin-top:12px">${membersHtml}</div>`;
+}
+
+// ============================================================
+// SOLICITUD DE ADMINISTRADOR DE SEDE
+// Solo el admin de ⭐San José de Renca puede aprobar
+// ============================================================
+async function solicitarAdminSede(sedeId, sedeNombre) {
+  if (!currentUser || currentUser.isAnonymous) { showToast('Debes iniciar sesión para solicitar'); return; }
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+
+  // Buscar la sede San José de Renca para enviarle la notificación
+  const { data: sedeRenca } = await sb.from('sedes').select('id').eq('nombre', '⭐San José de Renca').maybeSingle();
+  if (!sedeRenca) {
+    showToast('Error: no se encontró la sede central');
+    btn.disabled = false;
+    btn.textContent = '🙋 Solicito ser el administrador de esta sede';
+    return;
+  }
+
+  // Insertar solicitud
+  try {
+    await sb.from('notificaciones').insert({
+      sede_id: sedeRenca.id,
+      tipo: 'solicitud_admin_sede',
+      titulo: '🙋 Solicitud de administrador',
+      cuerpo: `${currentUser.nombre} solicita ser el administrador principal de la sede "${sedeNombre}" (ID: ${sedeId}). Revisa el panel de Admin para aprobar o rechazar.`,
+      usuario_origen: currentUser.id,
+      sede_solicitada_id: sedeId,
+    });
+    // Marcar en memoria local que ya solicitó (persiste en sesión)
+    currentUser.solicito_admin_sede_id = sedeId;
+    showToast('✓ Solicitud enviada. El admin de ⭐San José de Renca la revisará.');
+    // Refrescar vista
+    renderDirDetalle(sedeId);
+  } catch(e) {
+    showToast('Error al enviar solicitud');
+    btn.disabled = false;
+    btn.textContent = '🙋 Solicito ser el administrador de esta sede';
+  }
 }
 
 // ============================================================
@@ -5049,6 +5133,10 @@ async function loadAdminPanel() {
 
   const isPrincipal = currentUser.rol === 'admin_principal';
 
+  // Detectar si este admin es de la sede San José de Renca
+  const miSede = sedes.find(s => s.id == currentUser.sede_id);
+  const isRenca = isPrincipal && miSede && miSede.nombre === '⭐San José de Renca';
+
   // Load pending users
   const { data: pendingUsers } = await sb.from('usuarios')
     .select('*').eq('sede_id', currentUser.sede_id).eq('estado', 'pendiente');
@@ -5077,9 +5165,21 @@ async function loadAdminPanel() {
     const { data: ar } = await sb.from('solicitudes_asistencia_evento')
       .select('*, eventos(titulo,sede_id), usuarios(nombre,sede_id)')
       .eq('estado', 'pendiente');
-    // Filtrar solo los de eventos de esta sede
     attendanceRequests = (ar||[]).filter(r => r.eventos && r.eventos.sede_id == currentUser.sede_id);
   } catch(e) {}
+
+  // Si es admin de Renca: cargar solicitudes de administrador de otras sedes
+  let solicitudesAdmin = [];
+  if (isRenca) {
+    try {
+      const { data: solNot } = await sb.from('notificaciones')
+        .select('*')
+        .eq('sede_id', currentUser.sede_id)
+        .eq('tipo', 'solicitud_admin_sede')
+        .order('created_at', { ascending: false });
+      solicitudesAdmin = solNot || [];
+    } catch(e) {}
+  }
 
   const ROL_LABELS = { admin_principal: 'Admin Principal', admin_adjunto: 'Admin Adjunto', usuario: 'Usuario' };
   const rolOrder = { admin_principal: 0, admin_adjunto: 1, usuario: 2 };
@@ -5175,6 +5275,40 @@ async function loadAdminPanel() {
     html += '</div>';
   }
 
+  // === SOLICITUDES DE ADMINISTRADOR (solo admin de San José de Renca) ===
+  if (isRenca && solicitudesAdmin.length > 0) {
+    html += `<div class="admin-section">
+      <div class="admin-section-title" style="color:var(--accent)">🙋 Solicitudes de administrador de sede (${solicitudesAdmin.length})</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Solo tú puedes aprobar o rechazar estas solicitudes como admin de ⭐San José de Renca.</div>`;
+    html += solicitudesAdmin.map(sol => {
+      const sedeNomMatch = sol.cuerpo.match(/"([^"]+)"/);
+      const sedeIdMatch = sol.cuerpo.match(/\(ID: (\d+)\)/);
+      const solSedeNom = sedeNomMatch ? sedeNomMatch[1] : 'Desconocida';
+      const solSedeId = sedeIdMatch ? parseInt(sedeIdMatch[1]) : null;
+      const fecha = sol.created_at ? new Date(sol.created_at).toLocaleDateString('es-CL') : '';
+      return `<div class="pending-item highlight" style="border:1px solid rgba(251,191,36,0.3)">
+        <div class="pending-avatar" style="background:var(--accent);color:var(--accent-text)">🙋</div>
+        <div class="pending-info">
+          <div class="pending-name">${sol.cuerpo.split(' solicita')[0]}</div>
+          <div class="pending-detail">Sede: ${solSedeNom}</div>
+          <div class="pending-detail" style="color:var(--text3)">${fecha}</div>
+        </div>
+        <div class="pending-actions">
+          ${solSedeId && sol.usuario_origen
+            ? `<button class="btn-approve" title="Aprobar" onclick="aprobarSolicitudAdmin('${sol.id}','${sol.usuario_origen}',${solSedeId})">✓</button>
+               <button class="btn-reject" title="Rechazar" onclick="rechazarSolicitudAdmin('${sol.id}','${sol.usuario_origen}')">✗</button>`
+            : `<span style="font-size:11px;color:var(--text3)">Sin datos de usuario</span>`}
+        </div>
+      </div>`;
+    }).join('');
+    html += '</div>';
+  } else if (isRenca) {
+    html += `<div class="admin-section">
+      <div class="admin-section-title" style="color:var(--accent)">🙋 Solicitudes de administrador de sede</div>
+      <div class="card" style="text-align:center;color:var(--text3)">Sin solicitudes pendientes</div>
+    </div>`;
+  }
+
   // === GESTIÓN DE SEDES (solo admin_principal) ===
   if (isPrincipal) {
     const sedesOrdenadas = [...sedes].sort((a,b) => {
@@ -5265,6 +5399,45 @@ async function approveUser(userId) {
 async function rejectUser(userId) {
   requireAdminSecret('¿Rechazar la solicitud de este usuario?', async () => {
     await sb.from('usuarios').update({ estado: 'rechazado', activo: false }).eq('id', userId);
+    showToast('Solicitud rechazada');
+    loadAdminPanel();
+  });
+}
+
+async function aprobarSolicitudAdmin(notifId, usuarioId, sedeId) {
+  requireAdminSecret('¿Aprobar a esta persona como Admin Principal de esa sede?', async () => {
+    // Quitar admin_principal existente si lo hay
+    await sb.from('usuarios').update({ rol: 'admin_adjunto' })
+      .eq('sede_id', sedeId).eq('rol', 'admin_principal');
+    // Asignar nuevo admin_principal
+    await sb.from('usuarios').update({ rol: 'admin_principal', estado: 'aprobado', activo: true })
+      .eq('id', usuarioId);
+    // Marcar notificación como procesada (eliminar)
+    await sb.from('notificaciones').delete().eq('id', notifId);
+    // Notificar al usuario aprobado
+    const sede = sedes.find(s => s.id == sedeId);
+    await sb.from('notificaciones').insert({
+      sede_id: sedeId,
+      usuario_destino: usuarioId,
+      tipo: 'mensaje',
+      titulo: '⭐ ¡Eres el nuevo Administrador!',
+      cuerpo: `Tu solicitud fue aprobada. Ahora eres Admin Principal de la sede "${sede ? sede.nombre : sedeId}".`,
+    });
+    showToast('✓ Solicitud aprobada. Usuario asignado como Admin Principal.');
+    loadAdminPanel();
+  });
+}
+
+async function rechazarSolicitudAdmin(notifId, usuarioId) {
+  requireAdminSecret('¿Rechazar esta solicitud de administrador?', async () => {
+    await sb.from('notificaciones').delete().eq('id', notifId);
+    // Notificar al usuario rechazado
+    await sb.from('notificaciones').insert({
+      usuario_destino: usuarioId,
+      tipo: 'mensaje',
+      titulo: '❌ Solicitud no aprobada',
+      cuerpo: 'Tu solicitud para ser administrador de esa sede no fue aprobada en esta ocasión.',
+    });
     showToast('Solicitud rechazada');
     loadAdminPanel();
   });
@@ -6332,9 +6505,12 @@ function showMainAppAnon() {
   const homeQuoteEl = document.getElementById('home-quote-wrap');
   if (homeQuoteEl) homeQuoteEl.insertAdjacentHTML('beforebegin', anonBanner);
 
-  // Ocultar Directorio para modo anónimo
+  // Ocultar Directorio para modo anónimo (requiere estar registrado)
   const _dirBtn = document.querySelector('.more-menu-item[onclick*="telefonos"]');
   if (_dirBtn) _dirBtn.style.display = 'none';
+
+  // En modo anónimo: eventos de TODAS las sedes, biblioteca global, pasos y frase visible
+  // (se maneja en loadEventos y loadBiblioteca automáticamente ya que sede_id es null)
 
   loadDailyMessage();
   renderCounters();
