@@ -6481,14 +6481,14 @@ async function activarSosAlerta() {
 
   const userName  = currentUser.nombre || 'Un compañero/a';
   const sedeId    = currentUser.sede_id;
-  const sedeName  = (sedes.find(s => s.id === sedeId) || {}).nombre || 'la sede';
+  const sedeNameAlerta  = (sedes.find(s => s.id === sedeId) || {}).nombre || 'la sede';
   const prefijo   = currentUser.prefijo_pais || '+56';
   const telefono  = currentUser.telefono || '';
   const waNum     = telefono ? (prefijo + telefono).replace(/[^0-9+]/g, '') : '';
   const waLink    = waNum ? 'https://wa.me/' + waNum.replace('+','') : '';
   const waTexto   = waNum ? ' Escríbele por WhatsApp: ' + waLink : '';
 
-  showToast('🆘 Alerta enviada a ' + sedeName);
+  showToast('🆘 Alerta enviada a ' + sedeNameAlerta);
 
   try {
     const { error: sosErr } = await sb.from('notificaciones').insert({
