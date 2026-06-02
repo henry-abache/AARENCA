@@ -3457,13 +3457,15 @@ async function loadHomeAdminPanel() {
   let solicitudesAdmin = [];
   if (isRenca) {
     try {
-      const { data: solNot } = await sb.from('notificaciones')
+      const { data: solNot, error: solErr } = await sb.from('notificaciones')
         .select('*')
-        .eq('sede_id', currentUser.sede_id)
+        .eq('sede_id', RENCA_SEDE_ID)
         .eq('tipo', 'solicitud_admin_sede')
+        .eq('leida', false)
         .order('created_at', { ascending: false });
+      if (solErr) console.error('[loadHomeAdminPanel] Error al cargar solicitudes admin:', solErr);
       solicitudesAdmin = solNot || [];
-    } catch(e) {}
+    } catch(e) { console.error('[loadHomeAdminPanel] Excepción:', e); }
   }
 
   // Si no hay nada que mostrar, ocultar el panel
@@ -4700,21 +4702,23 @@ async function solicitarAdminSede(sedeId, sedeNombre) {
 
   // Insertar solicitud usando ID fijo de Renca (robusto, no depende del nombre)
   try {
-    await sb.from('notificaciones').insert({
+    const { error: insertError } = await sb.from('notificaciones').insert({
       sede_id: RENCA_SEDE_ID,
       tipo: 'solicitud_admin_sede',
       titulo: '🙋 Solicitud de administrador',
       cuerpo: `${currentUser.nombre} solicita ser el administrador principal de la sede "${sedeNombre}" (ID: ${sedeId}) (UID: ${currentUser.id}). Revisa el panel de Admin para aprobar o rechazar.`,
       usuario_origen: currentUser.id,
-      sede_solicitada_id: sedeId,
+      leida: false,
     });
+    if (insertError) throw insertError;
     // Marcar en memoria local que ya solicitó (persiste en sesión)
     currentUser.solicito_admin_sede_id = sedeId;
     showToast('✓ Solicitud enviada. El admin de ⭐San José de Renca la revisará.');
     // Refrescar vista
     renderDirDetalle(sedeId);
   } catch(e) {
-    showToast('Error al enviar solicitud');
+    console.error('[solicitarAdminSede] Error:', e);
+    showToast('Error al enviar solicitud: ' + (e.message || 'intenta de nuevo'));
     btn.disabled = false;
     btn.textContent = '🙋 Solicito ser el administrador de esta sede';
   }
