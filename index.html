@@ -2842,7 +2842,7 @@
         <p style="color:var(--text2);font-size:14px;margin-bottom:16px" id="admin-secret-msg">Ingresa la palabra secreta para confirmar.</p>
         <div class="input-group">
           <label class="input-label">Palabra secreta</label>
-          <input type="text" id="admin-secret-input" placeholder="felices24" autocomplete="off" />
+          <input type="text" id="admin-secret-input" placeholder="Palabra secreta" autocomplete="off" />
         </div>
         <div id="admin-secret-error" class="error-msg"></div>
         <button class="btn btn-primary" onclick="confirmAdminSecret()">Confirmar</button>
@@ -2975,6 +2975,19 @@ function cycleTheme() {
   const names = { auto: 'Automático', claro: 'Claro', oscuro: 'Oscuro', minimalista: 'Minimalista', adulto_mayor: 'Adulto Mayor ❤️' };
   showToast('Tema: ' + (names[currentTheme] || currentTheme));
   if (currentUser) sb.from('usuarios').update({ tema: currentTheme }).eq('id', currentUser.id);
+}
+
+// ============================================================
+// ESCAPE HTML — previene XSS al insertar datos de DB en innerHTML
+// ============================================================
+function esc(str) {
+  if (!str && str !== 0) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 // ============================================================
@@ -3268,8 +3281,25 @@ async function autoLogin() {
 
 function handleLogout() {
   if (!confirm('¿Cerrar sesión?')) return;
-  localStorage.removeItem('nvaa_user_id');
+
+  // Conservar solo lo que es estrictamente personal e independiente del usuario
+  const keep = ['nvaa_diary_pin', 'nvaa_diary_entries', 'nvaa_diary_hint', 'nvaa_theme', 'nvaa_lang'];
+  const keepValues = {};
+  keep.forEach(k => { const v = localStorage.getItem(k); if (v !== null) keepValues[k] = v; });
+
+  // Limpiar todo el localStorage
+  localStorage.clear();
+
+  // Restaurar los valores que conservamos
+  Object.entries(keepValues).forEach(([k, v]) => localStorage.setItem(k, v));
+
+  // Limpiar estado en memoria
   currentUser = null;
+  _dirUsuarios = [];
+  _dirAdmines = {};
+  _eventosCache.data = null;
+  _eventosCache.ts = 0;
+
   document.getElementById('screen-main').classList.remove('active');
   document.getElementById('screen-auth').classList.add('active');
   showToast('Sesión cerrada');
@@ -3630,8 +3660,8 @@ async function loadBiblioteca() {
     <div class="lib-item" data-lib-id="${item.id}" data-desc="${(item.descripcion||'').replace(/"/g,'&quot;')}" data-url="${item.url||''}" data-path="${item.archivo_path||''}" data-is-admin="${isAdmin}" data-cat="${catKey}" data-is-aa="${isAA}" data-titulo="${item.titulo.replace(/"/g,'&quot;')}">
       <div class="lib-icon dot-${catKey}">${CAT_ICONS[catKey]||CAT_ICONS.libros}</div>
       <div class="lib-info">
-        <div class="lib-title">${item.titulo}</div>
-        <div class="lib-desc">${item.descripcion||''}</div>
+        <div class="lib-title">${esc(item.titulo)}</div>
+        <div class="lib-desc">${esc(item.descripcion||'')}</div>
       </div>
       <div class="lib-badges">
         <div class="lib-cat-badge">${CAT_LABELS[catKey]||catKey}</div>
@@ -3937,14 +3967,14 @@ async function loadEventos(forceRefresh) {
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
         <div style="flex:1">
           <div class="event-date">${fecha}</div>
-          <div class="event-title">${ev.titulo}</div>
+          <div class="event-title">${esc(ev.titulo)}</div>
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0">
           ${canEdit ? `<button onclick="abrirEditarEvento(${ev.id})" style="flex-shrink:0;padding:6px 10px;border-radius:var(--radius-sm);background:transparent;border:1.5px solid var(--accent);color:var(--accent);font-size:12px;font-weight:700;cursor:pointer">✏️</button>` : ''}
           ${canDelete ? `<button onclick="deleteEvento(${ev.id})" style="flex-shrink:0;padding:6px 10px;border-radius:var(--radius-sm);background:transparent;border:1.5px solid var(--danger);color:var(--danger);font-size:12px;font-weight:700;cursor:pointer">🗑</button>` : ''}
         </div>
       </div>
-      ${ev.descripcion?`<div class="event-desc">${ev.descripcion}</div>`:''}
+      ${ev.descripcion?`<div class="event-desc">${esc(ev.descripcion)}</div>`:''}
       ${ev.direccion?`<div class="event-addr"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:14px;height:14px"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>${ev.direccion}</div>`:''}
       <div class="event-actions">
         ${actionBtns}
@@ -3975,13 +4005,23 @@ function openMaps(addr) {
 }
 
 // ── Ver asistencia por evento (solo admins) ──────────────────────────────────
+const _asistCache = {}; // { eventoId: { ts, miembros, respuestas } }
+const ASIST_TTL = 30000; // 30 segundos
+
 async function verAsistenciaEvento(eventoId, eventoTitulo) {
-  document.getElementById('asist-modal-title').textContent = '👥 ' + eventoTitulo;
+  document.getElementById('asist-modal-title').textContent = '👥 ' + esc(eventoTitulo);
   document.getElementById('asist-modal-body').innerHTML =
     '<div class="loading-spinner"><div class="spinner"></div><div class="loading-text">Cargando...</div></div>';
   openModal('modal-asistencia-evento');
 
   try {
+    // Usar caché si los datos son recientes
+    const cached = _asistCache[eventoId];
+    if (cached && (Date.now() - cached.ts) < ASIST_TTL) {
+      _renderAsistencia(cached.miembros, cached.respuestas);
+      return;
+    }
+
     // 1. Todos los miembros activos de la sede
     const { data: miembros, error: errM } = await sb.from('usuarios')
       .select('id,nombre,rol')
@@ -3995,63 +4035,69 @@ async function verAsistenciaEvento(eventoId, eventoTitulo) {
       .select('usuario_id,asiste')
       .eq('evento_id', eventoId);
 
-    const respMap = {};
-    (respuestas || []).forEach(r => { respMap[r.usuario_id] = r.asiste; });
-
-    const van    = (miembros || []).filter(u => respMap[u.id] === true);
-    const noVan  = (miembros || []).filter(u => respMap[u.id] === false);
-    const sinRep = (miembros || []).filter(u => respMap[u.id] === undefined);
-
-    const ROL_LABELS = { admin_principal: 'Admin', admin_adjunto: 'Adjunto' };
-    const fila = (u, color) => `
-      <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
-        <div style="width:36px;height:36px;border-radius:50%;background:${color}22;border:2px solid ${color};display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:${color};flex-shrink:0">
-          ${(u.nombre||'?').charAt(0).toUpperCase()}
-        </div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-            ${u.nombre}${u.rol !== 'usuario' ? ` <span style="font-size:10px;background:var(--accent);color:var(--accent-text);padding:1px 5px;border-radius:4px;font-weight:700">${ROL_LABELS[u.rol]||u.rol}</span>` : ''}
-          </div>
-        </div>
-      </div>`;
-
-    const seccion = (emoji, titulo, lista, color, vacio) => lista.length === 0 ? '' : `
-      <div style="margin-top:16px">
-        <div style="font-size:13px;font-weight:700;color:${color};margin-bottom:4px;display:flex;align-items:center;gap:6px">
-          ${emoji} ${titulo} <span style="background:${color}22;color:${color};border-radius:10px;padding:1px 8px;font-size:12px">${lista.length}</span>
-        </div>
-        ${lista.map(u => fila(u, color)).join('')}
-      </div>`;
-
-    const resumen = `
-      <div style="display:flex;gap:8px;margin-bottom:4px;flex-wrap:wrap">
-        <div style="flex:1;min-width:80px;text-align:center;background:var(--success)22;border:1.5px solid var(--success);border-radius:var(--radius-sm);padding:10px 6px">
-          <div style="font-size:22px;font-weight:800;color:var(--success)">${van.length}</div>
-          <div style="font-size:11px;color:var(--success);font-weight:600">Asistirán</div>
-        </div>
-        <div style="flex:1;min-width:80px;text-align:center;background:var(--danger)22;border:1.5px solid var(--danger);border-radius:var(--radius-sm);padding:10px 6px">
-          <div style="font-size:22px;font-weight:800;color:var(--danger)">${noVan.length}</div>
-          <div style="font-size:11px;color:var(--danger);font-weight:600">No asistirán</div>
-        </div>
-        <div style="flex:1;min-width:80px;text-align:center;background:var(--text3)22;border:1.5px solid var(--text3);border-radius:var(--radius-sm);padding:10px 6px">
-          <div style="font-size:22px;font-weight:800;color:var(--text3)">${sinRep.length}</div>
-          <div style="font-size:11px;color:var(--text3);font-weight:600">Sin responder</div>
-        </div>
-      </div>`;
-
-    document.getElementById('asist-modal-body').innerHTML =
-      resumen +
-      seccion('✅', 'Asistirán', van, 'var(--success)') +
-      seccion('❌', 'No asistirán', noVan, 'var(--danger)') +
-      seccion('⏳', 'Sin responder', sinRep, 'var(--text3)') +
-      (van.length + noVan.length + sinRep.length === 0
-        ? '<div class="empty-state" style="padding:24px"><div class="empty-icon">👥</div><div class="empty-title">Sin miembros</div></div>'
-        : '');
+    // Guardar en caché y renderizar
+    _asistCache[eventoId] = { ts: Date.now(), miembros: miembros || [], respuestas: respuestas || [] };
+    _renderAsistencia(miembros || [], respuestas || []);
 
   } catch(err) {
     document.getElementById('asist-modal-body').innerHTML =
-      `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Error</div><div class="empty-sub">${err.message}</div></div>`;
+      `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Error</div><div class="empty-sub">${esc(err.message)}</div></div>`;
   }
+}
+
+function _renderAsistencia(miembros, respuestas) {
+  const respMap = {};
+  (respuestas || []).forEach(r => { respMap[r.usuario_id] = r.asiste; });
+
+  const van    = miembros.filter(u => respMap[u.id] === true);
+  const noVan  = miembros.filter(u => respMap[u.id] === false);
+  const sinRep = miembros.filter(u => respMap[u.id] === undefined);
+
+  const ROL_LABELS = { admin_principal: 'Admin', admin_adjunto: 'Adjunto' };
+  const fila = (u, color) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="width:36px;height:36px;border-radius:50%;background:${color}22;border:2px solid ${color};display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:${color};flex-shrink:0">
+        ${esc((u.nombre||'?').charAt(0).toUpperCase())}
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+          ${esc(u.nombre||'Sin nombre')}${u.rol !== 'usuario' ? ` <span style="font-size:10px;background:var(--accent);color:var(--accent-text);padding:1px 5px;border-radius:4px;font-weight:700">${esc(ROL_LABELS[u.rol]||u.rol)}</span>` : ''}
+        </div>
+      </div>
+    </div>`;
+
+  const seccion = (emoji, titulo, lista, color) => lista.length === 0 ? '' : `
+    <div style="margin-top:16px">
+      <div style="font-size:13px;font-weight:700;color:${color};margin-bottom:4px;display:flex;align-items:center;gap:6px">
+        ${emoji} ${titulo} <span style="background:${color}22;color:${color};border-radius:10px;padding:1px 8px;font-size:12px">${lista.length}</span>
+      </div>
+      ${lista.map(u => fila(u, color)).join('')}
+    </div>`;
+
+  const resumen = `
+    <div style="display:flex;gap:8px;margin-bottom:4px;flex-wrap:wrap">
+      <div style="flex:1;min-width:80px;text-align:center;background:var(--success)22;border:1.5px solid var(--success);border-radius:var(--radius-sm);padding:10px 6px">
+        <div style="font-size:22px;font-weight:800;color:var(--success)">${van.length}</div>
+        <div style="font-size:11px;color:var(--success);font-weight:600">Asistirán</div>
+      </div>
+      <div style="flex:1;min-width:80px;text-align:center;background:var(--danger)22;border:1.5px solid var(--danger);border-radius:var(--radius-sm);padding:10px 6px">
+        <div style="font-size:22px;font-weight:800;color:var(--danger)">${noVan.length}</div>
+        <div style="font-size:11px;color:var(--danger);font-weight:600">No asistirán</div>
+      </div>
+      <div style="flex:1;min-width:80px;text-align:center;background:var(--text3)22;border:1.5px solid var(--text3);border-radius:var(--radius-sm);padding:10px 6px">
+        <div style="font-size:22px;font-weight:800;color:var(--text3)">${sinRep.length}</div>
+        <div style="font-size:11px;color:var(--text3);font-weight:600">Sin responder</div>
+      </div>
+    </div>`;
+
+  document.getElementById('asist-modal-body').innerHTML =
+    resumen +
+    seccion('✅', 'Asistirán', van, 'var(--success)') +
+    seccion('❌', 'No asistirán', noVan, 'var(--danger)') +
+    seccion('⏳', 'Sin responder', sinRep, 'var(--text3)') +
+    (van.length + noVan.length + sinRep.length === 0
+      ? '<div class="empty-state" style="padding:24px"><div class="empty-icon">👥</div><div class="empty-title">Sin miembros</div></div>'
+      : '');
 }
 
 async function deleteEvento(eventId) {
@@ -4626,17 +4672,37 @@ async function saveDirEditSede() {
 // ============================================================
 // NOTIFICACIONES
 // ============================================================
+// IDs de notificaciones que YO (este usuario) ya leí — guardado en localStorage
+function _getMyReadNotifs() {
+  try { return new Set(JSON.parse(localStorage.getItem('nvaa_notif_read_' + currentUser.id) || '[]')); }
+  catch(e) { return new Set(); }
+}
+function _markNotifReadLocal(id) {
+  const s = _getMyReadNotifs();
+  s.add(id);
+  localStorage.setItem('nvaa_notif_read_' + currentUser.id, JSON.stringify([...s]));
+}
+
 async function loadNotifBadge() {
-  const { data, count } = await sb.from('notificaciones')
-    .select('*', { count: 'exact' })
+  const { data } = await sb.from('notificaciones')
+    .select('id, usuario_destino')
     .eq('sede_id', currentUser.sede_id)
-    .eq('leida', false)
     .order('created_at', {ascending:false})
     .limit(50);
+  if (!data) return;
+  const myRead = _getMyReadNotifs();
+  // Una notificación cuenta como NO leída si:
+  // - No tiene usuario_destino (es para toda la sede) Y yo no la marqué como leída
+  // - O tiene usuario_destino === yo Y no la marqué como leída
+  const unread = data.filter(n => {
+    if (myRead.has(n.id)) return false;
+    if (n.usuario_destino && n.usuario_destino !== currentUser.id) return false;
+    return true;
+  });
   const badge = document.getElementById('notif-badge');
-  const n = count || 0;
-  badge.style.display = n > 0 ? 'flex' : 'none';
-  badge.textContent = n > 9 ? '9+' : n;
+  const count = unread.length;
+  badge.style.display = count > 0 ? 'flex' : 'none';
+  badge.textContent = count > 9 ? '9+' : count;
 }
 
 async function openNotifications() {
@@ -4654,22 +4720,32 @@ async function openNotifications() {
     return;
   }
 
-  body.innerHTML = data.map(n => {
+  // Filtrar: mostrar solo las que son para mí (sin destino = toda la sede, o destino = yo)
+  const myRead = _getMyReadNotifs();
+  const visible = data.filter(n => !n.usuario_destino || n.usuario_destino === currentUser.id);
+
+  if (!visible.length) {
+    body.innerHTML = '<div class="empty-state"><div class="empty-icon">🔔</div><div class="empty-title">Sin notificaciones</div></div>';
+    return;
+  }
+
+  body.innerHTML = visible.map(n => {
+    const yaLeida = myRead.has(n.id);
     const time = new Date(n.created_at).toLocaleString('es-CL', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
     const typeHint = { 'nuevo_evento': '📅', 'nuevo_material': '📚', 'nuevo_usuario': '👤', 'mensaje': '✉️', 'solicitud_sede': '🏠' }[n.tipo] || '🔔';
-    return `<div class="notif-item ${n.leida?'read':''}" onclick="handleNotifClick(${n.id},'${n.tipo||''}',this)">
+    const cuerpoText = n.cuerpo ? (()=>{try{const p=JSON.parse(n.cuerpo);return p.texto||n.cuerpo;}catch(e){return n.cuerpo;}})() : '';
+    return `<div class="notif-item ${yaLeida?'read':''}" onclick="handleNotifClick(${n.id},'${esc(n.tipo)||''}',this)">
       <div class="notif-dot"></div>
       <div class="notif-text">
-        <div class="notif-title">${typeHint} ${n.titulo}</div>
-        ${n.cuerpo?`<div class="notif-body">${(()=>{try{const p=JSON.parse(n.cuerpo);return p.texto||n.cuerpo;}catch(e){return n.cuerpo;}})()}</div>`:''}
+        <div class="notif-title">${typeHint} ${esc(n.titulo)}</div>
+        ${cuerpoText?`<div class="notif-body">${esc(cuerpoText)}</div>`:''}
         <div class="notif-time">${time} · Toca para ir</div>
       </div>
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;color:var(--text3);flex-shrink:0;align-self:center"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
     </div>`;
   }).join('');
 
-  // Marcar todas como leídas
-  await sb.from('notificaciones').update({ leida: true }).eq('sede_id', currentUser.sede_id).eq('leida', false);
+  // NO marcamos como leídas globalmente — cada usuario las marca individualmente al tocarlas
   document.getElementById('notif-badge').style.display = 'none';
 }
 
@@ -4679,9 +4755,9 @@ async function markRead(id, el) {
 }
 
 async function handleNotifClick(id, tipo, el) {
-  // Mark as read
+  // Marcar como leída SOLO para este usuario (localStorage individual)
   el.classList.add('read');
-  await sb.from('notificaciones').update({ leida: true }).eq('id', id);
+  _markNotifReadLocal(id);
 
   // Close notifications modal
   closeModal('modal-notifs');
