@@ -3806,6 +3806,7 @@ let _requestingEventId = null;
 async function loadEventos(forceRefresh) {
   const list = document.getElementById('events-list');
   const now = Date.now();
+  const isAnon = currentUser?.isAnonymous || String(currentUser?.id || '').startsWith('anon_');
   const cacheValid = !forceRefresh
     && _eventosCache.data
     && (now - _eventosCache.ts) < EVENTOS_CACHE_TTL
@@ -3822,29 +3823,52 @@ async function loadEventos(forceRefresh) {
       list.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><div class="loading-text">Cargando eventos...</div></div>';
     }
 
-    // Fetch eventos (solo futuros o últimos 7 días) + asistencia + solicitudes en paralelo
-    const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    const [evRes, asistRes, reqRes] = await Promise.all([
-      sb.from('eventos')
+    try {
+      // Fetch eventos (solo futuros o últimos 7 días) + asistencia + solicitudes en paralelo
+      const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+      // En modo anónimo solo traemos eventos; no hay asistencia ni solicitudes
+      const evPromise = sb.from('eventos')
         .select('id,titulo,descripcion,fecha_evento,direccion,creado_por,sede_id')
         .or(`fecha_evento.gte.${cutoff},fecha_evento.is.null`)
         .order('fecha_evento', {ascending:true})
-        .limit(60),
-      sb.from('asistencia_eventos').select('evento_id,asiste').eq('usuario_id', currentUser.id),
-      sb.from('solicitudes_asistencia_evento').select('evento_id,estado').eq('usuario_id', currentUser.id).catch(() => ({ data: [] }))
-    ]);
+        .limit(60);
 
-    eventos = evRes.data || [];
-    asistMap = {};
-    (asistRes.data||[]).forEach(a => asistMap[a.evento_id] = a.asiste);
-    reqMap = {};
-    ((reqRes.data)||[]).forEach(r => reqMap[r.evento_id] = r.estado);
+      const asistPromise = isAnon
+        ? Promise.resolve({ data: [] })
+        : sb.from('asistencia_eventos').select('evento_id,asiste').eq('usuario_id', currentUser.id).catch(() => ({ data: [] }));
 
-    _eventosCache.data    = eventos;
-    _eventosCache.asistMap = asistMap;
-    _eventosCache.reqMap   = reqMap;
-    _eventosCache.ts      = now;
-    _eventosCache.userId  = currentUser.id;
+      const reqPromise = isAnon
+        ? Promise.resolve({ data: [] })
+        : sb.from('solicitudes_asistencia_evento').select('evento_id,estado').eq('usuario_id', currentUser.id).catch(() => ({ data: [] }));
+
+      const [evRes, asistRes, reqRes] = await Promise.all([evPromise, asistPromise, reqPromise]);
+
+      if (evRes.error) throw evRes.error;
+
+      eventos = evRes.data || [];
+      asistMap = {};
+      (asistRes.data||[]).forEach(a => asistMap[a.evento_id] = a.asiste);
+      reqMap = {};
+      ((reqRes.data)||[]).forEach(r => reqMap[r.evento_id] = r.estado);
+
+      _eventosCache.data    = eventos;
+      _eventosCache.asistMap = asistMap;
+      _eventosCache.reqMap   = reqMap;
+      _eventosCache.ts      = now;
+      _eventosCache.userId  = currentUser.id;
+    } catch(err) {
+      console.error('[Eventos] Error al cargar:', err);
+      const esOffline = !navigator.onLine || (err?.message || '').toLowerCase().includes('failed to fetch');
+      list.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">${esOffline ? '📡' : '⚠️'}</div>
+          <div class="empty-title">${esOffline ? 'Sin conexión' : 'Error al cargar eventos'}</div>
+          <div class="empty-sub">${esOffline ? 'Conecta a internet y vuelve a intentarlo.' : 'Ocurrió un problema al obtener los eventos. Intenta de nuevo.'}</div>
+          <button class="btn btn-secondary btn-sm" style="margin-top:16px;width:auto" onclick="loadEventos(true)">🔄 Reintentar</button>
+        </div>`;
+      return;
+    }
   }
 
   if (!eventos || !eventos.length) {
