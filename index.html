@@ -4071,7 +4071,7 @@ async function enviarSolicitudAsistencia() {
       tipo: 'solicitud_asistencia',
       titulo: '🙋 Solicitud de asistencia',
       cuerpo: `${currentUser.nombre} solicita asistir al evento "${ev?.titulo||''}" desde otra sede.`,
-    }).catch(()=>{});
+    });
   }
 
   // Actualizar caché local
@@ -4143,7 +4143,7 @@ async function loadTelefonos() {
 
   // Intentar traer TODOS los usuarios activos
   let { data: usuarios, error: errDir } = await sb.from('usuarios')
-    .select('id,nombre,rol,sede_id,telefono,prefijo_pais,telefono_visibilidad,activo,padrino_id,direccion')
+    .select('id,nombre,rol,sede_id,telefono,prefijo_pais,activo,padrino_id,direccion')
     .eq('activo', true)
     .order('nombre');
 
@@ -4152,7 +4152,7 @@ async function loadTelefonos() {
   if (errDir || !usuarios || usuarios.length === 0) {
     console.warn('[Directorio] Query global sin datos, fallback a sede propia:', errDir?.message || 'sin datos');
     const { data: fallback, error: errFallback } = await sb.from('usuarios')
-      .select('id,nombre,rol,sede_id,telefono,prefijo_pais,telefono_visibilidad,activo,padrino_id,direccion')
+      .select('id,nombre,rol,sede_id,telefono,prefijo_pais,activo,padrino_id,direccion')
       .eq('sede_id', currentUser?.sede_id)
       .eq('activo', true)
       .order('nombre');
@@ -4313,7 +4313,7 @@ function _renderDirMiembros(users, sede, isOwn, hasAdm) {
     const init = (u.nombre||'?').charAt(0).toUpperCase();
     const rawTel = u.telefono && u.telefono.trim();
     // Aplicar visibilidad del teléfono
-    const vis = u.telefono_visibilidad || 'sede';
+    const vis = u.telefono_visibilidad || 'todas'; // columna aún no existe en DB, mostrar a todos por defecto
     const isSelf = u.id === currentUser?.id;
     const isAdmin = currentUser?.rol !== 'usuario';
     const isSameSede = u.sede_id === currentUser?.sede_id;
@@ -4442,7 +4442,7 @@ async function saveAdminEditSede() {
         sede_id: sedeId, usuario_destino: newAdminId, tipo: 'mensaje',
         titulo: '⭐ Nuevo rol: Administrador Principal',
         cuerpo: `${ev.nombre}, ahora eres el Administrador Principal de la sede ${nombre}.`,
-      }).catch(()=>{});
+      });
     }
   }
 
@@ -4827,8 +4827,7 @@ async function loadAdminBadge() {
   const { count: tc } = await sb.from('solicitudes_traslado')
     .select('id', { count: 'exact', head: true })
     .eq('sede_origen_id', currentUser.sede_id)
-    .eq('estado', 'pendiente')
-    .catch(() => ({ count: 0 }));
+    .eq('estado', 'pendiente');
 
   // Check attendance requests for events of this sede
   let ac = 0;
@@ -5221,7 +5220,7 @@ async function approveAttendanceRequest(reqId, userId, eventoId) {
         tipo: 'mensaje',
         titulo: '✅ Asistencia aprobada',
         cuerpo: `Tu solicitud para asistir al evento "${ev?.titulo||''}" fue aprobada. ¡Te esperamos!`,
-      }).catch(()=>{});
+      });
     }
     showToast('Asistencia aprobada ✓');
     loadAdminPanel();
@@ -5244,7 +5243,7 @@ async function rejectAttendanceRequest(reqId) {
           tipo: 'mensaje',
           titulo: '❌ Solicitud rechazada',
           cuerpo: `Tu solicitud para asistir al evento "${ev?.titulo||''}" no fue aprobada.`,
-        }).catch(()=>{});
+        });
       }
     }
     showToast('Solicitud rechazada');
@@ -6292,8 +6291,7 @@ async function openDirectorioPadrinos() {
     .select('id,nombre,telefono,prefijo_pais,adicciones,paso_actual,activo')
     .eq('sede_id', currentUser.sede_id)
     .eq('activo', true)
-    .eq('padrino_id', currentUser.id)
-    .catch(() => ({ data: null }));
+    .eq('padrino_id', currentUser.id);
 
   if (!apadrinados || apadrinados.length === 0) {
     body.innerHTML = `<div class="empty-state">
@@ -6486,8 +6484,8 @@ async function loadSOSWithDir() {
   if (!_dirUsuarios.length && !currentUser?.isAnonymous) {
     try {
       const { data: usuarios } = await sb.from('usuarios')
-        .select('id,nombre,rol,sede_id,telefono,prefijo_pais,telefono_visibilidad,activo,padrino_id,direccion')
-        .eq('activo', true).order('rol');
+        .select('id,nombre,rol,sede_id,telefono,prefijo_pais,activo,padrino_id,direccion')
+        .eq('activo', true).order('nombre');
       _dirUsuarios = usuarios || [];
     } catch(e) {}
   }
