@@ -5258,6 +5258,7 @@ async function loadAdminBadge() {
 
   const total = (count || 0) + (tc || 0) + ac;
   const badge = document.getElementById('admin-nav-badge');
+  if (!badge) return;
   badge.style.display = total > 0 ? 'flex' : 'none';
   badge.textContent = total > 9 ? '9+' : (total || '');
 }
@@ -6331,31 +6332,32 @@ function mostrarConfirmacionSOS(sedeName) {
     `;
     modal.innerHTML = `
       <div style="
-        background:var(--surface);border-radius:var(--radius-lg);
+        background:#1e293b;border-radius:20px;
         padding:28px 24px;max-width:340px;width:100%;
         border:2px solid #dc2626;
-        box-shadow:0 8px 40px rgba(220,38,38,0.4);
+        box-shadow:0 8px 40px rgba(220,38,38,0.5);
         text-align:center;animation:fadeInUp 0.2s ease;
       ">
         <div style="font-size:52px;margin-bottom:12px">🆘</div>
-        <div style="font-size:18px;font-weight:800;color:#dc2626;margin-bottom:10px">
+        <div style="font-size:20px;font-weight:800;color:#ffffff;margin-bottom:10px">
           Enviar S.O.S
         </div>
-        <div style="font-size:15px;color:var(--text);line-height:1.6;margin-bottom:20px">
-          ¿Quieres enviar un <strong>S.O.S</strong> a los miembros de<br>
-          <strong>${sedeName}</strong>?<br><br>
-          <span style="font-size:13px;color:var(--text2)">Todos verán una alerta de crisis en su pantalla de inicio.</span>
+        <div style="font-size:15px;color:#e2e8f0;line-height:1.7;margin-bottom:24px">
+          ¿Quieres enviar una alerta de crisis a los miembros de<br>
+          <strong style="color:#fbbf24">${sedeName}</strong>?<br><br>
+          <span style="font-size:13px;color:#94a3b8">Todos verán una alerta en su pantalla de inicio.</span>
         </div>
         <div style="display:flex;gap:10px">
           <button id="sos-confirm-no" style="
-            flex:1;padding:14px;border-radius:var(--radius-sm);
-            background:var(--bg3);border:none;
-            font-size:15px;font-weight:600;color:var(--text2);cursor:pointer;
+            flex:1;padding:14px;border-radius:10px;
+            background:#334155;border:1px solid #475569;
+            font-size:15px;font-weight:600;color:#e2e8f0;cursor:pointer;
           ">Cancelar</button>
           <button id="sos-confirm-yes" style="
-            flex:1;padding:14px;border-radius:var(--radius-sm);
+            flex:1;padding:14px;border-radius:10px;
             background:#dc2626;border:none;
             font-size:15px;font-weight:800;color:white;cursor:pointer;
+            box-shadow:0 4px 16px rgba(220,38,38,0.4);
           ">🆘 Sí, enviar</button>
         </div>
       </div>
