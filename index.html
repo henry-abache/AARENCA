@@ -2020,7 +2020,16 @@
     <!-- TAB CONTENT -->
     <!-- HOME -->
     <div class="scroll-content" id="tab-home" style="display:block">
-      <div id="home-quote-wrap"></div>
+      <div id="home-quote-wrap">
+        <div class="auth-quote-box" id="home-quote-box" style="margin:0 0 12px 0;position:relative">
+          <div class="auth-quote-icon">📖</div>
+          <div class="auth-quote-text" id="home-quote-text">Cargando frase...</div>
+          <div class="auth-quote-source" id="home-quote-source"></div>
+          <button onclick="loadDailyMessage()" title="Nueva frase" style="position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;opacity:0.5;padding:4px;color:var(--text2)" aria-label="Nueva frase aleatoria">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          </button>
+        </div>
+      </div>
       <div class="counters-section">
         <div class="counters-title">Mis Contadores</div>
         <div id="counters-list"></div>
@@ -3307,7 +3316,7 @@ function switchTab(tab, navEl) {
 // HOME TAB
 // ============================================================
 async function loadHomeTab() {
-  loadDailyMessage();
+  await loadDailyMessage();
   renderCounters();
 }
 
@@ -5601,31 +5610,29 @@ const AA_MESSAGES_OFFLINE = [
   { mensaje: "Confía en el proceso. La recuperación ocurre cuando te rindes al amor de un Poder Superior.", autor: "Doce Pasos — AA" },
 ];
 async function loadDailyMessage() {
-  let msgs = AA_MESSAGES_OFFLINE;
+  // Primero mostrar frase offline inmediatamente (sin esperar red)
+  _showQuoteFromArray(AA_MESSAGES_OFFLINE);
+
+  // Luego intentar cargar desde Supabase en segundo plano
   if (navigator.onLine) {
-    const { data } = await sb.from('mensajes_diarios').select('*').eq('activo', true).catch(() => ({ data: null }));
-    if (data && data.length) msgs = data;
+    try {
+      const { data } = await sb.from('mensajes_diarios').select('*').eq('activo', true);
+      if (data && data.length) _showQuoteFromArray(data);
+    } catch(e) { /* mantener frase offline */ }
   }
-  // Frase aleatoria, evitar repetir la última
-  let lastIdx = parseInt(sessionStorage.getItem('nvaa_last_msg') || '-1');
+}
+
+function _showQuoteFromArray(msgs) {
+  const textEl = document.getElementById('home-quote-text');
+  const srcEl  = document.getElementById('home-quote-source');
+  if (!textEl || !srcEl) return;
+  const lastIdx = parseInt(sessionStorage.getItem('nvaa_last_msg') || '-1');
   let idx;
   do { idx = Math.floor(Math.random() * msgs.length); } while (msgs.length > 1 && idx === lastIdx);
   sessionStorage.setItem('nvaa_last_msg', idx);
   const msg = msgs[idx];
-
-  // Solo la frase encima de los contadores
-  const homeQuoteWrap = document.getElementById('home-quote-wrap');
-  if (homeQuoteWrap) {
-    homeQuoteWrap.innerHTML = `
-      <div class="auth-quote-box" style="margin:0 0 12px 0;position:relative">
-        <div class="auth-quote-icon">📖</div>
-        <div class="auth-quote-text">${msg.mensaje}</div>
-        <div class="auth-quote-source">— ${msg.autor}</div>
-        <button onclick="loadDailyMessage()" title="Nueva frase" style="position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;opacity:0.5;padding:4px;color:var(--text2)" aria-label="Nueva frase aleatoria">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-        </button>
-      </div>`;
-  }
+  textEl.textContent = '«' + (msg.mensaje || msg.text || '') + '»';
+  srcEl.textContent  = '— ' + (msg.autor || msg.source || '');
 }
 
 // ============================================================
