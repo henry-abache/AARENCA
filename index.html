@@ -3836,11 +3836,11 @@ async function loadEventos(forceRefresh) {
 
       const asistPromise = isAnon
         ? Promise.resolve({ data: [] })
-        : sb.from('asistencia_eventos').select('evento_id,asiste').eq('usuario_id', currentUser.id).catch(() => ({ data: [] }));
+        : Promise.resolve(sb.from('asistencia_eventos').select('evento_id,asiste').eq('usuario_id', currentUser.id)).catch(() => ({ data: [] }));
 
       const reqPromise = isAnon
         ? Promise.resolve({ data: [] })
-        : sb.from('solicitudes_asistencia_evento').select('evento_id,estado').eq('usuario_id', currentUser.id).catch(() => ({ data: [] }));
+        : Promise.resolve(sb.from('solicitudes_asistencia_evento').select('evento_id,estado').eq('usuario_id', currentUser.id)).catch(() => ({ data: [] }));
 
       const [evRes, asistRes, reqRes] = await Promise.all([evPromise, asistPromise, reqPromise]);
 
@@ -5730,7 +5730,7 @@ const AA_MESSAGES_OFFLINE = [
 async function loadDailyMessage() {
   let msgs = AA_MESSAGES_OFFLINE;
   if (navigator.onLine) {
-    const { data } = await sb.from('mensajes_diarios').select('*').eq('activo', true).catch(() => ({ data: null }));
+    const { data } = await Promise.resolve(sb.from('mensajes_diarios').select('*').eq('activo', true)).catch(() => ({ data: null }));
     if (data && data.length) msgs = data;
   }
   // Frase aleatoria, evitar repetir la última
@@ -6439,12 +6439,12 @@ async function savePadrinoContact() {
 
       if (error) {
         // Si falla (tabla no existe aún), intentar en columnas de usuarios
-        await sb.from('usuarios').update({
+        await Promise.resolve(sb.from('usuarios').update({
           padrino_id:      padrinoData.id || null,
           padrino_nombre:  padrinoData.nombre || null,
           padrino_prefijo: padrinoData.prefijo,
           padrino_tel:     padrinoData.tel,
-        }).eq('id', currentUser.id).catch(() => {});
+        }).eq('id', currentUser.id)).catch(() => {});
       }
     } catch(e) {
       // Guardado en localStorage ya fue exitoso, no bloquear al usuario
