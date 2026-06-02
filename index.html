@@ -1792,6 +1792,7 @@
     .sos-big-btn { width:100%; padding:24px; background:linear-gradient(135deg,#dc2626,#b91c1c); border:none; border-radius:var(--radius-lg); cursor:pointer; animation:sosPulse 2s infinite; display:flex; flex-direction:column; align-items:center; gap:8px; box-shadow:0 8px 32px rgba(220,38,38,0.4); -webkit-tap-highlight-color:transparent; }
     .sos-big-btn:active { transform:scale(0.97); }
     @keyframes sosPulse { 0%,100%{box-shadow:0 8px 32px rgba(220,38,38,0.4);}50%{box-shadow:0 8px 48px rgba(220,38,38,0.7);} }
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);} }
     .sos-big-label { font-size:32px; font-weight:900; color:white; letter-spacing:2px; }
     .sos-big-sub { font-size:14px; color:rgba(255,255,255,0.85); }
     .sos-message { background:var(--surface); border:2px solid var(--accent); border-radius:var(--radius); padding:20px; text-align:center; width:100%; }
@@ -2043,6 +2044,8 @@
       </div>
       <!-- Panel de administrador en el inicio — solo visible para admin_principal -->
       <div id="home-admin-panel" style="display:none;margin-bottom:16px"></div>
+      <!-- Banner SOS — visible para todos cuando hay crisis activa en la sede -->
+      <div id="home-sos-banner" style="display:none"></div>
 
       <div class="counters-section">
         <div class="counters-title">Mis Contadores</div>
@@ -3435,6 +3438,7 @@ async function loadHomeTab() {
   loadDailyMessage();
   renderCounters();
   if (currentUser?.rol === 'admin_principal') loadHomeAdminPanel();
+  if (currentUser && !currentUser.isAnonymous && currentUser.sede_id) startSOSPolling();
 }
 
 async function loadHomeAdminPanel() {
@@ -3457,15 +3461,13 @@ async function loadHomeAdminPanel() {
   let solicitudesAdmin = [];
   if (isRenca) {
     try {
-      const { data: solNot, error: solErr } = await sb.from('notificaciones')
+      const { data: solNot } = await sb.from('notificaciones')
         .select('*')
-        .eq('sede_id', RENCA_SEDE_ID)
+        .eq('sede_id', currentUser.sede_id)
         .eq('tipo', 'solicitud_admin_sede')
-        .eq('leida', false)
         .order('created_at', { ascending: false });
-      if (solErr) console.error('[loadHomeAdminPanel] Error al cargar solicitudes admin:', solErr);
       solicitudesAdmin = solNot || [];
-    } catch(e) { console.error('[loadHomeAdminPanel] Excepción:', e); }
+    } catch(e) {}
   }
 
   // Si no hay nada que mostrar, ocultar el panel
@@ -4702,23 +4704,21 @@ async function solicitarAdminSede(sedeId, sedeNombre) {
 
   // Insertar solicitud usando ID fijo de Renca (robusto, no depende del nombre)
   try {
-    const { error: insertError } = await sb.from('notificaciones').insert({
+    await sb.from('notificaciones').insert({
       sede_id: RENCA_SEDE_ID,
       tipo: 'solicitud_admin_sede',
       titulo: '🙋 Solicitud de administrador',
       cuerpo: `${currentUser.nombre} solicita ser el administrador principal de la sede "${sedeNombre}" (ID: ${sedeId}) (UID: ${currentUser.id}). Revisa el panel de Admin para aprobar o rechazar.`,
       usuario_origen: currentUser.id,
-      leida: false,
+      sede_solicitada_id: sedeId,
     });
-    if (insertError) throw insertError;
     // Marcar en memoria local que ya solicitó (persiste en sesión)
     currentUser.solicito_admin_sede_id = sedeId;
     showToast('✓ Solicitud enviada. El admin de ⭐San José de Renca la revisará.');
     // Refrescar vista
     renderDirDetalle(sedeId);
   } catch(e) {
-    console.error('[solicitarAdminSede] Error:', e);
-    showToast('Error al enviar solicitud: ' + (e.message || 'intenta de nuevo'));
+    showToast('Error al enviar solicitud');
     btn.disabled = false;
     btn.textContent = '🙋 Solicito ser el administrador de esta sede';
   }
@@ -6298,6 +6298,155 @@ const EMERGENCY_NUMBERS = [
 
 
 // ============================================================
+// SOS — CONFIRMACIÓN MODAL
+// ============================================================
+function mostrarConfirmacionSOS(sedeName) {
+  return new Promise(resolve => {
+    // Eliminar modal anterior si existe
+    const prev = document.getElementById('modal-sos-confirm');
+    if (prev) prev.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'modal-sos-confirm';
+    modal.style.cssText = `
+      position:fixed;inset:0;z-index:9999;
+      display:flex;align-items:center;justify-content:center;
+      background:rgba(0,0,0,0.75);padding:24px;
+    `;
+    modal.innerHTML = `
+      <div style="
+        background:var(--surface);border-radius:var(--radius-lg);
+        padding:28px 24px;max-width:340px;width:100%;
+        border:2px solid #dc2626;
+        box-shadow:0 8px 40px rgba(220,38,38,0.4);
+        text-align:center;animation:fadeInUp 0.2s ease;
+      ">
+        <div style="font-size:52px;margin-bottom:12px">🆘</div>
+        <div style="font-size:18px;font-weight:800;color:#dc2626;margin-bottom:10px">
+          Enviar S.O.S
+        </div>
+        <div style="font-size:15px;color:var(--text);line-height:1.6;margin-bottom:20px">
+          ¿Quieres enviar un <strong>S.O.S</strong> a los miembros de<br>
+          <strong>${sedeName}</strong>?<br><br>
+          <span style="font-size:13px;color:var(--text2)">Todos verán una alerta de crisis en su pantalla de inicio.</span>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button id="sos-confirm-no" style="
+            flex:1;padding:14px;border-radius:var(--radius-sm);
+            background:var(--bg3);border:none;
+            font-size:15px;font-weight:600;color:var(--text2);cursor:pointer;
+          ">Cancelar</button>
+          <button id="sos-confirm-yes" style="
+            flex:1;padding:14px;border-radius:var(--radius-sm);
+            background:#dc2626;border:none;
+            font-size:15px;font-weight:800;color:white;cursor:pointer;
+          ">🆘 Sí, enviar</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    document.getElementById('sos-confirm-yes').onclick = () => { modal.remove(); resolve(true); };
+    document.getElementById('sos-confirm-no').onclick  = () => { modal.remove(); resolve(false); };
+    modal.addEventListener('click', e => { if (e.target === modal) { modal.remove(); resolve(false); } });
+  });
+}
+
+// SOS — BANNER EN PANTALLA INICIO
+// ============================================================
+let _sosPollingTimer = null;
+
+// Obtener IDs de SOS ya vistos por este usuario (guardados en localStorage)
+function _getSosVistos() {
+  try { return new Set(JSON.parse(localStorage.getItem('sos_vistos_' + (currentUser?.id||'anon')) || '[]')); }
+  catch(e) { return new Set(); }
+}
+function _marcarSosVisto(sosId) {
+  const vistos = _getSosVistos();
+  vistos.add(sosId);
+  localStorage.setItem('sos_vistos_' + (currentUser?.id||'anon'), JSON.stringify([...vistos]));
+}
+
+function confirmarSOSVisto(sosId) {
+  _marcarSosVisto(sosId);
+  const banner = document.getElementById('home-sos-banner');
+  if (banner) { banner.style.display = 'none'; banner.innerHTML = ''; }
+}
+
+async function checkSOSBanner() {
+  if (!currentUser || currentUser.isAnonymous || !currentUser.sede_id) return;
+  try {
+    // Traer todos los SOS no leídos de la sede (sin límite de tiempo)
+    const { data } = await sb.from('notificaciones')
+      .select('id,titulo,cuerpo,created_at')
+      .eq('sede_id', currentUser.sede_id)
+      .eq('tipo', 'sos_crisis')
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    const banner = document.getElementById('home-sos-banner');
+    if (!banner) return;
+
+    const vistos = _getSosVistos();
+    // Filtrar los que este usuario aún no marcó como vistos
+    // Y excluir el SOS que envió el mismo usuario (no se avisa a sí mismo)
+    const pendientes = (data || []).filter(s => !vistos.has(s.id));
+
+    if (pendientes.length > 0) {
+      const sos = pendientes[0]; // mostrar el más reciente
+      const nombre = sos.titulo.replace('🆘 ', '').replace(' necesita apoyo ahora', '');
+      const minutos = Math.round((Date.now() - new Date(sos.created_at)) / 60000);
+      let tiempo;
+      if (minutos < 1) tiempo = 'ahora mismo';
+      else if (minutos < 60) tiempo = `hace ${minutos} min`;
+      else { const h = Math.floor(minutos/60); tiempo = `hace ${h} hora${h>1?'s':''}`; }
+
+      const hayMas = pendientes.length > 1 ? ` (+${pendientes.length - 1} más)` : '';
+
+      banner.style.display = 'block';
+      banner.innerHTML = `
+        <div style="
+          background:linear-gradient(135deg,#7f1d1d,#dc2626);
+          border-radius:var(--radius);padding:14px 16px;
+          display:flex;align-items:flex-start;gap:12px;
+          animation:sosPulse 1.5s ease-in-out infinite;
+          margin-bottom:14px;
+        ">
+          <div style="font-size:32px;flex-shrink:0;margin-top:2px">🆘</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:15px;font-weight:800;color:white">¡Alerta de crisis en tu sede!${hayMas}</div>
+            <div style="font-size:13px;color:rgba(255,255,255,0.85);margin-top:2px">
+              <strong>${nombre}</strong> necesita apoyo — ${tiempo}
+            </div>
+            <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+              <button onclick="switchTab('sos',null);loadSOSWithDir()" style="
+                background:white;color:#dc2626;border:none;
+                border-radius:var(--radius-sm);padding:7px 12px;
+                font-size:12px;font-weight:800;cursor:pointer;
+              ">📞 Ir a SOS</button>
+              <button onclick="confirmarSOSVisto(${sos.id})" style="
+                background:rgba(255,255,255,0.2);color:white;
+                border:1.5px solid rgba(255,255,255,0.5);
+                border-radius:var(--radius-sm);padding:7px 12px;
+                font-size:12px;font-weight:600;cursor:pointer;
+              ">✓ Ya vi el aviso</button>
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      banner.style.display = 'none';
+      banner.innerHTML = '';
+    }
+  } catch(e) { console.warn('[SOS banner]', e); }
+}
+
+function startSOSPolling() {
+  checkSOSBanner();
+  if (_sosPollingTimer) clearInterval(_sosPollingTimer);
+  _sosPollingTimer = setInterval(checkSOSBanner, 30000); // cada 30 seg
+}
+
 // SOS — ALERTA A TODA LA SEDE
 // ============================================================
 let _sosAlertaSent = false; // evitar doble envío por doble-tap
@@ -6310,6 +6459,12 @@ async function activarSosAlerta() {
   if (!currentUser || currentUser.isAnonymous || !currentUser.sede_id) return;
 
   if (_sosAlertaSent) return;
+
+  // Confirmación antes de enviar
+  const sedeName = (sedes.find(s => s.id === currentUser.sede_id) || {}).nombre || 'tu sede';
+  const confirmed = await mostrarConfirmacionSOS(sedeName);
+  if (!confirmed) return;
+
   _sosAlertaSent = true;
 
   const userName  = currentUser.nombre || 'Un compañero/a';
@@ -6324,12 +6479,15 @@ async function activarSosAlerta() {
   showToast('🆘 Alerta enviada a ' + sedeName);
 
   try {
-    await sb.from('notificaciones').insert({
+    const { error: sosErr } = await sb.from('notificaciones').insert({
       sede_id: sedeId,
       tipo: 'sos_crisis',
       titulo: '🆘 ' + userName + ' necesita apoyo ahora',
       cuerpo: userName + ' activó el botón de crisis y necesita ayuda.' + waTexto,
+      leida: false,
     });
+    if (sosErr) console.error('[SOS] Error al insertar:', sosErr);
+    else checkSOSBanner(); // refrescar banner en home inmediatamente
   } catch (e) {
     console.warn('[SOS] Error al enviar alerta:', e);
   }
