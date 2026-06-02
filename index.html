@@ -3083,9 +3083,13 @@ async function handleLogin() {
 
   if (!nombre) { errEl.textContent = 'Ingresa tu nombre'; return; }
 
-  const userId = makeId(nombre, sedes.find(s=>s.id===sedeId)?.nombre || '');
+  // Buscar por nombre (insensible a mayúsculas) + sede_id para compatibilidad con IDs existentes
+  const { data: loginRows, error } = await sb.from('usuarios')
+    .select('*')
+    .eq('sede_id', sedeId)
+    .ilike('nombre', nombre.trim());
 
-  const { data, error } = await sb.from('usuarios').select('*').eq('id', userId).single();
+  const data = loginRows && loginRows.length > 0 ? loginRows[0] : null;
   if (error || !data) { errEl.textContent = 'Usuario no encontrado en esa sede.'; return; }
 
   // Verificar si está pendiente de aprobación
