@@ -218,6 +218,110 @@
       width: 48px !important;
       height: 48px !important;
     }
+
+    /* ===== LOVELABS SPORT ===== */
+    /* Energético, dinámico. Verde lima + negro carbón. */
+    [data-theme="lovelabs_sport"] {
+      --bg: #0d0d0d;
+      --bg2: #1a1a1a;
+      --bg3: #252525;
+      --surface: #1a1a1a;
+      --surface2: #202020;
+      --border: rgba(180,255,60,0.15);
+      --text: #f0f0f0;
+      --text2: #a0a0a0;
+      --text3: #606060;
+      --accent: #b4ff3c;
+      --accent2: #8fcc2a;
+      --accent-text: #0d0d0d;
+      --danger: #ff4d4d;
+      --success: #b4ff3c;
+      --info: #40c8ff;
+      --nav-bg: rgba(13,13,13,0.96);
+      --header-bg: rgba(13,13,13,0.96);
+      --input-bg: #252525;
+      --input-border: rgba(180,255,60,0.2);
+      --overlay: rgba(0,0,0,0.75);
+      --card-shadow: 0 4px 20px rgba(180,255,60,0.08);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --radius-lg: 20px;
+    }
+
+    /* ===== LOVELABS SOFISTICADO ===== */
+    /* Elegante, premium. Crema marfil + terracota + dorado. */
+    [data-theme="lovelabs_sofisticado"] {
+      --bg: #faf7f2;
+      --bg2: #ffffff;
+      --bg3: #f2ede4;
+      --surface: #ffffff;
+      --surface2: #faf7f2;
+      --border: rgba(139,90,60,0.12);
+      --text: #1c1410;
+      --text2: #5a4030;
+      --text3: #9a8070;
+      --accent: #b5651d;
+      --accent2: #8b4513;
+      --accent-text: #ffffff;
+      --danger: #c0392b;
+      --success: #27796b;
+      --info: #2e6b9e;
+      --nav-bg: rgba(250,247,242,0.97);
+      --header-bg: rgba(250,247,242,0.97);
+      --input-bg: #f2ede4;
+      --input-border: rgba(139,90,60,0.18);
+      --overlay: rgba(28,20,16,0.5);
+      --card-shadow: 0 4px 24px rgba(139,90,60,0.1);
+      --radius: 18px;
+      --radius-sm: 12px;
+      --radius-lg: 28px;
+    }
+
+    /* ===== LOVELABS OBSCURO ===== */
+    /* Ultra premium dark. Azul medianoche + violeta + blanco puro. */
+    [data-theme="lovelabs_obscuro"] {
+      --bg: #07080f;
+      --bg2: #0f1120;
+      --bg3: #181a2e;
+      --surface: #0f1120;
+      --surface2: #131525;
+      --border: rgba(140,110,255,0.14);
+      --text: #eeeeff;
+      --text2: #9090c0;
+      --text3: #505080;
+      --accent: #a78bfa;
+      --accent2: #7c3aed;
+      --accent-text: #ffffff;
+      --danger: #f87171;
+      --success: #34d399;
+      --info: #60a5fa;
+      --nav-bg: rgba(7,8,15,0.97);
+      --header-bg: rgba(7,8,15,0.97);
+      --input-bg: #181a2e;
+      --input-border: rgba(140,110,255,0.2);
+      --overlay: rgba(0,0,0,0.8);
+      --card-shadow: 0 4px 32px rgba(140,110,255,0.1);
+      --radius: 16px;
+      --radius-sm: 10px;
+      --radius-lg: 24px;
+    }
+
+    /* LoveLabs: ajustes tipográficos finos para los 3 temas */
+    [data-theme="lovelabs_sport"] .header-title,
+    [data-theme="lovelabs_sofisticado"] .header-title,
+    [data-theme="lovelabs_obscuro"] .header-title {
+      letter-spacing: -0.02em;
+    }
+    [data-theme="lovelabs_sofisticado"] .counter-days {
+      font-style: italic;
+    }
+    [data-theme="lovelabs_sport"] .btn-primary,
+    [data-theme="lovelabs_sport"] .btn.btn-primary {
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 13px;
+    }
+
     [data-theme="adulto_mayor"] .card {
       padding: 20px !important;
     }
@@ -2966,13 +3070,16 @@ const ROL_LABELS_G = { admin_principal: 'Admin Principal', admin_adjunto: 'Admin
 // ============================================================
 // THEME
 // ============================================================
-const THEMES = ['auto','claro','oscuro','minimalista','adulto_mayor'];
+const THEMES = ['auto','claro','oscuro','minimalista','adulto_mayor','lovelabs_sport','lovelabs_sofisticado','lovelabs_obscuro'];
 const THEME_ICONS = {
   auto: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="4" stroke-width="2"/><path stroke-linecap="round" stroke-width="2" d="M12 2v2m0 16v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M2 12h2m16 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>`,
   claro: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m8.66-9h-1M4.34 12h-1m15.07-6.07-.71.71M6.34 17.66l-.71.71m12.02 0 .71-.71M6.34 6.34l-.71-.71M12 6a6 6 0 100 12A6 6 0 0012 6z"/></svg>`,
   oscuro: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>`,
   minimalista: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2" stroke-width="2"/></svg>`,
   adulto_mayor: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>`,
+  lovelabs_sport: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>`,
+  lovelabs_sofisticado: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3l14 9-14 9V3z"/></svg>`,
+  lovelabs_obscuro: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="9" stroke-width="2"/><path stroke-linecap="round" stroke-width="2" d="M12 3a9 9 0 000 18"/></svg>`,
 };
 
 function applyTheme(theme) {
@@ -2987,6 +3094,9 @@ function applyTheme(theme) {
   if (metaTheme) {
     if (resolved === 'claro' || resolved === 'auto-claro') metaTheme.content = '#f8fafc';
     else if (resolved === 'adulto_mayor') metaTheme.content = '#fffbf0';
+    else if (resolved === 'lovelabs_sofisticado') metaTheme.content = '#faf7f2';
+    else if (resolved === 'lovelabs_sport') metaTheme.content = '#0d0d0d';
+    else if (resolved === 'lovelabs_obscuro') metaTheme.content = '#07080f';
     else metaTheme.content = '#0f172a';
   }
   const btn = document.getElementById('theme-btn');
@@ -2998,7 +3108,7 @@ function cycleTheme() {
   currentTheme = THEMES[(idx + 1) % THEMES.length];
   localStorage.setItem('nvaa_theme', currentTheme);
   applyTheme(currentTheme);
-  const names = { auto: 'Automático', claro: 'Claro', oscuro: 'Oscuro', minimalista: 'Minimalista', adulto_mayor: 'Adulto Mayor ❤️' };
+  const names = { auto: 'Automático', claro: 'Claro', oscuro: 'Oscuro', minimalista: 'Minimalista', adulto_mayor: 'Adulto Mayor ❤️', lovelabs_sport: '⚡ LoveLabs Sport', lovelabs_sofisticado: '✨ LoveLabs Sofisticado', lovelabs_obscuro: '🌌 LoveLabs Obscuro' };
   showToast('Tema: ' + (names[currentTheme] || currentTheme));
   if (currentUser) sb.from('usuarios').update({ tema: currentTheme }).eq('id', currentUser.id);
 }
